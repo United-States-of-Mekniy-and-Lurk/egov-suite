@@ -19,12 +19,9 @@ RUN dotnet publish src/Ego.Api/Ego.Api.csproj -c Release -o /app/publish --no-re
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
-RUN addgroup --system --gid 1001 ego \
-    && adduser --system --uid 1001 --ingroup ego ego
-
 COPY --from=build /app/publish .
 
-USER ego
+USER 1001:1001
 
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
