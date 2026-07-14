@@ -25,9 +25,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/United-States-of-Mekniy-and-Lurk/ego.git
+    repoURL: https://github.com/United-States-of-Mekniy-and-Lurk/egov-suite.git
     targetRevision: HEAD
-    path: helm/ego
+    path: ego/helm/ego
     helm:
       releaseName: ego
       # Override non-sensitive values here.

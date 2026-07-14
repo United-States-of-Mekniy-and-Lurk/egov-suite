@@ -4,11 +4,11 @@ replicaCount: 2
 api:
   image:
     # -- API container image repository
-    repository: citizen-service
+    repository: ghcr.io/united-states-of-mekniy-and-lurk/citizen-service-api
     # -- Image pull policy
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     # -- Image tag; defaults to the chart appVersion
-    tag: ""
+    tag: "latest"
 
   service:
     type: ClusterIP
@@ -49,9 +49,9 @@ web:
 
   image:
     # -- Web container image repository
-    repository: citizen-admin
-    pullPolicy: IfNotPresent
-    tag: ""
+    repository: ghcr.io/united-states-of-mekniy-and-lurk/citizen-service-web
+    pullPolicy: Always
+    tag: "latest"
 
   service:
     type: ClusterIP

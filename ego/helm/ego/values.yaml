@@ -3,9 +3,9 @@ fullnameOverride: ""
 replicaCount: 2
 image:
   repository: ghcr.io/united-states-of-mekniy-and-lurk/ego
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Automatically updated by the helm-release workflow after each successful Docker push to main.
-  tag: "sha-7ef56be"
+  tag: "latest"
 serviceAccount:
   create: true
   annotations: {}

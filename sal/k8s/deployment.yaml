@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: citizen-service
-          image: citizen-service:latest
+          image: ghcr.io/united-states-of-mekniy-and-lurk/citizen-service-api:latest
           ports:
             - containerPort: 8080
           envFrom:

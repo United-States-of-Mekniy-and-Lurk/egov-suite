@@ -1,0 +1,23 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY CitizenService.slnx ./
+COPY src/CitizenService.Web/CitizenService.Web.csproj src/CitizenService.Web/
+
+RUN dotnet restore src/CitizenService.Web/CitizenService.Web.csproj
+
+COPY . .
+RUN dotnet publish src/CitizenService.Web/CitizenService.Web.csproj -c Release -o /app/publish --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+
+RUN addgroup --system --gid 1001 app && adduser --system --uid 1001 --ingroup app app
+
+COPY --from=build /app/publish .
+
+USER app
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "CitizenService.Web.dll"]

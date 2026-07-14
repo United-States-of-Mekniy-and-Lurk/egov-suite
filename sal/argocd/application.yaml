@@ -11,9 +11,9 @@ spec:
 
   source:
     # -- Update repoURL to match your Git remote.
-    repoURL: https://github.com/United-States-of-Mekniy-and-Lurk/sal.git
+    repoURL: https://github.com/United-States-of-Mekniy-and-Lurk/egov-suite.git
     targetRevision: HEAD
-    path: helm/citizen-service
+    path: sal/helm/citizen-service
     helm:
       # -- Override individual values here or reference a values file.
       # In production, use a separate encrypted values file for secrets
