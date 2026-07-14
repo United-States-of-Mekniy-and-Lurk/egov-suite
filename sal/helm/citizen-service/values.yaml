@@ -4,7 +4,7 @@ replicaCount: 2
 api:
   image:
     # -- API container image repository
-    repository: ghcr.io/united-states-of-mekniy-and-lurk/citizen-service-api
+    repository: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-citizen-service-api
     # -- Image pull policy
     pullPolicy: Always
     # -- Image tag; defaults to the chart appVersion
@@ -49,7 +49,7 @@ web:
 
   image:
     # -- Web container image repository
-    repository: ghcr.io/united-states-of-mekniy-and-lurk/citizen-service-web
+    repository: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-citizen-service-web
     pullPolicy: Always
     tag: "latest"
 

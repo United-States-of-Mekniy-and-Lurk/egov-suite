@@ -25,19 +25,19 @@ jobs:
           - name: ego
             context: ./ego
             dockerfile: ./ego/Dockerfile
-            image: ghcr.io/united-states-of-mekniy-and-lurk/ego
+            image: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-ego
           - name: citizen-service-api
             context: ./sal
             dockerfile: ./sal/Dockerfile.api
-            image: ghcr.io/united-states-of-mekniy-and-lurk/citizen-service-api
+            image: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-citizen-service-api
           - name: citizen-service-web
             context: ./sal
             dockerfile: ./sal/Dockerfile.web
-            image: ghcr.io/united-states-of-mekniy-and-lurk/citizen-service-web
+            image: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-citizen-service-web
           - name: gov-cli
             context: ./gov-cli
             dockerfile: ./gov-cli/Dockerfile
-            image: ghcr.io/united-states-of-mekniy-and-lurk/gov-cli
+            image: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-gov-cli
 
     steps:
       - name: Checkout

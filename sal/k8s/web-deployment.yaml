@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: citizen-admin
-          image: ghcr.io/united-states-of-mekniy-and-lurk/citizen-service-web:latest
+          image: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-citizen-service-web:latest
           ports:
             - containerPort: 8080
           envFrom:
