@@ -1,0 +1,31 @@
+@page
+@model CitizenService.Web.Pages.Applications.ApplicationsIndexModel
+@{
+    ViewData["Title"] = "Applications";
+}
+
+<h1>Citizenship Applications</h1>
+<a href="/Applications/New" class="btn btn-primary mb-3">New Application</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Person ID</th>
+            <th>Status</th>
+            <th>Submitted At</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var a in Model.Applications)
+        {
+            <tr>
+                <td>@a.Id</td>
+                <td>@a.PersonId</td>
+                <td>@a.Status</td>
+                <td>@a.SubmittedAt</td>
+                <td><a href="/Applications/Detail?id=@a.Id">Review</a></td>
+            </tr>
+        }
+    </tbody>
+</table>

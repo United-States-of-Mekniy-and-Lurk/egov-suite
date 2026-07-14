@@ -1,0 +1,61 @@
+## .NET / C# build artifacts
+bin/
+obj/
+
+## NuGet packages
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+
+## User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Rider
+.idea/
+*.sln.iml
+
+## VS Code
+.vscode/
+
+## macOS
+.DS_Store
+
+## Windows
+Thumbs.db
+
+## dotnet publish output
+publish/
+out/
+
+## Entity Framework migrations - keep source, exclude snapshot build caches
+# (migrations themselves are kept)
+
+## Secrets / local config overrides
+appsettings.*.local.json
+secrets.json
+.env
+.env.local
+
+## Test results
+TestResults/
+coverage.xml
+*.coveragexml

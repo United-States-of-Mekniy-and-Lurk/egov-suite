@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "citizen-service.fullname" . }}-web
+  labels:
+    {{- include "citizen-service.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+spec:
+  type: {{ .Values.web.service.type }}
+  selector:
+    {{- include "citizen-service.web.selectorLabels" . | nindent 4 }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.web.service.port }}
+      targetPort: {{ .Values.web.service.targetPort }}

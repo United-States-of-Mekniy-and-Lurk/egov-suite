@@ -1,0 +1,12 @@
+apiVersion: v2
+name: ego
+description: Ego Person Registry – actor-centric identity service
+type: application
+version: 0.1.0
+appVersion: "latest"
+keywords:
+  - identity
+  - person-registry
+home: https://github.com/United-States-of-Mekniy-and-Lurk/ego
+sources:
+  - https://github.com/United-States-of-Mekniy-and-Lurk/ego

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: citizen-admin
+  labels:
+    app: citizen-admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: citizen-admin
+  template:
+    metadata:
+      labels:
+        app: citizen-admin
+    spec:
+      containers:
+        - name: citizen-admin
+          image: citizen-admin:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: citizen-service-config
+            - secretRef:
+                name: citizen-service-secret

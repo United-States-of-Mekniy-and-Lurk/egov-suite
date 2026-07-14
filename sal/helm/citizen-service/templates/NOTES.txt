@@ -1,0 +1,15 @@
+Thank you for installing {{ .Chart.Name }} {{ .Chart.Version }}.
+
+API endpoint:    http://{{ .Values.api.ingress.host }}
+Admin UI:        http://{{ .Values.web.ingress.host }}
+
+To upgrade the release:
+  helm upgrade {{ .Release.Name }} ./helm/citizen-service -n {{ .Release.Namespace }} -f your-values.yaml
+
+To manage secrets safely in production, set:
+  secret.existingSecret=<name-of-pre-existing-secret>
+
+and create the secret externally (e.g. with Sealed Secrets or Vault).
+The secret must contain:
+  - ConnectionStrings__DefaultConnection
+  - Oidc__ClientSecret

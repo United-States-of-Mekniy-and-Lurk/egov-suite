@@ -1,0 +1,17 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ego.postgresServiceName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ego.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+spec:
+  selector:
+    {{- include "ego.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+  ports:
+    - port: 5432
+      targetPort: 5432
+{{- end }}

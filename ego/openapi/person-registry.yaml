@@ -1,0 +1,194 @@
+openapi: 3.0.3
+info:
+  title: Ego Person Registry API
+  version: 0.1.0
+  description: |
+    Canonical Person Registry API for Mekniy and Lurk.
+    This API provides the identity bridge between authentication providers
+    and domain services.
+servers:
+  - url: https://ego.local
+security:
+  - bearerAuth: []
+paths:
+  /persons/{id}:
+    get:
+      operationId: getPersonById
+      summary: Get a person by platform identifier
+      parameters:
+        - $ref: '#/components/parameters/PersonId'
+      responses:
+        '200':
+          description: Person found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '404':
+          description: Person not found
+    patch:
+      operationId: patchPerson
+      summary: Patch mutable person fields
+      parameters:
+        - $ref: '#/components/parameters/PersonId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchPersonRequest'
+      responses:
+        '200':
+          description: Person updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '400':
+          description: Invalid patch payload
+        '404':
+          description: Person not found
+  /persons/by-sub/{sub}:
+    get:
+      operationId: getPersonBySub
+      summary: Get a person by authentication subject
+      parameters:
+        - in: path
+          name: sub
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Person found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '404':
+          description: Person not found
+  /persons:
+    post:
+      operationId: createPerson
+      summary: Create a person
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePersonRequest'
+      responses:
+        '201':
+          description: Person created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '409':
+          description: Person already exists for the provided identitySubject (unique constraint)
+  /me:
+    get:
+      operationId: getCurrentPerson
+      summary: Resolve authenticated identity to person
+      description: |
+        Uses the bearer token claims to resolve (or provision) the corresponding
+        Person and returns the canonical registry record.
+      responses:
+        '200':
+          description: Current person
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    PersonId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    PersonStatus:
+      type: string
+      description: Person lifecycle status. Defaults to active when not provided at creation.
+      default: active
+      enum:
+        - active
+        - disabled
+    Person:
+      type: object
+      required:
+        - id
+        - identitySubject
+        - preferredUsername
+        - displayName
+        - email
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        identitySubject:
+          type: string
+          description: Stable subject claim from the configured authentication provider (currently Keycloak).
+        preferredUsername:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+          format: email
+        status:
+          $ref: '#/components/schemas/PersonStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreatePersonRequest:
+      type: object
+      required:
+        - identitySubject
+        - preferredUsername
+        - displayName
+        - email
+      properties:
+        identitySubject:
+          type: string
+        preferredUsername:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+          format: email
+        status:
+          $ref: '#/components/schemas/PersonStatus'
+          description: Defaults to active when omitted.
+    PatchPersonRequest:
+      type: object
+      minProperties: 1
+      properties:
+        preferredUsername:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+          format: email
+        status:
+          $ref: '#/components/schemas/PersonStatus'
+          description: |
+            Administrative status managed by authorized platform actors.
+            Identity synchronization updates username/display name/email only
+            and does not change status.

@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ego
+      POSTGRES_USER: ego
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ego_dev_secret}
+      # Trust auth removes the need for a password in connection strings during local development.
+      # Do NOT use POSTGRES_HOST_AUTH_METHOD=trust in production.
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ego -d ego"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2
+    restart: unless-stopped
+    command: start-dev
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD:-admin}
+      KC_DB: dev-mem
+    ports:
+      - "8180:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health/ready || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 30s
+
+  ego-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres;Database=ego;Username=ego"
+      Keycloak__Authority: "http://keycloak:8080/realms/mekniy-and-lurk"
+      Keycloak__Audience: "account"
+      Keycloak__RequireHttpsMetadata: "false"
+      ASPNETCORE_ENVIRONMENT: Development
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

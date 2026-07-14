@@ -1,0 +1,27 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+
+namespace CitizenService.Web.Pages;
+
+[Authorize]
+public class IndexModel : PageModel
+{
+    private readonly IHttpClientFactory _httpClientFactory;
+
+    public int TotalCitizens { get; set; }
+    public int PendingApplications { get; set; }
+
+    public IndexModel(IHttpClientFactory httpClientFactory)
+    {
+        _httpClientFactory = httpClientFactory;
+    }
+
+    public async Task OnGetAsync()
+    {
+        // In a real app, fetch from API
+        TotalCitizens = 0;
+        PendingApplications = 0;
+        await Task.CompletedTask;
+    }
+}
+

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: citizen-service-config
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  Jwt__Authority: "http://keycloak:8080/realms/sal"
+  Jwt__Audience: "citizen-service"
+  PersonRegistry__BaseUrl: "http://person-registry"
+  CitizenApi__BaseUrl: "http://citizen-service"
+  Oidc__Authority: "http://keycloak:8080/realms/sal"
+  Oidc__ClientId: "citizen-admin"

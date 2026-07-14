@@ -1,0 +1,123 @@
+---
+# Ego API ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ego-api-config
+  namespace: ego
+data:
+  ASPNETCORE_ENVIRONMENT: Production
+  Keycloak__Authority: "https://keycloak.example.com/realms/mekniy-and-lurk"
+  Keycloak__Audience: "account"
+  Keycloak__RequireHttpsMetadata: "true"
+---
+# Ego API Secret — REPLACE the connection string value below before applying.
+# In production use sealed-secrets or external-secrets instead of a plain Secret.
+# Full connection string format: Host=<host>;Database=ego;Username=ego;Password=REPLACE_ME
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ego-api-secret
+  namespace: ego
+type: Opaque
+stringData:
+  # Replace REPLACE_ME with the actual password (from postgres-secret POSTGRES_PASSWORD).
+  # Using REPLACE_ME keeps the string syntactically invalid until intentionally configured.
+  ConnectionStrings__DefaultConnection: "Host=postgres;Database=ego;Username=ego;Password=REPLACE_ME"
+---
+# Ego API Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ego-api
+  namespace: ego
+  labels:
+    app: ego-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ego-api
+  template:
+    metadata:
+      labels:
+        app: ego-api
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+      containers:
+        - name: ego-api
+          image: ghcr.io/united-states-of-mekniy-and-lurk/ego:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: ego-api-config
+            - secretRef:
+                name: ego-api-secret
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+---
+# Ego API Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ego-api
+  namespace: ego
+spec:
+  selector:
+    app: ego-api
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+# Ego API Ingress (adjust host and TLS to match your cluster)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ego-api
+  namespace: ego
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - ego.example.com
+      secretName: ego-api-tls
+  rules:
+    - host: ego.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ego-api
+                port:
+                  number: 80

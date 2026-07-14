@@ -1,0 +1,223 @@
+openapi: "3.0.3"
+info:
+  title: CitizenService API
+  version: "1.0.0"
+  description: API for managing citizens and citizenship applications
+servers:
+  - url: http://citizen-service.local
+    description: Local development
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Citizen:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        personId: { type: string, format: uuid }
+        citizenNumber: { type: string }
+        status: { type: string, enum: [Active, Suspended, Revoked, FormerCitizen] }
+        grantedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        importSource: { type: string, nullable: true }
+    CitizenshipApplication:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        personId: { type: string, format: uuid }
+        status: { type: string, enum: [Draft, Submitted, UnderReview, Approved, Rejected, Withdrawn] }
+        formName: { type: string }
+        formVersion: { type: integer }
+        submittedAt: { type: string, format: date-time, nullable: true }
+        reviewedAt: { type: string, format: date-time, nullable: true }
+        decisionReason: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+paths:
+  /citizens:
+    get:
+      summary: List citizens
+      parameters:
+        - name: skip
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: take
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: List of citizens
+    post:
+      summary: Create citizen
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                personId: { type: string, format: uuid }
+                grantedAt: { type: string, format: date-time, nullable: true }
+                importSource: { type: string, nullable: true }
+                citizenNumber: { type: string, nullable: true }
+      responses:
+        "201":
+          description: Created
+  /citizens/{personId}:
+    get:
+      summary: Get citizen by PersonId
+      parameters:
+        - name: personId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Citizen found
+        "404":
+          description: Not found
+  /citizens/{personId}/status:
+    patch:
+      summary: Change citizen status
+      parameters:
+        - name: personId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string, enum: [Active, Suspended, Revoked, FormerCitizen] }
+                reason: { type: string, nullable: true }
+      responses:
+        "200":
+          description: Updated
+  /citizens/import/csv:
+    post:
+      summary: Import citizens from CSV
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Import result
+  /citizenship-applications:
+    get:
+      summary: List applications
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [Draft, Submitted, UnderReview, Approved, Rejected, Withdrawn] }
+        - name: skip
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: take
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: List of applications
+    post:
+      summary: Create draft application
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                personId: { type: string, format: uuid }
+                formName: { type: string }
+                formVersion: { type: integer }
+      responses:
+        "201":
+          description: Created
+  /citizenship-applications/{id}:
+    get:
+      summary: Get application by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Application found
+        "404":
+          description: Not found
+  /citizenship-applications/{id}/answers:
+    put:
+      summary: Save application answers
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answers:
+                  type: object
+      responses:
+        "200":
+          description: Updated
+  /citizenship-applications/{id}/transition:
+    post:
+      summary: Transition application state
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                targetState: { type: string, enum: [Draft, Submitted, UnderReview, Approved, Rejected, Withdrawn] }
+                reason: { type: string, nullable: true }
+      responses:
+        "200":
+          description: Updated
+  /forms:
+    get:
+      summary: List forms
+      responses:
+        "200":
+          description: List of forms
+  /forms/{name}/{version}:
+    get:
+      summary: Get form definition
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema: { type: string }
+        - name: version
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Form definition
+        "404":
+          description: Not found

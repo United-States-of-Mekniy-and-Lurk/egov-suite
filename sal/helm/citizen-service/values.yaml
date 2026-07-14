@@ -1,0 +1,109 @@
+# -- Number of replicas for the API pod
+replicaCount: 2
+
+api:
+  image:
+    # -- API container image repository
+    repository: citizen-service
+    # -- Image pull policy
+    pullPolicy: IfNotPresent
+    # -- Image tag; defaults to the chart appVersion
+    tag: ""
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+
+  ingress:
+    enabled: true
+    # -- Ingress class name (e.g. nginx)
+    className: ""
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+    host: citizen-service.local
+    tls: []
+    #  - secretName: citizen-service-tls
+    #    hosts:
+    #      - citizen-service.local
+
+  resources: {}
+  #  requests:
+  #    cpu: 100m
+  #    memory: 128Mi
+  #  limits:
+  #    cpu: 500m
+  #    memory: 256Mi
+
+  readinessProbe:
+    enabled: true
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 5
+
+  podAnnotations: {}
+
+web:
+  # -- Number of replicas for the Web/admin pod
+  replicaCount: 1
+
+  image:
+    # -- Web container image repository
+    repository: citizen-admin
+    pullPolicy: IfNotPresent
+    tag: ""
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+
+  ingress:
+    enabled: true
+    className: ""
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+    host: citizen-admin.local
+    tls: []
+    #  - secretName: citizen-admin-tls
+    #    hosts:
+    #      - citizen-admin.local
+
+  resources: {}
+
+  podAnnotations: {}
+
+# -- Configuration values rendered into the ConfigMap / environment
+config:
+  aspnetcoreEnvironment: "Production"
+  jwtAuthority: "http://keycloak:8080/realms/sal"
+  jwtAudience: "citizen-service"
+  personRegistryBaseUrl: "http://person-registry"
+  citizenApiBaseUrl: "http://citizen-service"
+  oidcAuthority: "http://keycloak:8080/realms/sal"
+  oidcClientId: "citizen-admin"
+
+# -- Secret values.
+# These are stored in a Kubernetes Secret created by the chart.
+# For production, prefer providing an existing secret via existingSecret
+# and managing credentials with a secrets manager (e.g. Sealed Secrets, Vault).
+secret:
+  # -- Name of a pre-existing Secret to use instead of creating one.
+  # When set, the chart will NOT create a Secret; the referenced secret must
+  # contain the same keys as the stringData block below.
+  existingSecret: ""
+
+  # -- Secret values used when existingSecret is empty and the chart creates the Secret.
+  # These values are base64-encoded by Kubernetes — do NOT commit real credentials here.
+  # Override via --set or an encrypted values file (e.g. helm-secrets / Sealed Secrets).
+  connectionString: "CHANGEME_CONNECTION_STRING"
+  oidcClientSecret: "CHANGE_ME"
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # -- Whether to create a ServiceAccount
+  create: false
+  name: ""
+  annotations: {}

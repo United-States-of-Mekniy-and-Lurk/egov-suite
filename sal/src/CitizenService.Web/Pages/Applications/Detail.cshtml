@@ -1,0 +1,42 @@
+@page
+@model CitizenService.Web.Pages.Applications.ApplicationDetailModel
+@{
+    ViewData["Title"] = "Application Detail";
+}
+
+<h1>Application Detail</h1>
+@if (Model.Application != null)
+{
+    <dl class="row">
+        <dt class="col-sm-3">ID</dt>
+        <dd class="col-sm-9">@Model.Application.Id</dd>
+        <dt class="col-sm-3">Person ID</dt>
+        <dd class="col-sm-9">@Model.Application.PersonId</dd>
+        <dt class="col-sm-3">Status</dt>
+        <dd class="col-sm-9">@Model.Application.Status</dd>
+        <dt class="col-sm-3">Form</dt>
+        <dd class="col-sm-9">@Model.Application.FormName v@Model.Application.FormVersion</dd>
+        <dt class="col-sm-3">Submitted At</dt>
+        <dd class="col-sm-9">@Model.Application.SubmittedAt</dd>
+        <dt class="col-sm-3">Decision Reason</dt>
+        <dd class="col-sm-9">@Model.Application.DecisionReason</dd>
+    </dl>
+
+    <form method="post">
+        <input type="hidden" name="id" value="@Model.Application.Id" />
+        <div class="mb-3">
+            <label>Transition To</label>
+            <select name="targetState" class="form-select">
+                <option value="UnderReview">Under Review</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label>Reason</label>
+            <textarea name="reason" class="form-control"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Apply Transition</button>
+    </form>
+}
+<a href="/Applications" class="btn btn-secondary">Back</a>

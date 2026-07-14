@@ -1,0 +1,108 @@
+nameOverride: ""
+fullnameOverride: ""
+replicaCount: 2
+image:
+  repository: ghcr.io/united-states-of-mekniy-and-lurk/ego
+  pullPolicy: IfNotPresent
+  # Automatically updated by the helm-release workflow after each successful Docker push to main.
+  tag: "sha-7ef56be"
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  host: ego.example.com
+  tls:
+    enabled: true
+    secretName: ego-api-tls
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+probes:
+  readiness:
+    path: /health/ready
+    initialDelaySeconds: 10
+    periodSeconds: 10
+  liveness:
+    path: /health/live
+    initialDelaySeconds: 30
+    periodSeconds: 30
+config:
+  aspnetcoreEnvironment: Production
+  keycloak:
+    authority: "https://keycloak.example.com/realms/mekniy-and-lurk"
+    audience: "account"
+    requireHttpsMetadata: "true"
+# Plain-text secret values used when externalSecrets.enabled is false.
+# Leave connectionString empty to auto-derive it from postgresql.* values (when postgresql.enabled is true).
+# Never commit real credentials here — pass them at deploy time:
+#   helm upgrade --install ego ./helm/ego \
+#     --set postgresql.****** \
+#     --set secrets.connectionString="Host=...;Username=ego;******"
+# For Argo CD deployments, enable externalSecrets instead of storing secrets in git.
+secrets:
+  connectionString: ""
+# External Secrets Operator (ESO) integration.
+# Set enabled: true for Argo CD deployments where secrets are managed by ESO.
+# Requires ESO (https://external-secrets.io) and a ClusterSecretStore/SecretStore in the cluster.
+externalSecrets:
+  enabled: false
+  refreshInterval: "1h"
+  secretStoreRef:
+    name: cluster-secret-store
+    kind: ClusterSecretStore
+  data:
+    connectionString:
+      remoteRef:
+        # Path to the secret in your secret backend (e.g. AWS Secrets Manager, Vault, GCP SM).
+        key: "ego/api"
+        property: "connection-string"
+# In-cluster PostgreSQL. Set enabled: false to use an external managed database.
+postgresql:
+  enabled: true
+  image: postgres:16-alpine
+  database: ego
+  username: ego
+  storageSize: 5Gi
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  # Plain-text password used when postgresql.externalSecrets.enabled is false.
+  # Never commit a real password here — pass it at deploy time:
+  #   helm upgrade --install ego ./helm/ego --set postgresql.******
+  # For Argo CD deployments, enable postgresql.externalSecrets instead.
+  password: "CHANGE_THIS_PASSWORD_BEFORE_DEPLOYING"
+  externalSecrets:
+    enabled: false
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: cluster-secret-store
+      kind: ClusterSecretStore
+    remoteRef:
+      key: "ego/postgres"
+      property: "password"

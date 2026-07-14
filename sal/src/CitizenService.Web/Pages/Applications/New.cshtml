@@ -1,0 +1,23 @@
+@page
+@model CitizenService.Web.Pages.Applications.NewApplicationModel
+@{
+    ViewData["Title"] = "New Application";
+}
+
+<h1>New Citizenship Application</h1>
+<form method="post">
+    <div class="mb-3">
+        <label>Person ID</label>
+        <input type="text" name="personId" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Form Name</label>
+        <input type="text" name="formName" value="citizenship_application" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Form Version</label>
+        <input type="number" name="formVersion" value="1" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Create Draft</button>
+    <a href="/Applications" class="btn btn-secondary">Cancel</a>
+</form>

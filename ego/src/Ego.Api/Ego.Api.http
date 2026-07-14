@@ -1,0 +1,11 @@
+@Ego.Api_HostAddress = http://localhost:5002
+
+GET {{Ego.Api_HostAddress}}/persons
+Accept: application/json
+
+###
+
+GET {{Ego.Api_HostAddress}}/me
+Accept: application/json
+
+###
