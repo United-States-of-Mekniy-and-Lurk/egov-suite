@@ -88,3 +88,27 @@ Name of the secret to mount (existing or chart-managed).
 {{- include "citizen-service.fullname" . }}-secret
 {{- end }}
 {{- end }}
+
+{{/*
+Name of the in-cluster PostgreSQL Service.
+*/}}
+{{- define "citizen-service.postgresServiceName" -}}
+{{- printf "%s-postgres" (include "citizen-service.fullname" .) }}
+{{- end }}
+
+{{/*
+Resolve effective DB connection string.
+Priority:
+	1. secret.connectionString
+	2. Derived from postgresql.* values when postgresql.enabled=true
+	3. Placeholder value
+*/}}
+{{- define "citizen-service.connectionString" -}}
+{{- if .Values.secret.connectionString }}
+{{- .Values.secret.connectionString }}
+{{- else if .Values.postgresql.enabled }}
+{{- printf "Host=%s;Database=%s;Username=%s;Password=%s" (include "citizen-service.postgresServiceName" .) .Values.postgresql.database .Values.postgresql.username .Values.postgresql.password }}
+{{- else }}
+CHANGEME_CONNECTION_STRING
+{{- end }}
+{{- end }}

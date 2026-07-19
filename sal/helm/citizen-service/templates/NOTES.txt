@@ -13,3 +13,9 @@ and create the secret externally (e.g. with Sealed Secrets or Vault).
 The secret must contain:
   - ConnectionStrings__DefaultConnection
   - Oidc__ClientSecret
+
+PostgreSQL provisioning:
+  - Enabled by default via postgresql.enabled=true
+  - The chart auto-derives ConnectionStrings__DefaultConnection when
+    secret.connectionString is empty
+  - Set postgresql.enabled=false when using an external database

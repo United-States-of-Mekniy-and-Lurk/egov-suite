@@ -96,8 +96,25 @@ secret:
   # -- Secret values used when existingSecret is empty and the chart creates the Secret.
   # These values are base64-encoded by Kubernetes — do NOT commit real credentials here.
   # Override via --set or an encrypted values file (e.g. helm-secrets / Sealed Secrets).
-  connectionString: "CHANGEME_CONNECTION_STRING"
+  # Leave empty to auto-derive from postgresql.* when postgresql.enabled=true.
+  connectionString: ""
   oidcClientSecret: "CHANGE_ME"
+
+# -- In-cluster PostgreSQL settings. Set enabled=false to use external DB.
+postgresql:
+  enabled: true
+  image: postgres:16-alpine
+  database: citizenservice
+  username: postgres
+  storageSize: 5Gi
+  password: "CHANGE_THIS_PASSWORD_BEFORE_DEPLOYING"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
 
 nameOverride: ""
 fullnameOverride: ""
