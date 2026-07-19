@@ -65,6 +65,40 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 
+app.Use(async (context, next) =>
+{
+    app.Logger.LogInformation(
+        "Incoming request {Method} {Path} scheme={Scheme} host={Host} x-forwarded-proto={XForwardedProto} x-forwarded-host={XForwardedHost} cf-visitor={CfVisitor}",
+        context.Request.Method,
+        context.Request.Path + context.Request.QueryString,
+        context.Request.Scheme,
+        context.Request.Host,
+        context.Request.Headers["X-Forwarded-Proto"].ToString(),
+        context.Request.Headers["X-Forwarded-Host"].ToString(),
+        context.Request.Headers["CF-Visitor"].ToString());
+
+    await next();
+});
+
+var publicBaseUrl = builder.Configuration["Oidc:PublicBaseUrl"];
+if (Uri.TryCreate(publicBaseUrl, UriKind.Absolute, out var parsedPublicBaseUrl))
+{
+    app.Use(async (context, next) =>
+    {
+        context.Request.Scheme = parsedPublicBaseUrl.Scheme;
+        context.Request.Host = parsedPublicBaseUrl.IsDefaultPort
+            ? new HostString(parsedPublicBaseUrl.Host)
+            : new HostString(parsedPublicBaseUrl.Host, parsedPublicBaseUrl.Port);
+
+        if (!string.IsNullOrWhiteSpace(parsedPublicBaseUrl.AbsolutePath) && parsedPublicBaseUrl.AbsolutePath != "/")
+        {
+            context.Request.PathBase = parsedPublicBaseUrl.AbsolutePath;
+        }
+
+        await next();
+    });
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
