@@ -1,16 +1,31 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor |
+                               ForwardedHeaders.XForwardedProto |
+                               ForwardedHeaders.XForwardedHost;
+
+    // Cloudflare/ingress proxies are dynamic in many local setups.
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
 })
-.AddCookie()
+.AddCookie(options =>
+{
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+})
 .AddOpenIdConnect(options =>
 {
     options.Authority = builder.Configuration["Oidc:Authority"];
@@ -22,6 +37,7 @@ builder.Services.AddAuthentication(options =>
     // Some Keycloak setups reject PAR with generic invalid_request errors.
     // Disable PAR and use the standard authorization code flow endpoint.
     options.PushedAuthorizationBehavior = PushedAuthorizationBehavior.Disable;
+    options.RequireHttpsMetadata = true;
     options.Scope.Add("openid");
     options.Scope.Add("profile");
     options.Scope.Add("email");
@@ -36,6 +52,8 @@ builder.Services.AddHttpClient("CitizenApi", client =>
 });
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 if (!app.Environment.IsDevelopment())
 {

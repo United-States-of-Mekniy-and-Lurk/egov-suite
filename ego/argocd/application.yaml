@@ -12,7 +12,7 @@
 # Apply to your Argo CD cluster:
 #   kubectl apply -f argocd/application.yaml
 #
-# Argo CD will sync the Helm chart from the repository and deploy it to the ego namespace.
+# Argo CD will sync the Helm chart from the repository and deploy it to the default namespace.
 # The helm-release workflow bumps image.tag in helm/ego/values.yaml after each Docker push,
 # triggering an automated Argo CD sync when auto-sync is enabled.
 apiVersion: argoproj.io/v1alpha1
@@ -61,7 +61,7 @@ spec:
         #       property: "password"
   destination:
     server: https://kubernetes.default.svc
-    namespace: ego
+    namespace: default
   syncPolicy:
     automated:
       prune: true

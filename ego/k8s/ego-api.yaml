@@ -4,7 +4,6 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: ego-api-config
-  namespace: ego
 data:
   ASPNETCORE_ENVIRONMENT: Production
   Keycloak__Authority: "https://keycloak.example.com/realms/mekniy-and-lurk"
@@ -18,7 +17,6 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: ego-api-secret
-  namespace: ego
 type: Opaque
 stringData:
   # Replace REPLACE_ME with the actual password (from postgres-secret POSTGRES_PASSWORD).
@@ -30,7 +28,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ego-api
-  namespace: ego
   labels:
     app: ego-api
 spec:
@@ -88,7 +85,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ego-api
-  namespace: ego
 spec:
   selector:
     app: ego-api
@@ -101,7 +97,6 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ego-api
-  namespace: ego
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:

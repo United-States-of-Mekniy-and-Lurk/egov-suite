@@ -76,10 +76,13 @@ web:
 # -- Configuration values rendered into the ConfigMap / environment
 config:
   aspnetcoreEnvironment: "Production"
+  # Use the canonical issuer URL reachable by end users/browsers.
+  # Do not use a cluster-internal-only URI here when login happens in browser.
   jwtAuthority: "http://keycloak:8080/realms/sal"
   jwtAudience: "citizen-service"
   personRegistryBaseUrl: "http://person-registry"
   citizenApiBaseUrl: "http://citizen-service"
+  # Must match the public OIDC issuer used by the browser (typically via your tunnel/domain).
   oidcAuthority: "http://keycloak:8080/realms/sal"
   oidcClientId: "citizen-admin"
 

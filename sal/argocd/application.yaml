@@ -29,7 +29,7 @@ spec:
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: citizen-service
+    namespace: default
 
   syncPolicy:
     automated:
