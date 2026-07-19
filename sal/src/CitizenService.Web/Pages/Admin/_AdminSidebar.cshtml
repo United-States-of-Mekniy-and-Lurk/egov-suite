@@ -1,0 +1,43 @@
+@model CitizenService.Web.Models.AdminSidebarViewModel
+@{
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+}
+
+<aside class="mklu-admin-sidebar" aria-label="@L["admin.workspace.navigation"]">
+    <nav class="mklu-admin-nav">
+        <a asp-page="/Admin/RegistryFields"
+           class="mklu-admin-nav-link @(Model.ActiveSection == "fields" ? "is-active" : null)">
+            @L["nav.registry_fields"]
+        </a>
+        <a asp-page="/Admin/Forms"
+           class="mklu-admin-nav-link @(Model.ActiveSection == "forms" ? "is-active" : null)">
+            @L["admin.forms.title"]
+        </a>
+    </nav>
+
+    <div class="mklu-field-catalog">
+        <div class="mklu-field-catalog-heading">
+            <h2>@L["admin.workspace.available_fields"]</h2>
+            <span class="mklu-count">@Model.Fields.Count(field => field.IsActive)</span>
+        </div>
+        @if (!Model.Fields.Any(field => field.IsActive))
+        {
+            <p class="mklu-text-secondary">@L["admin.registry_fields.empty"]</p>
+        }
+        else
+        {
+            <ul class="mklu-field-catalog-list">
+                @foreach (var field in Model.Fields.Where(field => field.IsActive).OrderBy(field => field.SortOrder))
+                {
+                    <li>
+                        <span class="mklu-field-catalog-label">@field.GetLabel(culture)</span>
+                        <span class="mklu-field-catalog-meta">
+                            <code>@field.Key</code>
+                            <span>@field.FieldType</span>
+                        </span>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</aside>

@@ -18,6 +18,7 @@ public class ApplicationApprovalTests
     private readonly Mock<IRegistryFieldRepository> _registry = new();
     private readonly Mock<IPersonClient> _persons = new();
     private readonly Mock<ICurrentActor> _actor = new();
+    private readonly Mock<ICitizenNumberGenerator> _citizenNumbers = new();
 
     [Fact]
     public async Task ApproveAsync_CreatesCitizenAndCopiesMatchingAnswers()
@@ -30,7 +31,8 @@ public class ApplicationApprovalTests
         ConfigureCommon(application, field);
         _citizens.Setup(repository => repository.GetByPersonIdAsync(_personId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => createdCitizen);
-        _citizens.Setup(repository => repository.CountAsync(It.IsAny<CancellationToken>())).ReturnsAsync(0);
+        _citizenNumbers.Setup(generator => generator.Generate())
+            .Returns("CIT-7A3F-19C2-8D44-BE01-62AF-90D3");
         _citizens.Setup(repository => repository.AddAsync(It.IsAny<Citizen>(), It.IsAny<CancellationToken>()))
             .Callback<Citizen, CancellationToken>((citizen, _) => createdCitizen = citizen)
             .ReturnsAsync((Citizen citizen, CancellationToken _) => citizen);
@@ -49,6 +51,7 @@ public class ApplicationApprovalTests
         result.Status.Should().Be(ApplicationStatus.Approved);
         createdCitizen.Should().NotBeNull();
         createdCitizen!.PersonId.Should().Be(_personId);
+        createdCitizen.CitizenNumber.Should().Be("CIT-7A3F-19C2-8D44-BE01-62AF-90D3");
         createdCitizen.ImportSource.Should().Be($"application:{application.Id}");
         savedValue.Should().NotBeNull();
         savedValue!.Value.Should().Be("2000-01-02");
@@ -110,7 +113,8 @@ public class ApplicationApprovalTests
 
     private ApplicationAppService CreateService()
     {
-        var citizenService = new CitizenAppService(_citizens.Object, _actor.Object, _persons.Object);
+        var citizenService = new CitizenAppService(
+            _citizens.Object, _actor.Object, _persons.Object, _citizenNumbers.Object);
         var registryService = new RegistryFieldService(
             _registry.Object, _citizens.Object, _applications.Object, _forms.Object, _actor.Object);
         return new ApplicationAppService(

@@ -4,27 +4,139 @@
     ViewData["Title"] = L["admin.forms.title"].Value;
 }
 
-<h1 class="mklu-heading-1">@L["admin.forms.title"]</h1>
-<p class="mklu-text-secondary" style="max-width: 640px;">
-    @L["admin.forms.description"]
-</p>
+<header class="mklu-admin-page-header">
+    <p class="mklu-eyebrow">@L["nav.admin"]</p>
+    <h1 class="mklu-heading-1">@L["admin.forms.title"]</h1>
+    <p class="mklu-text-secondary">@L["admin.forms.description"]</p>
+</header>
 
-@if (!string.IsNullOrWhiteSpace(Model.Message))
-{
-    <div class="mklu-alert @(Model.IsError ? "mklu-alert-error" : "mklu-alert-success")" role="status">
-        @Model.Message
-    </div>
-}
+<div class="mklu-admin-workspace">
+    <partial name="_AdminSidebar" model='new CitizenService.Web.Models.AdminSidebarViewModel { ActiveSection = "forms", Fields = Model.Definitions }' />
 
-<form method="post" class="mklu-form">
-    <div class="mklu-field">
-        <label asp-for="FormName">@L["admin.forms.name"]</label>
-        <input asp-for="FormName" required />
+    <div class="mklu-admin-content">
+        @if (!string.IsNullOrWhiteSpace(Model.Message))
+        {
+            <div class="mklu-alert @(Model.IsError ? "mklu-alert-error" : "mklu-alert-success")" role="status">
+                @Model.Message
+            </div>
+        }
+
+        @if (Model.UnavailableFieldKeys.Count > 0)
+        {
+            <div class="mklu-alert mklu-alert-warning" role="status">
+                <strong>@L["admin.forms.unavailable_fields"]</strong>
+                <p>@string.Join(", ", Model.UnavailableFieldKeys)</p>
+            </div>
+        }
+
+        <section class="mklu-admin-section">
+            <div class="mklu-section-heading">
+                <div>
+                    <h2 class="mklu-heading-2">@L["admin.forms.builder"]</h2>
+                    <p class="mklu-text-secondary">@L["admin.forms.builder_help"]</p>
+                </div>
+                @if (Model.Forms.Any(form => form.IsActive && form.Name == Model.FormName))
+                {
+                    var activeVersion = Model.Forms.First(form => form.IsActive && form.Name == Model.FormName);
+                    <span class="mklu-version-badge">v@activeVersion.Version @L["common.active"].Value.ToLowerInvariant()</span>
+                }
+            </div>
+
+            <form method="post" class="mklu-admin-form">
+                <div class="mklu-form-grid">
+                    <div class="mklu-field">
+                        <label asp-for="FormName">@L["admin.forms.name"]</label>
+                        <input asp-for="FormName" required />
+                    </div>
+                    <div class="mklu-field">
+                        <label asp-for="TitleEn">@L["admin.forms.title_en"]</label>
+                        <input asp-for="TitleEn" required />
+                    </div>
+                    <div class="mklu-field">
+                        <label asp-for="TitleCs">@L["admin.forms.title_cs"]</label>
+                        <input asp-for="TitleCs" />
+                    </div>
+                </div>
+
+                <fieldset class="mklu-field-picker">
+                    <legend>@L["admin.forms.choose_fields"]</legend>
+                    <p class="mklu-text-secondary">@L["admin.forms.choose_fields_help"]</p>
+                    @if (!Model.Definitions.Any(field => field.IsActive))
+                    {
+                        <div class="mklu-empty-state">
+                            <p>@L["admin.forms.no_registry_fields"]</p>
+                            <a asp-page="/Admin/RegistryFields" class="mklu-btn mklu-btn-outlined">@L["admin.registry_fields.add"]</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mklu-field-picker-list">
+                            @foreach (var field in Model.Definitions.Where(field => field.IsActive).OrderBy(field => field.SortOrder))
+                            {
+                                var unavailable = field.FieldType == "Select" && field.OptionSourceType != "Static";
+                                <label class="mklu-field-picker-item @(unavailable ? "is-disabled" : null)">
+                                    <input type="checkbox"
+                                           name="SelectedFieldKeys"
+                                           value="@field.Key"
+                                           checked="@Model.SelectedFieldKeys.Contains(field.Key)"
+                                           disabled="@unavailable" />
+                                    <span class="mklu-field-picker-copy">
+                                        <strong>@field.GetLabel("en")</strong>
+                                        <span><code>@field.Key</code> · @field.FieldType</span>
+                                    </span>
+                                    @if (field.IsRequired)
+                                    {
+                                        <span class="mklu-badge mklu-badge-required">@L["admin.forms.required"]</span>
+                                    }
+                                    @if (unavailable)
+                                    {
+                                        <span class="mklu-badge mklu-badge-pending">@L["admin.forms.remote_pending"]</span>
+                                    }
+                                </label>
+                            }
+                        </div>
+                    }
+                </fieldset>
+
+                <div class="mklu-form-actions">
+                    <button type="submit" class="mklu-btn mklu-btn-filled">@L["admin.forms.publish"]</button>
+                    <span class="mklu-text-secondary">@L["admin.forms.publish_help"]</span>
+                </div>
+            </form>
+        </section>
+
+        <section class="mklu-admin-section">
+            <h2 class="mklu-heading-2">@L["admin.forms.versions"]</h2>
+            @if (Model.Forms.Count == 0)
+            {
+                <p class="mklu-text-secondary">@L["admin.forms.no_versions"]</p>
+            }
+            else
+            {
+                <div class="mklu-table-wrap">
+                    <table class="table mklu-admin-table">
+                        <thead>
+                            <tr>
+                                <th>@L["admin.forms.name"]</th>
+                                <th>@L["admin.forms.version"]</th>
+                                <th>@L["common.status"]</th>
+                                <th>@L["common.created"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var form in Model.Forms)
+                            {
+                                <tr>
+                                    <td><code>@form.Name</code></td>
+                                    <td>v@form.Version</td>
+                                    <td>@(form.IsActive ? L["common.active"] : L["common.inactive"])</td>
+                                    <td>@form.CreatedAt.ToString("d")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
     </div>
-    <div class="mklu-field">
-        <label asp-for="DefinitionJson">@L["admin.forms.definition"]</label>
-        <textarea asp-for="DefinitionJson" rows="18" required></textarea>
-        <p class="mklu-text-secondary">@L["admin.forms.types"]</p>
-    </div>
-    <button type="submit" class="mklu-btn mklu-btn-filled">@L["admin.forms.publish"]</button>
-</form>
+</div>

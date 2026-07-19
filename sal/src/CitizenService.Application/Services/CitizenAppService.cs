@@ -9,12 +9,18 @@ public class CitizenAppService
     private readonly ICitizenRepository _citizenRepository;
     private readonly ICurrentActor _currentActor;
     private readonly IPersonClient _personClient;
+    private readonly ICitizenNumberGenerator _citizenNumberGenerator;
 
-    public CitizenAppService(ICitizenRepository citizenRepository, ICurrentActor currentActor, IPersonClient personClient)
+    public CitizenAppService(
+        ICitizenRepository citizenRepository,
+        ICurrentActor currentActor,
+        IPersonClient personClient,
+        ICitizenNumberGenerator citizenNumberGenerator)
     {
         _citizenRepository = citizenRepository;
         _currentActor = currentActor;
         _personClient = personClient;
+        _citizenNumberGenerator = citizenNumberGenerator;
     }
 
     public async Task<Citizen> CreateCitizenAsync(Guid personId, DateTime? grantedAt, string? importSource, string? citizenNumber, CancellationToken ct)
@@ -35,10 +41,7 @@ public class CitizenAppService
     {
 
         if (string.IsNullOrWhiteSpace(citizenNumber))
-        {
-            var count = await _citizenRepository.CountAsync(ct);
-            citizenNumber = $"CIT-{(count + 1).ToString().PadLeft(6, '0')}";
-        }
+            citizenNumber = _citizenNumberGenerator.Generate();
 
         var citizen = new Citizen
         {

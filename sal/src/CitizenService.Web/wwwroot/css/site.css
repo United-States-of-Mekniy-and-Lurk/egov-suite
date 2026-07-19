@@ -138,7 +138,7 @@ body {
   font-size: 12px;
   font-weight: 400;
   color: #B0B0B0;
-  letter-spacing: 0.5px;
+  letter-spacing: 0;
   display: block;
 }
 .mklu-header-nav {
@@ -217,7 +217,7 @@ body {
   font-size: 32px;
   font-weight: 600;
   line-height: 1.25;
-  letter-spacing: -0.25px;
+  letter-spacing: 0;
   margin: 0 0 16px;
 }
 .mklu-heading-2 {
@@ -243,7 +243,7 @@ body {
   font-size: 14px;
   font-weight: 600;
   line-height: 1.43;
-  letter-spacing: 0.1px;
+  letter-spacing: 0;
   color: var(--mklu-text-secondary);
   margin: 0 0 4px;
 }
@@ -309,7 +309,7 @@ body {
   font-size: 12px;
   font-weight: 600;
   border-radius: 2px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0;
 }
 .mklu-badge-active {
   background-color: var(--mklu-success-surface);
@@ -367,6 +367,263 @@ body {
   background-color: var(--mklu-success-surface);
   color: var(--mklu-success-text);
   border: 1px solid var(--mklu-success-text);
+}
+.mklu-alert-warning {
+  background-color: var(--mklu-warning-surface);
+  color: var(--mklu-warning-text);
+  border: 1px solid var(--mklu-warning-text);
+}
+
+/* Administration workspace */
+.mklu-admin-page-header {
+  max-width: 760px;
+  margin-bottom: 36px;
+}
+.mklu-admin-page-header .mklu-text-secondary {
+  margin: 0;
+}
+.mklu-eyebrow {
+  margin: 0 0 6px;
+  color: var(--mklu-text-link);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+.mklu-admin-workspace {
+  display: grid;
+  grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+.mklu-admin-sidebar {
+  position: sticky;
+  top: 24px;
+  border-right: 1px solid var(--mklu-border);
+  padding-right: 24px;
+}
+.mklu-admin-nav {
+  display: grid;
+  gap: 4px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--mklu-border);
+}
+.mklu-admin-nav-link {
+  display: block;
+  padding: 10px 12px;
+  color: var(--mklu-text-primary);
+  border-left: 3px solid transparent;
+  text-decoration: none;
+  font-weight: 600;
+}
+.mklu-admin-nav-link:visited {
+  color: var(--mklu-text-primary);
+}
+.mklu-admin-nav-link:hover {
+  background: var(--mklu-surface-sunken);
+  color: var(--mklu-text-primary);
+}
+.mklu-admin-nav-link.is-active {
+  border-left-color: var(--mklu-interactive);
+  background: var(--mklu-interactive-subtle);
+}
+.mklu-field-catalog {
+  padding-top: 24px;
+}
+.mklu-field-catalog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.mklu-field-catalog-heading h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.mklu-count {
+  min-width: 28px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--mklu-surface-sunken);
+  color: var(--mklu-text-secondary);
+  font-size: 12px;
+  text-align: center;
+}
+.mklu-field-catalog-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+.mklu-field-catalog-list li {
+  padding: 10px 0;
+  border-top: 1px solid var(--mklu-border);
+}
+.mklu-field-catalog-label,
+.mklu-field-catalog-meta {
+  display: block;
+}
+.mklu-field-catalog-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+.mklu-field-catalog-meta {
+  margin-top: 2px;
+  color: var(--mklu-text-secondary);
+  font-size: 12px;
+}
+.mklu-field-catalog-meta code {
+  color: var(--mklu-text-link);
+}
+.mklu-admin-content {
+  min-width: 0;
+}
+.mklu-admin-section {
+  padding-bottom: 40px;
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--mklu-border);
+}
+.mklu-admin-section:last-child {
+  border-bottom: 0;
+}
+.mklu-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+.mklu-section-heading h2,
+.mklu-section-heading p {
+  margin-bottom: 4px;
+}
+.mklu-count-summary,
+.mklu-version-badge {
+  white-space: nowrap;
+  padding: 6px 10px;
+  background: var(--mklu-surface-sunken);
+  color: var(--mklu-text-secondary);
+  border-radius: var(--mklu-radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+}
+.mklu-admin-form {
+  max-width: 820px;
+}
+.mklu-form-section {
+  margin: 0 0 28px;
+  padding: 0 0 12px;
+  border: 0;
+  border-bottom: 1px solid var(--mklu-border);
+}
+.mklu-form-section legend,
+.mklu-field-picker legend {
+  width: 100%;
+  margin-bottom: 20px;
+  font-family: var(--mklu-font-serif);
+  font-size: 20px;
+  font-weight: 600;
+}
+.mklu-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 24px;
+}
+.mklu-field-help {
+  margin: 6px 0 0;
+  color: var(--mklu-text-secondary);
+  font-size: 13px;
+}
+.mklu-policy-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.mklu-checkbox-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--mklu-border);
+  border-radius: var(--mklu-radius-sm);
+  background: var(--mklu-surface-raised);
+  cursor: pointer;
+}
+.mklu-checkbox-option input,
+.mklu-field-picker-item input {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  margin: 2px 0 0;
+  padding: 0;
+}
+.mklu-checkbox-option span,
+.mklu-checkbox-option small {
+  display: block;
+}
+.mklu-checkbox-option small {
+  margin-top: 2px;
+  color: var(--mklu-text-secondary);
+  font-size: 12px;
+}
+.mklu-field-picker {
+  margin: 0 0 28px;
+  padding: 0;
+  border: 0;
+}
+.mklu-field-picker > .mklu-text-secondary {
+  margin: -12px 0 16px;
+}
+.mklu-field-picker-list {
+  border-top: 1px solid var(--mklu-border);
+}
+.mklu-field-picker-item {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 64px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--mklu-border);
+  cursor: pointer;
+}
+.mklu-field-picker-item:hover {
+  background: var(--mklu-interactive-subtle);
+}
+.mklu-field-picker-item.is-disabled {
+  background: var(--mklu-surface-sunken);
+  color: var(--mklu-text-disabled);
+  cursor: not-allowed;
+}
+.mklu-field-picker-copy,
+.mklu-field-picker-copy span {
+  display: block;
+}
+.mklu-field-picker-copy span {
+  color: var(--mklu-text-secondary);
+  font-size: 12px;
+}
+.mklu-badge-required {
+  background: var(--mklu-surface-sunken);
+  color: var(--mklu-text-secondary);
+}
+.mklu-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.mklu-empty-state {
+  padding: 24px;
+  border: 1px dashed var(--mklu-border);
+  text-align: center;
+}
+.mklu-admin-table code {
+  color: var(--mklu-text-primary);
 }
 
 /* Definition list */
@@ -485,5 +742,43 @@ a:visited {
   }
   .mklu-main {
     padding: 32px 0 48px;
+  }
+  .mklu-admin-workspace {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .mklu-admin-sidebar {
+    position: static;
+    border-right: 0;
+    border-bottom: 1px solid var(--mklu-border);
+    padding: 0 0 20px;
+  }
+  .mklu-admin-nav {
+    grid-template-columns: 1fr 1fr;
+    padding-bottom: 16px;
+  }
+  .mklu-field-catalog-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 220px;
+  }
+  .mklu-field-catalog-list li {
+    padding-right: 12px;
+  }
+  .mklu-form-grid,
+  .mklu-policy-options {
+    grid-template-columns: 1fr;
+  }
+  .mklu-section-heading,
+  .mklu-form-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .mklu-field-picker-item {
+    grid-template-columns: 24px minmax(0, 1fr);
+  }
+  .mklu-field-picker-item .mklu-badge {
+    grid-column: 2;
+    justify-self: start;
   }
 }

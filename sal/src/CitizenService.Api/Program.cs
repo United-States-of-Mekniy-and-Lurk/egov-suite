@@ -77,6 +77,7 @@ builder.Services.AddScoped<IApplicationRepository, ApplicationRepository>();
 builder.Services.AddScoped<IFormRepository, FormRepository>();
 builder.Services.AddScoped<IRegistryFieldRepository, RegistryFieldRepository>();
 builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+builder.Services.AddSingleton<ICitizenNumberGenerator, RandomCitizenNumberGenerator>();
 
 builder.Services.AddScoped<CitizenAppService>();
 builder.Services.AddScoped<ApplicationAppService>();

@@ -39,12 +39,22 @@ public class ApplicationFormViewModel
     public string Name { get; set; } = string.Empty;
     public int Version { get; set; }
     public string DefinitionJson { get; set; } = "{}";
+    public bool IsActive { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
 
 public class ApplicationFormDefinition
 {
     public string Title { get; set; } = string.Empty;
+    public Dictionary<string, string> Titles { get; set; } = [];
     public List<ApplicationFormField> Fields { get; set; } = [];
+
+    public string GetTitle(string culture)
+    {
+        if (Titles.TryGetValue(culture, out var localized)) return localized;
+        if (Titles.TryGetValue("en", out var english)) return english;
+        return Title;
+    }
 }
 
 public class ApplicationFormField
@@ -52,7 +62,36 @@ public class ApplicationFormField
     public string Name { get; set; } = string.Empty;
     public string Type { get; set; } = "text";
     public string Label { get; set; } = string.Empty;
+    public Dictionary<string, string> Labels { get; set; } = [];
     public bool Required { get; set; }
+    public List<ApplicationFormFieldOption> Options { get; set; } = [];
+    public string? Step { get; set; }
+
+    public string GetLabel(string culture)
+    {
+        if (Labels.TryGetValue(culture, out var localized)) return localized;
+        if (Labels.TryGetValue("en", out var english)) return english;
+        return Label;
+    }
+}
+
+public class ApplicationFormFieldOption
+{
+    public string Value { get; set; } = string.Empty;
+    public Dictionary<string, string> Labels { get; set; } = [];
+
+    public string GetLabel(string culture)
+    {
+        if (Labels.TryGetValue(culture, out var localized)) return localized;
+        if (Labels.TryGetValue("en", out var english)) return english;
+        return Value;
+    }
+}
+
+public class AdminSidebarViewModel
+{
+    public string ActiveSection { get; set; } = string.Empty;
+    public List<RegistryFieldDefinitionViewModel> Fields { get; set; } = [];
 }
 
 public class RegistryFieldDefinitionViewModel

@@ -4,7 +4,11 @@
     ViewData["Title"] = "New Application";
 }
 
-<h1 class="mklu-heading-1">@Model.FormDefinition.Title</h1>
+@{
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+}
+
+<h1 class="mklu-heading-1">@Model.FormDefinition.GetTitle(culture)</h1>
 
 @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
 {
@@ -15,14 +19,34 @@
     @foreach (var field in Model.FormDefinition.Fields)
     {
         <div class="mklu-field">
-            <label for="@field.Name">@field.Label</label>
+            @if (field.Type != "checkbox")
+            {
+                <label for="@field.Name">@field.GetLabel(culture)</label>
+            }
             @if (field.Type == "textarea")
             {
                 <textarea id="@field.Name" name="@field.Name" required="@field.Required"></textarea>
             }
+            else if (field.Type == "select")
+            {
+                <select id="@field.Name" name="@field.Name" required="@field.Required">
+                    <option value=""></option>
+                    @foreach (var option in field.Options)
+                    {
+                        <option value="@option.Value">@option.GetLabel(culture)</option>
+                    }
+                </select>
+            }
+            else if (field.Type == "checkbox")
+            {
+                <label class="mklu-checkbox-option">
+                    <input id="@field.Name" name="@field.Name" type="checkbox" value="true" required="@field.Required" />
+                    <span>@field.GetLabel(culture)</span>
+                </label>
+            }
             else
             {
-                <input id="@field.Name" name="@field.Name" type="@field.Type" required="@field.Required" />
+                <input id="@field.Name" name="@field.Name" type="@field.Type" step="@field.Step" required="@field.Required" />
             }
         </div>
     }
