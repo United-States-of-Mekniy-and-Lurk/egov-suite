@@ -111,7 +111,7 @@ public class ApplicationAppService
         var transition = new ApplicationTransition
         {
             Id = Guid.NewGuid(),
-            ApplicationId = applicationId,
+            ApplicationId = application.Id,
             FromStatus = application.Status,
             ToStatus = targetStatus,
             ChangedByPersonId = _currentActor.PersonId,

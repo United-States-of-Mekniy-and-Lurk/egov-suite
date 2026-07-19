@@ -224,7 +224,7 @@ public partial class RegistryFieldService
         if (definition.OptionSourceType != FieldOptionSourceType.Static)
             return value;
 
-        var options = DeserializeOptions(definition.StaticOptionsJson);
+        var options = DeserializeOptions(definition.StaticOptionsJson) ?? [];
         if (options.All(option => option.Value != value))
             throw InvalidValue(definition, "one of the configured options");
         return value;
