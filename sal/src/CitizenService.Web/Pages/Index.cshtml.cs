@@ -14,6 +14,7 @@ public class IndexModel : PageModel
 
     public PersonViewModel? Person { get; set; }
     public CitizenViewModel? Citizen { get; set; }
+    public List<CitizenRegistryFieldViewModel> RegistryFields { get; set; } = [];
     public ApplicationViewModel? PendingApplication { get; set; }
     public string UserState { get; set; } = "unknown"; // "citizen", "pending", "new", "error"
     public string? ErrorMessage { get; set; }
@@ -51,6 +52,10 @@ public class IndexModel : PageModel
                 return;
             }
         }
+        catch (DownstreamUnauthorizedException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to call Ego Person Registry");
@@ -69,8 +74,20 @@ public class IndexModel : PageModel
                 var citizenContent = await citizenResponse.Content.ReadAsStringAsync(ct);
                 Citizen = JsonSerializer.Deserialize<CitizenViewModel>(citizenContent, JsonOptions);
                 UserState = "citizen";
+
+                var fieldsResponse = await citizenClient.GetAsync($"/citizens/{Person.Id}/fields", ct);
+                if (fieldsResponse.IsSuccessStatusCode)
+                {
+                    var fieldsContent = await fieldsResponse.Content.ReadAsStringAsync(ct);
+                    RegistryFields = JsonSerializer.Deserialize<List<CitizenRegistryFieldViewModel>>(
+                        fieldsContent, JsonOptions) ?? [];
+                }
                 return;
             }
+        }
+        catch (DownstreamUnauthorizedException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -93,6 +110,10 @@ public class IndexModel : PageModel
                     a.Status is "Draft" or "Submitted" or "UnderReview");
             }
         }
+        catch (DownstreamUnauthorizedException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to check existing applications");
@@ -103,23 +124,7 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnPostApplyAsync(CancellationToken ct)
     {
-        // Resolve identity first
-        var egoClient = _httpClientFactory.CreateClient("PersonRegistry");
-        var meResponse = await egoClient.GetAsync("/me", ct);
-        if (!meResponse.IsSuccessStatusCode)
-            return RedirectToPage();
-
-        var meContent = await meResponse.Content.ReadAsStringAsync(ct);
-        var person = JsonSerializer.Deserialize<PersonViewModel>(meContent, JsonOptions);
-        if (person == null || person.Id == Guid.Empty)
-            return RedirectToPage();
-
-        // Submit application using the current user's PersonId, default form
-        var citizenClient = _httpClientFactory.CreateClient("CitizenApi");
-        var body = new { personId = person.Id, formName = "citizenship_application", formVersion = 1 };
-        await citizenClient.PostAsJsonAsync("/citizenship-applications", body, ct);
-
-        return RedirectToPage();
+        return RedirectToPage("/Applications/New");
     }
 }
 

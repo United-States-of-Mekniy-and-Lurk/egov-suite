@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace CitizenService.Web.Pages.Import;
 
-[Authorize]
+[Authorize(Policy = "RequireAdmin")]
 public class ImportIndexModel : PageModel
 {
     private readonly IHttpClientFactory _httpClientFactory;

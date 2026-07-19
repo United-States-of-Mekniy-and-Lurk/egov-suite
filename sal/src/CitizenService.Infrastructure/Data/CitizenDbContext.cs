@@ -13,6 +13,8 @@ public class CitizenDbContext : DbContext
     public DbSet<CitizenshipApplication> Applications { get; set; }
     public DbSet<ApplicationTransition> ApplicationTransitions { get; set; }
     public DbSet<ApplicationForm> ApplicationForms { get; set; }
+    public DbSet<RegistryFieldDefinition> RegistryFieldDefinitions { get; set; }
+    public DbSet<CitizenFieldValue> CitizenFieldValues { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -60,6 +62,37 @@ public class CitizenDbContext : DbContext
             IsActive = true,
             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             DefinitionJson = """{"title":"Citizenship Application","fields":[{"name":"legal_name","type":"text","label":"Legal Name","required":true},{"name":"motivation","type":"textarea","label":"Motivation","required":true},{"name":"date_of_birth","type":"date","label":"Date of Birth","required":true}]}"""
+        });
+
+        modelBuilder.Entity<RegistryFieldDefinition>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.Key).IsUnique();
+            e.Property(x => x.Key).HasMaxLength(128);
+            e.Property(x => x.LabelsJson).HasColumnType("jsonb");
+            e.Property(x => x.FieldType).HasConversion<string>();
+            e.Property(x => x.OptionSourceType).HasConversion<string>();
+            e.Property(x => x.StaticOptionsJson).HasColumnType("jsonb");
+            e.Property(x => x.OptionSourceService).HasMaxLength(128);
+            e.Property(x => x.OptionSourcePath).HasMaxLength(512);
+        });
+
+        modelBuilder.Entity<CitizenFieldValue>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.CitizenId, x.FieldDefinitionId }).IsUnique();
+            e.HasOne<Citizen>()
+                .WithMany()
+                .HasForeignKey(x => x.CitizenId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<RegistryFieldDefinition>()
+                .WithMany()
+                .HasForeignKey(x => x.FieldDefinitionId)
+                .OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<CitizenshipApplication>()
+                .WithMany()
+                .HasForeignKey(x => x.SourceApplicationId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

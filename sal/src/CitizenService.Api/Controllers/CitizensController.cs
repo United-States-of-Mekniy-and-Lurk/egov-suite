@@ -29,6 +29,7 @@ public class CitizensController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Policy = "RequireClerk")]
     public async Task<IActionResult> List([FromQuery] int skip = 0, [FromQuery] int take = 20, CancellationToken ct = default)
     {
         var citizens = await _citizenService.ListAsync(skip, take, ct);
@@ -36,6 +37,7 @@ public class CitizensController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = "RequireAdmin")]
     public async Task<IActionResult> Create([FromBody] CreateCitizenRequest request, CancellationToken ct)
     {
         var citizen = await _citizenService.CreateCitizenAsync(request.PersonId, request.GrantedAt, request.ImportSource, request.CitizenNumber, ct);
@@ -43,6 +45,7 @@ public class CitizensController : ControllerBase
     }
 
     [HttpPatch("{personId:guid}/status")]
+    [Authorize(Policy = "RequireAdmin")]
     public async Task<IActionResult> ChangeStatus(Guid personId, [FromBody] ChangeStatusRequest request, CancellationToken ct)
     {
         var citizen = await _citizenService.ChangeStatusAsync(personId, request.Status, request.Reason, ct);
@@ -50,6 +53,7 @@ public class CitizensController : ControllerBase
     }
 
     [HttpPost("import/csv")]
+    [Authorize(Policy = "RequireAdmin")]
     public async Task<IActionResult> ImportCsv(IFormFile file, CancellationToken ct)
     {
         if (file == null || file.Length == 0)

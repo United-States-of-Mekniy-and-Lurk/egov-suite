@@ -7,12 +7,13 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace CitizenService.Web.Pages.Applications;
 
-[Authorize]
+[Authorize(Policy = "RequireClerk")]
 public class ApplicationDetailModel : PageModel
 {
     private readonly IHttpClientFactory _httpClientFactory;
 
     public ApplicationViewModel? Application { get; set; }
+    public string? ErrorMessage { get; set; }
 
     public ApplicationDetailModel(IHttpClientFactory httpClientFactory)
     {
@@ -34,7 +35,15 @@ public class ApplicationDetailModel : PageModel
     {
         var client = _httpClientFactory.CreateClient("CitizenApi");
         var body = new { targetState, reason };
-        await client.PostAsJsonAsync($"/citizenship-applications/{id}/transition", body, ct);
+        var response = await client.PostAsJsonAsync($"/citizenship-applications/{id}/transition", body, ct);
+        if (!response.IsSuccessStatusCode)
+        {
+            ErrorMessage = await response.Content.ReadFromJsonAsync<string>(cancellationToken: ct)
+                ?? "The application transition could not be completed.";
+            await OnGetAsync(id, ct);
+            return Page();
+        }
+
         return RedirectToPage(new { id });
     }
 }

@@ -1,0 +1,111 @@
+@page
+@model CitizenService.Web.Pages.Admin.RegistryFieldsModel
+@{
+    ViewData["Title"] = L["admin.registry_fields.title"].Value;
+}
+
+<h1 class="mklu-heading-1">@L["admin.registry_fields.title"]</h1>
+<p class="mklu-text-secondary">@L["admin.registry_fields.description"]</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="mklu-alert @(Model.IsError ? "mklu-alert-error" : "mklu-alert-success")" role="status">
+        @Model.Message
+    </div>
+}
+
+<section class="mklu-section">
+    <h2 class="mklu-heading-2">@L["admin.registry_fields.existing"]</h2>
+    @if (Model.Definitions.Count == 0)
+    {
+        <p class="mklu-text-secondary">@L["admin.registry_fields.empty"]</p>
+    }
+    else
+    {
+        <div class="mklu-table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>@L["admin.registry_fields.key"]</th>
+                        <th>@L["admin.registry_fields.label_en"]</th>
+                        <th>@L["admin.registry_fields.type"]</th>
+                        <th>@L["admin.registry_fields.user_editable"]</th>
+                        <th>@L["common.status"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var definition in Model.Definitions)
+                    {
+                        <tr>
+                            <td><code>@definition.Key</code></td>
+                            <td>@definition.GetLabel("en")</td>
+                            <td>@definition.FieldType</td>
+                            <td>@(definition.UserEditable ? L["common.yes"] : L["common.no"])</td>
+                            <td>@(definition.IsActive ? L["common.active"] : L["common.inactive"])</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+<section class="mklu-section">
+    <h2 class="mklu-heading-2">@L["admin.registry_fields.add"]</h2>
+    <form method="post" class="mklu-form">
+        <div class="mklu-field">
+            <label asp-for="Key">@L["admin.registry_fields.key"]</label>
+            <input asp-for="Key" pattern="[a-z][a-z0-9_]*" required />
+        </div>
+        <div class="mklu-field">
+            <label asp-for="LabelEn">@L["admin.registry_fields.label_en"]</label>
+            <input asp-for="LabelEn" required />
+        </div>
+        <div class="mklu-field">
+            <label asp-for="LabelCs">@L["admin.registry_fields.label_cs"]</label>
+            <input asp-for="LabelCs" />
+        </div>
+        <div class="mklu-field">
+            <label asp-for="FieldType">@L["admin.registry_fields.type"]</label>
+            <select asp-for="FieldType">
+                <option value="Text">Text</option>
+                <option value="MultilineText">Multiline text</option>
+                <option value="Date">Date</option>
+                <option value="Integer">Integer</option>
+                <option value="Decimal">Decimal</option>
+                <option value="Boolean">Boolean</option>
+                <option value="Select">Select</option>
+            </select>
+        </div>
+        <div class="mklu-field">
+            <label asp-for="SortOrder">@L["admin.registry_fields.sort_order"]</label>
+            <input asp-for="SortOrder" type="number" min="0" />
+        </div>
+        <div class="mklu-field mklu-check-field">
+            <label><input asp-for="IsRequired" type="checkbox" /> @L["admin.registry_fields.required"]</label>
+            <label><input asp-for="UserEditable" type="checkbox" /> @L["admin.registry_fields.user_editable_help"]</label>
+        </div>
+        <div class="mklu-field">
+            <label asp-for="OptionSourceType">@L["admin.registry_fields.option_source"]</label>
+            <select asp-for="OptionSourceType">
+                <option value="None">@L["admin.registry_fields.option_none"]</option>
+                <option value="Static">@L["admin.registry_fields.option_static"]</option>
+                <option value="RemoteService">@L["admin.registry_fields.option_remote"]</option>
+            </select>
+        </div>
+        <div class="mklu-field">
+            <label asp-for="StaticOptions">@L["admin.registry_fields.static_options"]</label>
+            <textarea asp-for="StaticOptions"></textarea>
+            <p class="mklu-text-secondary">@L["admin.registry_fields.static_options_help"]</p>
+        </div>
+        <div class="mklu-field">
+            <label asp-for="OptionSourceService">@L["admin.registry_fields.remote_service"]</label>
+            <input asp-for="OptionSourceService" />
+        </div>
+        <div class="mklu-field">
+            <label asp-for="OptionSourcePath">@L["admin.registry_fields.remote_path"]</label>
+            <input asp-for="OptionSourcePath" placeholder="/locations" />
+        </div>
+        <button type="submit" class="mklu-btn mklu-btn-filled">@L["admin.registry_fields.create"]</button>
+    </form>
+</section>

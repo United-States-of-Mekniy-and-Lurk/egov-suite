@@ -1,29 +1,29 @@
 ﻿@page
 @model CitizenService.Web.Pages.IndexModel
 @{
-    ViewData["Title"] = "Citizen Service";
+    ViewData["Title"] = L["app.name"].Value;
 }
 
 @if (Model.UserState == "error")
 {
     <div class="mklu-alert mklu-alert-error" role="alert">
-        <h2>Service unavailable</h2>
+        <h2>@L["error.service_unavailable"]</h2>
         <p>@Model.ErrorMessage</p>
-        <p>Please try again later or contact support.</p>
+        <p>@L["error.try_again"]</p>
     </div>
 }
 else
 {
     <section class="mklu-section">
-        <h1 class="mklu-heading-1">Your identity</h1>
+        <h1 class="mklu-heading-1">@L["index.your_identity"]</h1>
         <div class="mklu-card" style="max-width: 560px;">
             <div class="mklu-card-body">
                 <dl class="mklu-dl">
-                    <dt>Name</dt>
+                    <dt>@L["common.name"]</dt>
                     <dd>@Model.Person?.DisplayName</dd>
-                    <dt>Email</dt>
+                    <dt>@L["common.email"]</dt>
                     <dd>@Model.Person?.Email</dd>
-                    <dt>Username</dt>
+                    <dt>@L["common.username"]</dt>
                     <dd>@Model.Person?.PreferredUsername</dd>
                 </dl>
             </div>
@@ -31,18 +31,18 @@ else
     </section>
 
     <section class="mklu-section">
-        <h2 class="mklu-heading-2">Citizenship status</h2>
+        <h2 class="mklu-heading-2">@L["index.citizenship_status"]</h2>
 
         @if (Model.UserState == "citizen")
         {
             <div class="mklu-card" style="max-width: 560px;">
                 <div class="mklu-card-body">
                     <dl class="mklu-dl">
-                        <dt>Status</dt>
+                        <dt>@L["common.status"]</dt>
                         <dd><span class="mklu-badge mklu-badge-@(Model.Citizen?.Status?.ToLowerInvariant())">@Model.Citizen?.Status</span></dd>
-                        <dt>Citizen number</dt>
+                        <dt>@L["index.citizen_number"]</dt>
                         <dd>@Model.Citizen?.CitizenNumber</dd>
-                        <dt>Granted</dt>
+                        <dt>@L["index.granted"]</dt>
                         <dd>@Model.Citizen?.GrantedAt?.ToString("d MMMM yyyy")</dd>
                     </dl>
                 </div>
@@ -52,13 +52,17 @@ else
         {
             <div class="mklu-card" style="max-width: 560px;">
                 <div class="mklu-card-body">
-                    <p class="mklu-body-lg">You have a citizenship application in progress.</p>
+                    <p class="mklu-body-lg">@L["index.pending_application"]</p>
                     <dl class="mklu-dl">
-                        <dt>Status</dt>
+                        <dt>@L["common.status"]</dt>
                         <dd><span class="mklu-badge mklu-badge-pending">@Model.PendingApplication?.Status</span></dd>
-                        <dt>Submitted</dt>
-                        <dd>@(Model.PendingApplication?.SubmittedAt?.ToString("d MMMM yyyy") ?? "Not yet submitted")</dd>
+                        <dt>@L["common.submitted"]</dt>
+                        <dd>@(Model.PendingApplication?.SubmittedAt?.ToString("d MMMM yyyy") ?? L["index.not_yet_submitted"].Value)</dd>
                     </dl>
+                    @if (Model.PendingApplication?.Status == "Draft")
+                    {
+                        <a asp-page="/Applications/New" class="mklu-btn mklu-btn-filled">@L["index.continue_application"]</a>
+                    }
                 </div>
             </div>
         }
@@ -66,16 +70,48 @@ else
         {
             <div class="mklu-card" style="max-width: 560px;">
                 <div class="mklu-card-body">
-                    <p class="mklu-body-lg">You are not yet a citizen of the United States of Mekniy and Lurk.</p>
+                    <p class="mklu-body-lg">@L["index.not_citizen"]</p>
                     <p class="mklu-text-secondary" style="margin-bottom: 24px;">
-                        Submit a citizenship application to begin the process.
+                        @L["index.not_citizen_cta"]
                     </p>
                     <form method="post" asp-page-handler="Apply">
-                        <button type="submit" class="mklu-btn mklu-btn-filled">Apply for citizenship</button>
+                        <button type="submit" class="mklu-btn mklu-btn-filled">@L["index.apply_button"]</button>
                     </form>
                 </div>
             </div>
         }
     </section>
+
+    @if (Model.UserState == "citizen")
+    {
+        var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+        <section class="mklu-section">
+            <h2 class="mklu-heading-2">@L["index.registry_data"]</h2>
+            <p class="mklu-text-secondary">@L["index.registry_data_description"]</p>
+            <div class="mklu-card" style="max-width: 720px;">
+                <div class="mklu-card-body">
+                    @if (Model.RegistryFields.Count == 0)
+                    {
+                        <p class="mklu-text-secondary">@L["index.registry_data_empty"]</p>
+                    }
+                    else
+                    {
+                        <dl class="mklu-dl mklu-registry-fields">
+                            @foreach (var field in Model.RegistryFields)
+                            {
+                                <dt>@field.Definition.GetLabel(culture)</dt>
+                                <dd>
+                                    <span>@(string.IsNullOrEmpty(field.Value) ? L["common.not_yet"].Value : field.Value)</span>
+                                    <span class="mklu-field-policy">
+                                        @(field.Definition.UserEditable ? L["index.change_request_allowed"] : L["index.registry_managed"])
+                                    </span>
+                                </dd>
+                            }
+                        </dl>
+                    }
+                </div>
+            </div>
+        </section>
+    }
 }
 

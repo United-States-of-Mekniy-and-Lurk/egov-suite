@@ -1,0 +1,30 @@
+@page
+@model CitizenService.Web.Pages.Admin.FormsModel
+@{
+    ViewData["Title"] = L["admin.forms.title"].Value;
+}
+
+<h1 class="mklu-heading-1">@L["admin.forms.title"]</h1>
+<p class="mklu-text-secondary" style="max-width: 640px;">
+    @L["admin.forms.description"]
+</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="mklu-alert @(Model.IsError ? "mklu-alert-error" : "mklu-alert-success")" role="status">
+        @Model.Message
+    </div>
+}
+
+<form method="post" class="mklu-form">
+    <div class="mklu-field">
+        <label asp-for="FormName">@L["admin.forms.name"]</label>
+        <input asp-for="FormName" required />
+    </div>
+    <div class="mklu-field">
+        <label asp-for="DefinitionJson">@L["admin.forms.definition"]</label>
+        <textarea asp-for="DefinitionJson" rows="18" required></textarea>
+        <p class="mklu-text-secondary">@L["admin.forms.types"]</p>
+    </div>
+    <button type="submit" class="mklu-btn mklu-btn-filled">@L["admin.forms.publish"]</button>
+</form>

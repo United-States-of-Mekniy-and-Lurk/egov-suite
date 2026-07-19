@@ -4,6 +4,11 @@ namespace CitizenService.Infrastructure.Http;
 
 public interface IPersonRegistryApi
 {
+    [Get("/me")]
+    Task<ApiResponse<PersonApiResponse>> GetCurrentPersonAsync(
+        [Header("Authorization")] string authorization,
+        CancellationToken ct = default);
+
     [Get("/persons/{id}")]
     Task<ApiResponse<PersonApiResponse>> GetPersonByIdAsync(Guid id, CancellationToken ct = default);
 }

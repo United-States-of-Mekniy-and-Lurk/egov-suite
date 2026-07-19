@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace CitizenService.Web.Pages.Citizens;
 
-[Authorize]
+[Authorize(Policy = "RequireClerk")]
 public class CitizenDetailModel : PageModel
 {
     private readonly IHttpClientFactory _httpClientFactory;

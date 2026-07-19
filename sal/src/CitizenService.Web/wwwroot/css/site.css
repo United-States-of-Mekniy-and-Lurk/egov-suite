@@ -143,7 +143,16 @@ body {
 }
 .mklu-header-nav {
   display: flex;
+  align-items: center;
   gap: 8px;
+}
+.mklu-nav-form {
+  margin: 0;
+}
+.mklu-nav-button {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
 }
 .mklu-nav-link {
   font-family: var(--mklu-font-sans);
@@ -354,6 +363,11 @@ body {
   color: var(--mklu-error-text);
   border: 1px solid var(--mklu-border-error);
 }
+.mklu-alert-success {
+  background-color: var(--mklu-success-surface);
+  color: var(--mklu-success-text);
+  border: 1px solid var(--mklu-success-text);
+}
 
 /* Definition list */
 .mklu-dl {
@@ -377,6 +391,64 @@ body {
   background: var(--mklu-surface-sunken);
   padding: 2px 6px;
   border-radius: 2px;
+}
+.mklu-registry-fields dd {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mklu-field-policy {
+  color: var(--mklu-text-secondary);
+  font-size: 12px;
+}
+
+/* Forms */
+.mklu-form {
+  max-width: 640px;
+}
+.mklu-field {
+  margin-bottom: 24px;
+}
+.mklu-field label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.mklu-field input,
+.mklu-field textarea,
+.mklu-field select {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 16px;
+  color: var(--mklu-text-primary);
+  background: var(--mklu-surface-raised);
+  border: 1px solid var(--mklu-border-strong);
+  border-radius: var(--mklu-radius-sm);
+  font: 16px/1.5 var(--mklu-font-sans);
+}
+.mklu-field textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+.mklu-check-field label {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mklu-check-field input[type="checkbox"] {
+  width: 20px;
+  min-height: 20px;
+  padding: 0;
+}
+.mklu-table-wrap {
+  overflow-x: auto;
+}
+.mklu-field input:focus,
+.mklu-field textarea:focus,
+.mklu-field select:focus {
+  border: 2px solid var(--mklu-interactive);
 }
 
 /* Links */

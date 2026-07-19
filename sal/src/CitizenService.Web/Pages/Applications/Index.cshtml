@@ -1,14 +1,14 @@
 @page
 @model CitizenService.Web.Pages.Applications.ApplicationsIndexModel
 @{
-    ViewData["Title"] = "My Applications";
+    ViewData["Title"] = L["applications.title"].Value;
 }
 
-<h1 class="mklu-heading-1">My applications</h1>
+<h1 class="mklu-heading-1">@L["applications.title"]</h1>
 
 @if (Model.Applications.Count == 0)
 {
-    <p class="mklu-text-secondary">You have no citizenship applications.</p>
+    <p class="mklu-text-secondary">@L["applications.empty"]</p>
 }
 else
 {
@@ -17,20 +17,20 @@ else
         <div class="mklu-card" style="max-width: 560px; margin-bottom: 16px;">
             <div class="mklu-card-body">
                 <dl class="mklu-dl">
-                    <dt>Status</dt>
+                    <dt>@L["common.status"]</dt>
                     <dd><span class="mklu-badge mklu-badge-@(a.Status.ToLowerInvariant())">@a.Status</span></dd>
-                    <dt>Created</dt>
+                    <dt>@L["common.created"]</dt>
                     <dd>@a.CreatedAt.ToString("d MMMM yyyy")</dd>
-                    <dt>Submitted</dt>
-                    <dd>@(a.SubmittedAt?.ToString("d MMMM yyyy") ?? "Not yet")</dd>
+                    <dt>@L["common.submitted"]</dt>
+                    <dd>@(a.SubmittedAt?.ToString("d MMMM yyyy") ?? L["common.not_yet"].Value)</dd>
                     @if (a.ReviewedAt.HasValue)
                     {
-                        <dt>Reviewed</dt>
+                        <dt>@L["common.reviewed"]</dt>
                         <dd>@a.ReviewedAt.Value.ToString("d MMMM yyyy")</dd>
                     }
                     @if (!string.IsNullOrEmpty(a.DecisionReason))
                     {
-                        <dt>Decision</dt>
+                        <dt>@L["common.decision"]</dt>
                         <dd>@a.DecisionReason</dd>
                     }
                 </dl>

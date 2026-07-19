@@ -1,21 +1,23 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-COPY CitizenService.slnx ./
-COPY src/CitizenService.Web/CitizenService.Web.csproj src/CitizenService.Web/
+COPY sal/CitizenService.slnx ./
+COPY sal/src/CitizenService.Web/CitizenService.Web.csproj src/CitizenService.Web/
 
 RUN dotnet restore src/CitizenService.Web/CitizenService.Web.csproj
 
-COPY . .
+COPY sal/ .
 RUN dotnet publish src/CitizenService.Web/CitizenService.Web.csproj -c Release -o /app/publish --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
 COPY --from=build /app/publish .
+COPY translations/ /app/translations/
 
 USER 1001:1001
 ENV ASPNETCORE_URLS=http://+:8080
+ENV Translations__Path=/app/translations
 EXPOSE 8080
 
 ENTRYPOINT ["dotnet", "CitizenService.Web.dll"]

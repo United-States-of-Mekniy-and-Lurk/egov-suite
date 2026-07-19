@@ -4,4 +4,28 @@
     ViewData["Title"] = "New Application";
 }
 
-<p>Redirecting to home page&hellip;</p>
+<h1 class="mklu-heading-1">@Model.FormDefinition.Title</h1>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="mklu-alert mklu-alert-error" role="alert">@Model.ErrorMessage</div>
+}
+
+<form method="post" class="mklu-form">
+    @foreach (var field in Model.FormDefinition.Fields)
+    {
+        <div class="mklu-field">
+            <label for="@field.Name">@field.Label</label>
+            @if (field.Type == "textarea")
+            {
+                <textarea id="@field.Name" name="@field.Name" required="@field.Required"></textarea>
+            }
+            else
+            {
+                <input id="@field.Name" name="@field.Name" type="@field.Type" required="@field.Required" />
+            }
+        </div>
+    }
+    <button type="submit" class="mklu-btn mklu-btn-filled">@L["applications.submit"]</button>
+    <a asp-page="/Index" class="mklu-btn mklu-btn-outlined">@L["common.cancel"]</a>
+</form>

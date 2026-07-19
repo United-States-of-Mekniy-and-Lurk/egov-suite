@@ -6,15 +6,21 @@ using CitizenService.Infrastructure.Repositories;
 using CitizenService.Infrastructure.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Refit;
+using System.Security.Claims;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 
@@ -52,7 +58,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireClerk", policy =>
+        policy.RequireRole("citizen-service:clerk", "citizen-service:admin"));
+    options.AddPolicy("RequireAdmin", policy =>
+        policy.RequireRole("citizen-service:admin"));
+});
+
+// Extract Keycloak realm roles into standard ClaimTypes.Role claims
+builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
 
 builder.Services.AddDbContext<CitizenDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -60,9 +75,12 @@ builder.Services.AddDbContext<CitizenDbContext>(options =>
 builder.Services.AddScoped<ICitizenRepository, CitizenRepository>();
 builder.Services.AddScoped<IApplicationRepository, ApplicationRepository>();
 builder.Services.AddScoped<IFormRepository, FormRepository>();
+builder.Services.AddScoped<IRegistryFieldRepository, RegistryFieldRepository>();
+builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
 builder.Services.AddScoped<CitizenAppService>();
 builder.Services.AddScoped<ApplicationAppService>();
+builder.Services.AddScoped<RegistryFieldService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentActor, CurrentActorService>();
@@ -84,6 +102,27 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthentication();
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity is ClaimsIdentity identity &&
+        identity.IsAuthenticated &&
+        !identity.HasClaim(claim => claim.Type == "person_id"))
+    {
+        var authorization = context.Request.Headers.Authorization.ToString();
+        if (!string.IsNullOrWhiteSpace(authorization))
+        {
+            var personRegistry = context.RequestServices.GetRequiredService<IPersonRegistryApi>();
+            var response = await personRegistry.GetCurrentPersonAsync(
+                authorization, context.RequestAborted);
+            if (response.IsSuccessStatusCode && response.Content != null)
+            {
+                identity.AddClaim(new Claim("person_id", response.Content.Id.ToString()));
+            }
+        }
+    }
+
+    await next();
+});
 app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health");
@@ -95,4 +134,41 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+/// <summary>
+/// Extracts Keycloak realm roles from the realm_access JWT claim
+/// into standard ClaimTypes.Role so [Authorize(Roles/Policy)] works.
+/// </summary>
+public class KeycloakClaimsTransformation : IClaimsTransformation
+{
+    public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+    {
+        var identity = principal.Identity as ClaimsIdentity;
+        if (identity == null)
+            return Task.FromResult(principal);
+
+        var realmAccess = principal.FindFirst("realm_access")?.Value;
+        if (realmAccess == null)
+            return Task.FromResult(principal);
+
+        try
+        {
+            using var doc = JsonDocument.Parse(realmAccess);
+            if (doc.RootElement.TryGetProperty("roles", out var roles))
+            {
+                foreach (var role in roles.EnumerateArray())
+                {
+                    var roleName = role.GetString();
+                    if (roleName != null && !identity.HasClaim(ClaimTypes.Role, roleName))
+                    {
+                        identity.AddClaim(new Claim(ClaimTypes.Role, roleName));
+                    }
+                }
+            }
+        }
+        catch (JsonException) { }
+
+        return Task.FromResult(principal);
+    }
+}
 

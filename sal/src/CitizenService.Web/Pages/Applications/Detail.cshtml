@@ -5,6 +5,13 @@
 }
 
 <h1>Application Detail</h1>
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="mklu-alert mklu-alert-error" role="alert">
+        <strong>@L["applications.transition_failed"]</strong>
+        <span>@Model.ErrorMessage</span>
+    </div>
+}
 @if (Model.Application != null)
 {
     <dl class="row">

@@ -1,9 +1,9 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Citizen Service</title>
+    <title>@ViewData["Title"] - @L["app.name"]</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@300;400;600&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -12,19 +12,34 @@
     <link rel="stylesheet" href="~/CitizenService.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <a class="mklu-skip-link" href="#main-content">Skip to main content</a>
+    <a class="mklu-skip-link" href="#main-content">@L["app.skip_to_content"]</a>
     <header class="mklu-header" role="banner">
         <div class="mklu-header-inner">
             <div class="mklu-header-brand">
                 <img src="~/img/MKLU-Flag-Small.svg" alt="" height="24" aria-hidden="true" />
                 <div>
-                    <a class="mklu-header-title" asp-page="/Index">Citizen Service</a>
-                    <span class="mklu-header-subtitle">United States of Mekniy and Lurk</span>
+                    <a class="mklu-header-title" asp-page="/Index">@L["app.name"]</a>
+                    <span class="mklu-header-subtitle">@L["app.country"]</span>
                 </div>
             </div>
             <nav class="mklu-header-nav" aria-label="Main navigation">
-                <a class="mklu-nav-link" asp-page="/Index">Home</a>
-                <a class="mklu-nav-link" asp-page="/Applications/Index">My applications</a>
+                <a class="mklu-nav-link" asp-page="/Index">@L["nav.home"]</a>
+                <a class="mklu-nav-link" asp-page="/Applications/Index">@L["nav.my_applications"]</a>
+                @if (User.IsInRole("citizen-service:clerk") || User.IsInRole("citizen-service:admin"))
+                {
+                    <a class="mklu-nav-link" asp-page="/Citizens/Index">@L["nav.citizens"]</a>
+                }
+                @if (User.IsInRole("citizen-service:admin"))
+                {
+                    <a class="mklu-nav-link" asp-page="/Admin/Forms">@L["nav.admin"]</a>
+                    <a class="mklu-nav-link" asp-page="/Admin/RegistryFields">@L["nav.registry_fields"]</a>
+                }
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <form method="post" asp-page="/Logout" class="mklu-nav-form">
+                        <button type="submit" class="mklu-nav-link mklu-nav-button">@L["nav.logout"]</button>
+                    </form>
+                }
             </nav>
         </div>
     </header>
@@ -36,7 +51,7 @@
 
     <footer class="mklu-footer" role="contentinfo">
         <div class="mklu-footer-inner">
-            &copy; 2026 United States of Mekniy and Lurk &mdash; <a href="/Privacy">Privacy</a>
+            @L["footer.copyright", DateTime.Now.Year] &mdash; <a href="/Privacy">@L["nav.privacy"]</a>
         </div>
     </footer>
 

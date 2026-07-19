@@ -23,6 +23,17 @@ public class CitizenAppService
         if (!personExists)
             throw new InvalidOperationException($"Person {personId} not found in the Person Registry.");
 
+        return await CreateVerifiedCitizenAsync(personId, grantedAt, importSource, citizenNumber, ct);
+    }
+
+    internal async Task<Citizen> CreateVerifiedCitizenAsync(
+        Guid personId,
+        DateTime? grantedAt,
+        string? importSource,
+        string? citizenNumber,
+        CancellationToken ct)
+    {
+
         if (string.IsNullOrWhiteSpace(citizenNumber))
         {
             var count = await _citizenRepository.CountAsync(ct);
