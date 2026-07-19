@@ -69,7 +69,7 @@ config:
   # Do not use a cluster-internal-only URI here when login happens in browser.
   jwtAuthority: "http://keycloak:8080/realms/sal"
   jwtAudience: "citizen-service"
-  personRegistryBaseUrl: "http://person-registry"
+  personRegistryBaseUrl: "http://ego"
   citizenApiBaseUrl: "http://citizen-service"
   # Public HTTPS base URL of the web app, used to build the OIDC redirect URI.
   publicWebBaseUrl: "https://citizen-admin.local"

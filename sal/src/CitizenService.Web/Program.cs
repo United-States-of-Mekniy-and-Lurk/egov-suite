@@ -130,7 +130,7 @@ builder.Services.AddHttpClient("CitizenApi", client =>
 
 builder.Services.AddHttpClient("PersonRegistry", client =>
 {
-    var baseUrl = builder.Configuration["PersonRegistry:BaseUrl"] ?? "http://person-registry";
+    var baseUrl = builder.Configuration["PersonRegistry:BaseUrl"] ?? "http://ego";
     client.BaseAddress = new Uri(baseUrl);
 }).AddHttpMessageHandler<BearerTokenHandler>();
 

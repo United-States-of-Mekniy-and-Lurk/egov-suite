@@ -86,7 +86,7 @@ builder.Services.AddScoped<RegistryFieldService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentActor, CurrentActorService>();
 
-var personRegistryBaseUrl = builder.Configuration["PersonRegistry:BaseUrl"] ?? "http://person-registry";
+var personRegistryBaseUrl = builder.Configuration["PersonRegistry:BaseUrl"] ?? "http://ego";
 builder.Services.AddRefitClient<IPersonRegistryApi>()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri(personRegistryBaseUrl));
 builder.Services.AddScoped<IPersonClient, PersonClient>();
