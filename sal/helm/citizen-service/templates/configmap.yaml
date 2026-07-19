@@ -10,5 +10,6 @@ data:
   Jwt__Audience: {{ .Values.config.jwtAudience | quote }}
   PersonRegistry__BaseUrl: {{ .Values.config.personRegistryBaseUrl | quote }}
   CitizenApi__BaseUrl: {{ .Values.config.citizenApiBaseUrl | quote }}
+  Oidc__PublicBaseUrl: {{ .Values.config.publicWebBaseUrl | quote }}
   Oidc__Authority: {{ .Values.config.oidcAuthority | quote }}
   Oidc__ClientId: {{ .Values.config.oidcClientId | quote }}

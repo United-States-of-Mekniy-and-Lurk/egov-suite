@@ -38,6 +38,16 @@ builder.Services.AddAuthentication(options =>
     // Disable PAR and use the standard authorization code flow endpoint.
     options.PushedAuthorizationBehavior = PushedAuthorizationBehavior.Disable;
     options.RequireHttpsMetadata = true;
+    var publicBaseUrl = builder.Configuration["Oidc:PublicBaseUrl"]?.TrimEnd('/');
+    if (!string.IsNullOrWhiteSpace(publicBaseUrl))
+    {
+        options.Events ??= new OpenIdConnectEvents();
+        options.Events.OnRedirectToIdentityProvider = context =>
+        {
+            context.ProtocolMessage.RedirectUri = $"{publicBaseUrl}{options.CallbackPath}";
+            return Task.CompletedTask;
+        };
+    }
     options.Scope.Add("openid");
     options.Scope.Add("profile");
     options.Scope.Add("email");
