@@ -70,7 +70,7 @@ config:
   jwtAuthority: "http://keycloak:8080/realms/sal"
   jwtAudience: "citizen-service"
   personRegistryBaseUrl: "http://ego"
-  citizenApiBaseUrl: "http://citizen-service"
+  citizenApiBaseUrl: "http://citizen-service-api"
   # Public HTTPS base URL of the web app, used to build the OIDC redirect URI.
   publicWebBaseUrl: "https://citizen-admin.local"
   # Must match the public OIDC issuer used by the browser (typically via your tunnel/domain).

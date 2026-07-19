@@ -124,7 +124,7 @@ builder.Services.AddTransient<BearerTokenHandler>();
 
 builder.Services.AddHttpClient("CitizenApi", client =>
 {
-    var baseUrl = builder.Configuration["CitizenApi:BaseUrl"] ?? "http://citizen-service";
+    var baseUrl = builder.Configuration["CitizenApi:BaseUrl"] ?? "http://citizen-service-api";
     client.BaseAddress = new Uri(baseUrl);
 }).AddHttpMessageHandler<BearerTokenHandler>();
 
