@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Text.Json;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
 
 namespace CitizenService.Web.Services;
@@ -11,6 +12,20 @@ namespace CitizenService.Web.Services;
 /// </summary>
 public class KeycloakClaimsTransformation : IClaimsTransformation
 {
+    public static void AddRolesFromAccessToken(ClaimsPrincipal? principal, string? accessToken)
+    {
+        if (principal?.Identity is not ClaimsIdentity identity || string.IsNullOrWhiteSpace(accessToken))
+            return;
+
+        var handler = new JwtSecurityTokenHandler();
+        if (!handler.CanReadToken(accessToken))
+            return;
+
+        var token = handler.ReadJwtToken(accessToken);
+        using var payload = JsonDocument.Parse(token.Payload.SerializeToJson());
+        AddRealmRoles(identity, payload.RootElement);
+    }
+
     public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
     {
         var identity = principal.Identity as ClaimsIdentity;
@@ -24,17 +39,7 @@ public class KeycloakClaimsTransformation : IClaimsTransformation
         try
         {
             using var doc = JsonDocument.Parse(realmAccess);
-            if (doc.RootElement.TryGetProperty("roles", out var roles))
-            {
-                foreach (var role in roles.EnumerateArray())
-                {
-                    var roleName = role.GetString();
-                    if (roleName != null && !identity.HasClaim(ClaimTypes.Role, roleName))
-                    {
-                        identity.AddClaim(new Claim(ClaimTypes.Role, roleName));
-                    }
-                }
-            }
+            AddRealmRoles(identity, doc.RootElement, realmAccessIsRoot: true);
         }
         catch (JsonException)
         {
@@ -42,5 +47,29 @@ public class KeycloakClaimsTransformation : IClaimsTransformation
         }
 
         return Task.FromResult(principal);
+    }
+
+    private static void AddRealmRoles(
+        ClaimsIdentity identity,
+        JsonElement root,
+        bool realmAccessIsRoot = false)
+    {
+        var realmAccess = root;
+        if (!realmAccessIsRoot &&
+            (!root.TryGetProperty("realm_access", out realmAccess) ||
+             realmAccess.ValueKind != JsonValueKind.Object))
+        {
+            return;
+        }
+
+        if (!realmAccess.TryGetProperty("roles", out var roles) || roles.ValueKind != JsonValueKind.Array)
+            return;
+
+        foreach (var role in roles.EnumerateArray())
+        {
+            var roleName = role.GetString();
+            if (!string.IsNullOrWhiteSpace(roleName) && !identity.HasClaim(ClaimTypes.Role, roleName))
+                identity.AddClaim(new Claim(ClaimTypes.Role, roleName));
+        }
     }
 }

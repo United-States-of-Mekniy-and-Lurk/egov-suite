@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Localization;
 using CitizenService.Web.Services;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +51,22 @@ builder.Services.AddAuthentication(options =>
     options.RequireHttpsMetadata = true;
     options.Events = new OpenIdConnectEvents
     {
+        OnTokenValidated = context =>
+        {
+            KeycloakClaimsTransformation.AddRolesFromAccessToken(
+                context.Principal,
+                context.TokenEndpointResponse?.AccessToken);
+
+            var roles = context.Principal?.FindAll(ClaimTypes.Role)
+                .Select(claim => claim.Value)
+                .OrderBy(role => role)
+                .ToArray() ?? [];
+            var logger = context.HttpContext.RequestServices
+                .GetRequiredService<ILoggerFactory>()
+                .CreateLogger("OpenIdConnect");
+            logger.LogInformation("OIDC token validated with roles [{Roles}]", string.Join(", ", roles));
+            return Task.CompletedTask;
+        },
         OnRedirectToIdentityProvider = context =>
         {
             var configuredPublicBaseUrl = builder.Configuration["Oidc:PublicBaseUrl"]?.TrimEnd('/');
