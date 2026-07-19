@@ -3,43 +3,41 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - CitizenService.Web</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - Citizen Service</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@300;400;600&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CitizenService.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">CitizenService.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </li>
-                    </ul>
+    <a class="mklu-skip-link" href="#main-content">Skip to main content</a>
+    <header class="mklu-header" role="banner">
+        <div class="mklu-header-inner">
+            <div class="mklu-header-brand">
+                <img src="~/img/MKLU-Flag-Small.svg" alt="" height="24" aria-hidden="true" />
+                <div>
+                    <a class="mklu-header-title" asp-page="/Index">Citizen Service</a>
+                    <span class="mklu-header-subtitle">United States of Mekniy and Lurk</span>
                 </div>
             </div>
-        </nav>
+            <nav class="mklu-header-nav" aria-label="Main navigation">
+                <a class="mklu-nav-link" asp-page="/Index">Home</a>
+                <a class="mklu-nav-link" asp-page="/Applications/Index">Applications</a>
+                <a class="mklu-nav-link" asp-page="/Citizens/Index">Citizens</a>
+            </nav>
+        </div>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+    <div class="mklu-page">
+        <main id="main-content" role="main" class="mklu-main">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - CitizenService.Web - <a asp-area="" asp-page="/Privacy">Privacy</a>
+    <footer class="mklu-footer" role="contentinfo">
+        <div class="mklu-footer-inner">
+            &copy; 2026 United States of Mekniy and Lurk &mdash; <a href="/Privacy">Privacy</a>
         </div>
     </footer>
 

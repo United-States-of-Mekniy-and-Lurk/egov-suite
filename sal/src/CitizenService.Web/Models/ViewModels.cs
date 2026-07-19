@@ -1,5 +1,15 @@
 namespace CitizenService.Web.Models;
 
+public class PersonViewModel
+{
+    public Guid Id { get; set; }
+    public string IdentitySubject { get; set; } = string.Empty;
+    public string PreferredUsername { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+}
+
 public class CitizenViewModel
 {
     public Guid Id { get; set; }

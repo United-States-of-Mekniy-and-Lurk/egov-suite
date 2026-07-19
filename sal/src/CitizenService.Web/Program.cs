@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -83,11 +84,19 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddTransient<BearerTokenHandler>();
+
 builder.Services.AddHttpClient("CitizenApi", client =>
 {
     var baseUrl = builder.Configuration["CitizenApi:BaseUrl"] ?? "http://citizen-service";
     client.BaseAddress = new Uri(baseUrl);
-});
+}).AddHttpMessageHandler<BearerTokenHandler>();
+
+builder.Services.AddHttpClient("PersonRegistry", client =>
+{
+    var baseUrl = builder.Configuration["PersonRegistry:BaseUrl"] ?? "http://person-registry";
+    client.BaseAddress = new Uri(baseUrl);
+}).AddHttpMessageHandler<BearerTokenHandler>();
 
 var app = builder.Build();
 
@@ -140,4 +149,31 @@ app.UseAuthorization();
 app.MapRazorPages();
 
 app.Run();
+
+public class BearerTokenHandler : DelegatingHandler
+{
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public BearerTokenHandler(IHttpContextAccessor httpContextAccessor)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    protected override async Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext != null)
+        {
+            var accessToken = await httpContext.GetTokenAsync("access_token");
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+            }
+        }
+
+        return await base.SendAsync(request, cancellationToken);
+    }
+}
 

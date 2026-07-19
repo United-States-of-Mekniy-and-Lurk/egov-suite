@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MKLU Design System — Showcase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&family=Noto+Sans:wght@400;600&family=Noto+Sans+Canadian+Aboriginal&family=Noto+Sans+Mono&display=swap" rel="stylesheet">
+  <style>
+    /* ─── TOKENS ─────────────────────────────────────────────── */
+    :root {
+      --color-grey:        #2F2F2F;
+      --color-white:       #F8F8F8;
+      --color-blue:        #0094FF;
+      --color-blue-dark:   #007ACC;
+      --color-blue-darker: #0072CC;
+      --color-blue-active: #005FA3;
+      --color-blue-subtle: #E6F4FF;
+      --color-focus:       #FFD700;
+      --color-visited:     #5A3EA8;
+      --color-text-1:      #2F2F2F;
+      --color-text-2:      #595959;
+      --color-text-3:      #9B9B9B;
+      --color-text-inv:    #F8F8F8;
+      --color-surface-page:   #F8F8F8;
+      --color-surface-raised: #FFFFFF;
+      --color-surface-sunken: #EFEFEF;
+      --color-border:      #C8C8C8;
+      --color-border-strong: #2F2F2F;
+      --color-error:       #C62828;
+      --color-error-bg:    #FFF0F0;
+      --color-success:     #2E7D32;
+      --color-success-bg:  #F0FFF4;
+      --color-warning:     #CC7700;
+      --color-warning-bg:  #FFF8E1;
+
+      --font-serif: 'Source Serif 4', 'Noto Serif', Georgia, serif;
+      --font-sans:  'Noto Sans', 'Noto Sans Canadian Aboriginal', system-ui, sans-serif;
+      --font-mono:  'Noto Sans Mono', monospace;
+
+      --radius-xs: 2px;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-full: 9999px;
+
+      --shadow-1: 0 1px 3px rgb(0 0 0/.12), 0 1px 2px rgb(0 0 0/.08);
+      --shadow-2: 0 3px 8px rgb(0 0 0/.14), 0 1px 4px rgb(0 0 0/.10);
+      --shadow-3: 0 8px 24px rgb(0 0 0/.18), 0 2px 8px rgb(0 0 0/.10);
+
+      --transition: 200ms cubic-bezier(.2,0,0,1);
+    }
+
+    /* ─── RESET ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--color-text-1);
+      background: var(--color-surface-page);
+    }
+    img, svg { display: block; max-width: 100%; }
+    *:focus-visible {
+      outline: 3px solid var(--color-focus);
+      outline-offset: 2px;
+    }
+
+    /* ─── SKIP LINK ──────────────────────────────────────────── */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 16px;
+      background: var(--color-grey);
+      color: var(--color-white);
+      padding: 8px 16px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 9999;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      transition: top 100ms;
+    }
+    .skip-link:focus { top: 8px; }
+
+    /* ─── SITE HEADER ────────────────────────────────────────── */
+    .site-header {
+      background: var(--color-grey);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .site-header__flag {
+      height: 24px;
+      width: auto;
+      flex-shrink: 0;
+    }
+    .site-header__wordmark {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text-inv);
+      letter-spacing: 0.1px;
+      line-height: 1.2;
+    }
+    .site-header__wordmark small {
+      display: block;
+      font-size: 11px;
+      font-weight: 400;
+      color: #B0B0B0;
+      letter-spacing: 0.4px;
+    }
+    .site-header__spacer { flex: 1; }
+    .site-header__lang {
+      display: flex;
+      gap: 4px;
+    }
+    .site-header__lang button {
+      background: none;
+      border: 1px solid transparent;
+      color: #B0B0B0;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: color var(--transition), border-color var(--transition);
+    }
+    .site-header__lang button:hover { color: var(--color-white); border-color: #595959; }
+    .site-header__lang button.active { color: var(--color-white); border-color: var(--color-blue); }
+
+    /* Service bar */
+    .service-bar {
+      background: var(--color-blue);
+      height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      gap: 12px;
+    }
+    .service-bar__name {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .service-bar__badge {
+      font-size: 11px;
+      font-weight: 600;
+      background: rgb(255 255 255/.2);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      letter-spacing: 0.5px;
+    }
+
+    /* ─── LAYOUT ─────────────────────────────────────────────── */
+    .layout {
+      display: flex;
+      min-height: calc(100vh - 104px);
+    }
+
+    /* Side nav */
+    .sidenav {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--color-surface-raised);
+      border-right: 1px solid var(--color-border);
+      padding: 24px 0;
+      position: sticky;
+      top: 104px;
+      height: calc(100vh - 104px);
+      overflow-y: auto;
+    }
+    .sidenav__section {
+      padding: 0 16px;
+      margin-bottom: 8px;
+    }
+    .sidenav__section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-text-2);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 8px 0 4px;
+    }
+    .sidenav__link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--color-text-1);
+      text-decoration: none;
+      transition: background var(--transition), color var(--transition);
+    }
+    .sidenav__link:hover { background: var(--color-surface-sunken); }
+    .sidenav__link.active {
+      background: var(--color-blue-subtle);
+      color: var(--color-blue-darker);
+      font-weight: 600;
+      border-left: 3px solid var(--color-blue);
+      padding-left: 9px;
+    }
+
+    /* Main */
+    main {
+      flex: 1;
+      padding: 48px 64px;
+      max-width: 900px;
+    }
+    .section {
+      margin-bottom: 80px;
+      scroll-margin-top: 120px;
+    }
+    .section__title {
+      font-family: var(--font-serif);
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--color-text-1);
+      margin-bottom: 8px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--color-grey);
+    }
+    .section__subtitle {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--color-text-1);
+      margin: 32px 0 12px;
+    }
+    .section__desc {
+      font-size: 15px;
+      color: var(--color-text-2);
+      margin-bottom: 24px;
+      max-width: 600px;
+    }
+
+    /* ─── DEMO CARDS ─────────────────────────────────────────── */
+    .demo-card {
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+    .demo-card__label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--color-text-2);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    /* ─── COLORS ─────────────────────────────────────────────── */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .color-swatch {
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      box-shadow: var(--shadow-1);
+    }
+    .color-swatch__block {
+      height: 64px;
+    }
+    .color-swatch__info {
+      background: var(--color-surface-raised);
+      padding: 8px 10px;
+    }
+    .color-swatch__name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-text-1);
+      display: block;
+    }
+    .color-swatch__hex {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-text-2);
+    }
+
+    /* ─── TYPOGRAPHY ─────────────────────────────────────────── */
+    .type-specimen { margin-bottom: 20px; }
+    .type-specimen__label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-text-2);
+      margin-bottom: 4px;
+    }
+    .type-meta {
+      display: inline-block;
+      font-size: 11px;
+      color: var(--color-text-3);
+      margin-left: 12px;
+      vertical-align: baseline;
+    }
+
+    /* ─── BUTTONS ────────────────────────────────────────────── */
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 44px;
+      padding: 0 24px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background var(--transition), color var(--transition), border-color var(--transition);
+      white-space: nowrap;
+    }
+    .btn--filled {
+      background: var(--color-blue);
+      color: #fff;
+      border-color: var(--color-blue);
+    }
+    .btn--filled:hover { background: var(--color-blue-dark); border-color: var(--color-blue-dark); }
+    .btn--outlined {
+      background: transparent;
+      color: var(--color-blue-darker);
+      border-color: var(--color-blue);
+    }
+    .btn--outlined:hover { background: var(--color-blue-subtle); }
+    .btn--text {
+      background: transparent;
+      color: var(--color-blue-darker);
+      border-color: transparent;
+      padding: 0 16px;
+    }
+    .btn--text:hover { background: var(--color-blue-subtle); }
+    .btn--danger {
+      background: var(--color-error);
+      color: #fff;
+      border-color: var(--color-error);
+    }
+    .btn--danger:hover { background: #9C1F1F; border-color: #9C1F1F; }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* ─── TAGS / BADGES ──────────────────────────────────────── */
+    .badge-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: var(--radius-xs);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .badge--default  { background: #EFEFEF; color: var(--color-text-1); }
+    .badge--primary  { background: var(--color-blue-subtle); color: var(--color-blue-darker); }
+    .badge--success  { background: var(--color-success-bg); color: var(--color-success); }
+    .badge--warning  { background: var(--color-warning-bg); color: var(--color-warning); }
+    .badge--error    { background: var(--color-error-bg); color: var(--color-error); }
+
+    /* Chips */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      height: 32px;
+      padding: 0 12px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-page);
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--color-text-1);
+      cursor: pointer;
+      transition: background var(--transition), border-color var(--transition), color var(--transition);
+    }
+    .chip:hover { background: var(--color-surface-sunken); }
+    .chip.selected {
+      background: var(--color-blue-subtle);
+      border-color: var(--color-blue);
+      color: var(--color-blue-darker);
+      font-weight: 600;
+    }
+
+    /* ─── FORM INPUTS ────────────────────────────────────────── */
+    .form-group { margin-bottom: 20px; }
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text-1);
+      margin-bottom: 6px;
+    }
+    .form-hint {
+      display: block;
+      font-size: 13px;
+      color: var(--color-text-2);
+      margin-bottom: 6px;
+    }
+    .form-input {
+      display: block;
+      width: 100%;
+      height: 48px;
+      padding: 0 16px;
+      font-family: var(--font-sans);
+      font-size: 16px;
+      color: var(--color-text-1);
+      background: #fff;
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-sm);
+      transition: border-color var(--transition);
+      outline: none;
+    }
+    .form-input:focus {
+      border-color: var(--color-blue);
+      border-width: 2px;
+      outline: 3px solid var(--color-focus);
+      outline-offset: 2px;
+    }
+    .form-input.error { border-color: var(--color-error); border-width: 2px; }
+    .form-input::placeholder { color: var(--color-text-3); }
+    .form-error {
+      display: block;
+      font-size: 13px;
+      color: var(--color-error);
+      margin-top: 4px;
+    }
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23595959' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 40px;
+      cursor: pointer;
+    }
+
+    /* Checkbox / Radio */
+    .check-group { display: flex; flex-direction: column; gap: 10px; }
+    .check-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .check-label input[type="checkbox"],
+    .check-label input[type="radio"] {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--color-border-strong);
+      border-radius: 2px;
+      cursor: pointer;
+      accent-color: var(--color-blue);
+      flex-shrink: 0;
+    }
+    .check-label input[type="radio"] { border-radius: 50%; }
+
+    /* Toggle */
+    .toggle { display: flex; align-items: center; gap: 12px; }
+    .toggle__input { display: none; }
+    .toggle__track {
+      width: 44px;
+      height: 24px;
+      background: var(--color-border);
+      border-radius: var(--radius-full);
+      position: relative;
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+    .toggle__input:checked + .toggle__track { background: var(--color-blue); }
+    .toggle__thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: var(--shadow-1);
+      transition: transform var(--transition);
+    }
+    .toggle__input:checked + .toggle__track .toggle__thumb { transform: translateX(20px); }
+    .toggle__label { font-size: 14px; color: var(--color-text-1); }
+
+    /* ─── CARDS ──────────────────────────────────────────────── */
+    .card {
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      box-shadow: var(--shadow-1);
+    }
+    .card__title {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .card__body { font-size: 15px; color: var(--color-text-2); line-height: 1.6; }
+    .card__footer {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      gap: 8px;
+    }
+    .card--official {
+      border-top: 4px solid var(--color-grey);
+    }
+    .card--official .card__header-bar {
+      background: var(--color-grey);
+      margin: -24px -24px 24px;
+      padding: 10px 24px;
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card--official .card__header-bar span {
+      color: var(--color-text-inv);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* ─── ALERTS ─────────────────────────────────────────────── */
+    .alert {
+      display: flex;
+      gap: 12px;
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      border-left: 4px solid;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+    .alert__icon { font-size: 18px; flex-shrink: 0; line-height: 1.4; }
+    .alert__content {}
+    .alert__title { font-weight: 600; margin-bottom: 2px; }
+    .alert--info    { background: var(--color-blue-subtle); border-color: var(--color-blue); }
+    .alert--success { background: var(--color-success-bg); border-color: var(--color-success); }
+    .alert--warning { background: var(--color-warning-bg); border-color: var(--color-warning); }
+    .alert--error   { background: var(--color-error-bg); border-color: var(--color-error); }
+
+    /* ─── TABLE ──────────────────────────────────────────────── */
+    .mklu-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .mklu-table th {
+      background: var(--color-grey);
+      color: var(--color-text-inv);
+      font-weight: 600;
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 13px;
+      letter-spacing: 0.2px;
+    }
+    .mklu-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: top;
+    }
+    .mklu-table tr:nth-child(even) td { background: #FAFAFA; }
+    .mklu-table tr:hover td { background: var(--color-blue-subtle); }
+
+    /* ─── PROGRESS ───────────────────────────────────────────── */
+    .progress-track {
+      height: 4px;
+      background: var(--color-surface-sunken);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--color-blue);
+      border-radius: var(--radius-full);
+      transition: width 600ms cubic-bezier(.2,0,0,1);
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--color-blue-subtle);
+      border-top-color: var(--color-blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .spinner { animation: none; border-top-color: var(--color-blue); }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── TABS ───────────────────────────────────────────────── */
+    .tabs { border-bottom: 1px solid var(--color-border); display: flex; }
+    .tab {
+      height: 48px;
+      padding: 0 16px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--color-text-2);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      cursor: pointer;
+      transition: color var(--transition), border-color var(--transition);
+    }
+    .tab:hover { color: var(--color-text-1); background: var(--color-surface-sunken); }
+    .tab.active { color: var(--color-blue); border-bottom-color: var(--color-blue); font-weight: 600; }
+
+    /* ─── BREADCRUMB ─────────────────────────────────────────── */
+    .breadcrumb { display: flex; align-items: center; gap: 4px; font-size: 13px; }
+    .breadcrumb a { color: var(--color-blue-darker); text-decoration: underline; }
+    .breadcrumb a:hover { color: var(--color-blue-active); }
+    .breadcrumb__sep { color: var(--color-text-3); }
+    .breadcrumb__current { color: var(--color-text-1); }
+
+    /* ─── TOOLTIP ────────────────────────────────────────────── */
+    .tooltip-host { position: relative; display: inline-flex; }
+    .tooltip-host .tooltip-bubble {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--color-grey);
+      color: var(--color-text-inv);
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: var(--radius-xs);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 200ms;
+      z-index: 10;
+    }
+    .tooltip-host:hover .tooltip-bubble,
+    .tooltip-host:focus-within .tooltip-bubble { opacity: 1; }
+
+    /* ─── DIAGONAL DIVIDER ───────────────────────────────────── */
+    .diagonal-divider {
+      height: 48px;
+      background: var(--color-grey);
+      clip-path: polygon(0 0, 100% 0, 100% 55%, 0 100%);
+      margin: 40px 0 0;
+    }
+    .diagonal-divider--blue {
+      background: var(--color-blue);
+    }
+
+    /* ─── DOCUMENT TEMPLATE ──────────────────────────────────── */
+    .doc-preview {
+      background: #fff;
+      box-shadow: var(--shadow-3);
+      border-radius: var(--radius-sm);
+      max-width: 600px;
+      overflow: hidden;
+      font-family: var(--font-sans);
+    }
+    .doc-header-bar {
+      background: var(--color-grey);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .doc-header-bar__left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .doc-header-bar__wordmark {
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    .doc-header-bar__wordmark small {
+      display: block;
+      color: #B0B0B0;
+      font-size: 10px;
+      font-weight: 400;
+    }
+    .doc-accent-line {
+      height: 3px;
+      background: var(--color-blue);
+    }
+    .doc-body {
+      padding: 40px 48px;
+    }
+    .doc-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--color-text-2);
+      margin-bottom: 32px;
+    }
+    .doc-title {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--color-text-1);
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .doc-subtitle {
+      font-size: 13px;
+      color: var(--color-text-2);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .doc-rule { border: none; border-top: 1px solid var(--color-border); margin-bottom: 24px; }
+    .doc-para {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--color-text-1);
+      margin-bottom: 16px;
+    }
+    .doc-signature-block {
+      margin-top: 48px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    .doc-sig-line {
+      border-top: 1px solid var(--color-text-1);
+      padding-top: 6px;
+      font-size: 12px;
+      color: var(--color-text-2);
+    }
+    .doc-sig-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-text-1);
+    }
+    .doc-footer-bar {
+      background: var(--color-surface-sunken);
+      padding: 10px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .doc-footer-bar span {
+      font-size: 11px;
+      color: var(--color-text-2);
+      font-family: var(--font-mono);
+    }
+    .doc-blue-accent-bottom { height: 2px; background: var(--color-blue); }
+
+    /* ─── MANTICORE BG DEMO ──────────────────────────────────── */
+    .manticore-surface {
+      background: var(--color-grey);
+      border-radius: var(--radius-md);
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+      color: var(--color-text-inv);
+      text-align: center;
+    }
+    .manticore-surface__bg {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.06;
+      pointer-events: none;
+    }
+    .manticore-surface__bg svg {
+      width: 260px;
+      height: 260px;
+    }
+    .manticore-surface__content {
+      position: relative;
+      z-index: 1;
+    }
+    .manticore-surface__tagline {
+      font-family: var(--font-serif);
+      font-size: 13px;
+      font-weight: 300;
+      font-style: italic;
+      color: #B0B0B0;
+      margin-bottom: 16px;
+      letter-spacing: 0.5px;
+    }
+    .manticore-surface__title {
+      font-family: var(--font-serif);
+      font-size: 28px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .manticore-surface__body {
+      font-size: 15px;
+      color: #C0C0C0;
+      max-width: 400px;
+      margin: 0 auto 24px;
+      line-height: 1.6;
+    }
+
+    /* ─── FOCUS DEMO ─────────────────────────────────────────── */
+    .focus-demo-btn {
+      background: var(--color-blue);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0 24px;
+      height: 44px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: 3px solid transparent;
+      outline-offset: 2px;
+      transition: outline-color 100ms;
+    }
+    .focus-demo-btn:focus { outline-color: var(--color-focus); }
+
+    /* ─── ACCORDION ──────────────────────────────────────────── */
+    .accordion { border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; }
+    .accordion__item { border-bottom: 1px solid var(--color-border); }
+    .accordion__item:last-child { border-bottom: none; }
+    .accordion__trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      height: 56px;
+      background: var(--color-surface-raised);
+      border: none;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text-1);
+      cursor: pointer;
+      text-align: left;
+      transition: background var(--transition);
+    }
+    .accordion__trigger:hover { background: var(--color-surface-sunken); }
+    .accordion__chevron { transition: transform 200ms; }
+    .accordion__trigger[aria-expanded="true"] .accordion__chevron { transform: rotate(180deg); }
+    .accordion__panel {
+      padding: 0 20px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 200ms ease, padding 200ms ease;
+    }
+    .accordion__panel.open { max-height: 200px; padding: 16px 20px; }
+    .accordion__panel p { font-size: 14px; color: var(--color-text-2); line-height: 1.6; }
+
+    /* ─── TOAST ──────────────────────────────────────────────── */
+    .toast {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--color-grey);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      box-shadow: var(--shadow-3);
+    }
+    .toast__action {
+      color: var(--color-blue);
+      background: none;
+      border: none;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: 4px;
+      text-decoration: underline;
+    }
+
+    /* ─── AVATAR ─────────────────────────────────────────────── */
+    .avatar-row { display: flex; align-items: center; gap: 16px; }
+    .avatar {
+      border-radius: 50%;
+      background: var(--color-grey);
+      color: #fff;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .avatar--sm  { width: 32px; height: 32px; font-size: 13px; }
+    .avatar--md  { width: 40px; height: 40px; font-size: 15px; }
+    .avatar--lg  { width: 56px; height: 56px; font-size: 20px; }
+    .avatar--blue { background: var(--color-blue); }
+
+    /* ─── FOOTER ─────────────────────────────────────────────── */
+    footer {
+      background: var(--color-grey);
+      color: #B0B0B0;
+      padding: 40px 64px;
+      margin-top: 80px;
+    }
+    footer h3 {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    footer p { font-size: 13px; line-height: 1.6; max-width: 480px; }
+    footer .footer-motto {
+      font-family: var(--font-serif);
+      font-size: 13px;
+      font-style: italic;
+      color: #888;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #444;
+    }
+    footer .footer-accent { width: 100%; height: 2px; background: var(--color-blue); margin-bottom: 32px; }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .sidenav { display: none; }
+      main { padding: 32px 24px; }
+      footer { padding: 32px 24px; }
+      .site-header { padding: 0 20px; }
+      .service-bar { padding: 0 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<!-- ── SITE HEADER ─────────────────────────────────────────── -->
+<header class="site-header" role="banner">
+  <!-- Inline flag SVG (simplified tricolor) -->
+  <svg class="site-header__flag" viewBox="0 0 120 72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect width="120" height="72" fill="#2F2F2F"/>
+    <polygon points="0,0 60,0 0,72" fill="#F8F8F8"/>
+    <polygon points="0,0 40,0 0,48" fill="#0094FF"/>
+  </svg>
+  <div class="site-header__wordmark">
+    United States of Mekniy and Lurk
+    <small>Shinsegye-Aēru · Design System</small>
+  </div>
+  <div class="site-header__spacer"></div>
+  <div class="site-header__lang" aria-label="Language switcher">
+    <button class="active" aria-current="true">EN</button>
+    <button>NIS</button>
+    <button>CS</button>
+    <button>LOR</button>
+  </div>
+</header>
+
+<!-- ── SERVICE BAR ─────────────────────────────────────────── -->
+<div class="service-bar">
+  <span class="service-bar__name">MKLU Design System — Component Showcase</span>
+  <span class="service-bar__badge">v1.0</span>
+</div>
+
+<!-- ── LAYOUT ──────────────────────────────────────────────── -->
+<div class="layout">
+
+  <!-- Side nav -->
+  <nav class="sidenav" aria-label="Design system sections">
+    <div class="sidenav__section">
+      <div class="sidenav__section-label">Foundation</div>
+      <a href="#colors" class="sidenav__link active">Colors</a>
+      <a href="#typography" class="sidenav__link">Typography</a>
+      <a href="#symbols" class="sidenav__link">National Symbols</a>
+    </div>
+    <div class="sidenav__section">
+      <div class="sidenav__section-label">Actions</div>
+      <a href="#buttons" class="sidenav__link">Buttons</a>
+      <a href="#tags" class="sidenav__link">Badges & Chips</a>
+    </div>
+    <div class="sidenav__section">
+      <div class="sidenav__section-label">Input</div>
+      <a href="#forms" class="sidenav__link">Form Fields</a>
+    </div>
+    <div class="sidenav__section">
+      <div class="sidenav__section-label">Navigation</div>
+      <a href="#navigation" class="sidenav__link">Nav Patterns</a>
+    </div>
+    <div class="sidenav__section">
+      <div class="sidenav__section-label">Containment</div>
+      <a href="#cards" class="sidenav__link">Cards</a>
+      <a href="#accordion" class="sidenav__link">Accordion</a>
+    </div>
+    <div class="sidenav__section">
+      <div class="sidenav__section-label">Data Display</div>
+      <a href="#table" class="sidenav__link">Tables</a>
+      <a href="#avatars" class="sidenav__link">Avatars</a>
+    </div>
+    <div class="sidenav__section">
+      <div class="sidenav__section-label">Feedback</div>
+      <a href="#alerts" class="sidenav__link">Alerts</a>
+      <a href="#progress" class="sidenav__link">Progress</a>
+      <a href="#toast" class="sidenav__link">Toast</a>
+    </div>
+    <div class="sidenav__section">
+      <div class="sidenav__section-label">Templates</div>
+      <a href="#decree" class="sidenav__link">Official Decree</a>
+      <a href="#creative" class="sidenav__link">Creative Elements</a>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main id="main">
+
+    <!-- ── COLORS ─────────────────────────────────────────── -->
+    <section class="section" id="colors">
+      <h2 class="section__title">Colors</h2>
+      <p class="section__desc">All colours derive from the three national colours. The national palette anchors the system; derivative tokens handle semantic and interactive states.</p>
+
+      <h3 class="section__subtitle">National Palette</h3>
+      <div class="color-grid">
+        <div class="color-swatch">
+          <div class="color-swatch__block" style="background:#2F2F2F;"></div>
+          <div class="color-swatch__info">
+            <span class="color-swatch__name">Mekniyan Grey</span>
+            <span class="color-swatch__hex">#2F2F2F</span>
+          </div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch__block" style="background:#F8F8F8; border:1px solid #e0e0e0;"></div>
+          <div class="color-swatch__info">
+            <span class="color-swatch__name">Hanunkx Pure</span>
+            <span class="color-swatch__hex">#F8F8F8</span>
+          </div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch__block" style="background:#0094FF;"></div>
+          <div class="color-swatch__info">
+            <span class="color-swatch__name">Lurkish Sky</span>
+            <span class="color-swatch__hex">#0094FF</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="section__subtitle">Interactive Derivatives</h3>
+      <div class="color-grid">
+        <div class="color-swatch">
+          <div class="color-swatch__block" style="background:#0072CC;"></div>
+          <div class="color-swatch__info"><span class="color-swatch__name">Link text</span><span class="color-swatch__hex">#0072CC</span></div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch__block" style="background:#007ACC;"></div>
+          <div class="color-swatch__info"><span class="color-swatch__name">Hover</span><span class="color-swatch__hex">#007ACC</span></div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch__block" style="background:#005FA3;"></div>
+          <div class="color-swatch__info"><span class="color-swatch__name">Active</span><span class="color-swatch__hex">#005FA3</span></div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch__block" style="background:#E6F4FF; border:1px solid #cce3ff;"></div>
+          <div class="color-swatch__info"><span class="color-swatch__name">Subtle</span><span class="color-swatch__hex">#E6F4FF</span></div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch__block" style="background:#5A3EA8;"></div>
+          <div class="color-swatch__info"><span class="color-swatch__name">Visited</span><span class="color-swatch__hex">#5A3EA8</span></div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch__block" style="background:#FFD700;"></div>
+          <div class="color-swatch__info"><span class="color-swatch__name">Focus ring</span><span class="color-swatch__hex">#FFD700</span></div>
+        </div>
+      </div>
+
+      <h3 class="section__subtitle">Semantic</h3>
+      <div class="color-grid">
+        <div class="color-swatch">
+          <div class="color-swatch__block" style="background:#C62828;"></div>
+          <div class="color-swatch__info"><span class="color-swatch__name">Error</span><span class="color-swatch__hex">#C62828</span></div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch__block" style="background:#2E7D32;"></div>
+          <div class="color-swatch__info"><span class="color-swatch__name">Success</span><span class="color-swatch__hex">#2E7D32</span></div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch__block" style="background:#CC7700;"></div>
+          <div class="color-swatch__info"><span class="color-swatch__name">Warning</span><span class="color-swatch__hex">#CC7700</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TYPOGRAPHY ──────────────────────────────────────── -->
+    <section class="section" id="typography">
+      <h2 class="section__title">Typography</h2>
+      <p class="section__desc">Source Serif 4 for headings (gravitas, authority); Noto Sans for body (Unicode breadth — covers Nissiian Latin Extended and Loringian Canadian Syllabics).</p>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Display & Headings — Source Serif 4</div>
+        <div class="type-specimen">
+          <div class="type-specimen__label">type.display-lg · 48px · 300</div>
+          <div style="font-family:var(--font-serif);font-size:48px;font-weight:300;line-height:1.17;letter-spacing:-0.5px;color:var(--color-text-1)">Mekniy-Lurk</div>
+        </div>
+        <div class="type-specimen">
+          <div class="type-specimen__label">type.h1 · 32px · 600</div>
+          <div style="font-family:var(--font-serif);font-size:32px;font-weight:600;line-height:1.25;">Official Gazette of the United States</div>
+        </div>
+        <div class="type-specimen">
+          <div class="type-specimen__label">type.h2 · 24px · 600</div>
+          <div style="font-family:var(--font-serif);font-size:24px;font-weight:600;line-height:1.33;">Senate Decree No. 42</div>
+        </div>
+        <div class="type-specimen">
+          <div class="type-specimen__label">type.h3 · 20px · 600</div>
+          <div style="font-family:var(--font-serif);font-size:20px;font-weight:600;line-height:1.4;">Article I — Citizenship Rights</div>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Body — Noto Sans</div>
+        <div class="type-specimen">
+          <div class="type-specimen__label">type.body-lg · 18px · 400</div>
+          <p style="font-size:18px;line-height:1.56;">The United States of Mekniy and Lurk upholds the principles of Mekkism — a federal wakeist semi-constitutional monarchy founded on cultural experimentation and civic participation.</p>
+        </div>
+        <div class="type-specimen">
+          <div class="type-specimen__label">type.body-md · 16px · 400</div>
+          <p style="font-size:16px;line-height:1.5;">Citizens of Mekniy-Lurk hold the right to participate in the biannual Senate elections and to petition the Mēk on matters of constitutional interpretation.</p>
+        </div>
+        <div class="type-specimen">
+          <div class="type-specimen__label">type.body-sm · 14px · 400 — with Nissiian characters</div>
+          <p style="font-size:14px;line-height:1.43;color:var(--color-text-2);">Mēk Praeniy Naemal Seok · Kaae Rāvenssae Kxaiji · Motto: Nney esta alta ineul asx · Ēguka (anthem)</p>
+        </div>
+        <div class="type-specimen">
+          <div class="type-specimen__label">type.caption · Loringian (Canadian Syllabics — Noto Sans Canadian Aboriginal)</div>
+          <p style="font-size:14px;font-family:'Noto Sans Canadian Aboriginal','Noto Sans',sans-serif;color:var(--color-text-2);" lang="cr">ᓄᓇᕗᑦ · ᐃᓄᐃᑦ · ᑲᓇᑕ</p>
+        </div>
+        <div class="type-specimen">
+          <div class="type-specimen__label">type.code — Noto Sans Mono</div>
+          <code style="font-family:var(--font-mono);font-size:14px;background:var(--color-surface-sunken);padding:8px 12px;border-radius:var(--radius-sm);display:block;">mklu.color.text.primary → #2F2F2F</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── NATIONAL SYMBOLS ────────────────────────────────── -->
+    <section class="section" id="symbols">
+      <h2 class="section__title">National Symbols</h2>
+      <p class="section__desc">The Manticore Mossaesa (white fill) is designed for dark surfaces. The Grand Mekniyan Seal is for formal official use only.</p>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Manticore — correct usage (on dark surface)</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <div style="background:#2F2F2F;padding:24px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;width:120px;height:120px;">
+            <img src="manticore.svg" style="width:80px;height:80px;object-fit:contain;" alt="Manticore Mossaesa — national emblem">
+          </div>
+          <div style="background:#0094FF;padding:24px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;width:120px;height:120px;">
+            <img src="manticore.svg" style="width:80px;height:80px;object-fit:contain;filter:brightness(10);" alt="Manticore Mossaesa on blue surface">
+          </div>
+          <div style="background:#F8F8F8;border:1px solid #e0e0e0;padding:24px;border-radius:var(--radius-md);display:flex;flex-direction:column;align-items:center;justify-content:center;width:120px;height:120px;gap:6px;">
+            <img src="manticore.svg" style="width:80px;height:80px;object-fit:contain;filter:invert(1);" alt="Manticore recoloured dark for light surface">
+            <span style="font-size:10px;color:#C62828;font-weight:600;">recolour needed</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Flag — do not alter</div>
+        <img src="MKLU-Flag-Small.svg" style="height:72px;border-radius:var(--radius-xs);box-shadow:var(--shadow-1);" alt="Flag of the United States of Mekniy and Lurk">
+      </div>
+    </section>
+
+    <!-- ── BUTTONS ─────────────────────────────────────────── -->
+    <section class="section" id="buttons">
+      <h2 class="section__title">Buttons</h2>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Button variants</div>
+        <div class="btn-row">
+          <button class="btn btn--filled">Submit decree</button>
+          <button class="btn btn--outlined">View details</button>
+          <button class="btn btn--text">Cancel</button>
+          <button class="btn btn--danger">Revoke citizenship</button>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Disabled state</div>
+        <div class="btn-row">
+          <button class="btn btn--filled" disabled>Submit decree</button>
+          <button class="btn btn--outlined" disabled>View details</button>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Focus ring (Tab to this button)</div>
+        <button class="focus-demo-btn">Tab to me</button>
+      </div>
+    </section>
+
+    <!-- ── BADGES & CHIPS ──────────────────────────────────── -->
+    <section class="section" id="tags">
+      <h2 class="section__title">Badges &amp; Chips</h2>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Status badges</div>
+        <div class="badge-row">
+          <span class="badge badge--default">Micronation</span>
+          <span class="badge badge--primary">Active decree</span>
+          <span class="badge badge--success">Ratified</span>
+          <span class="badge badge--warning">Pending review</span>
+          <span class="badge badge--error">Vetoed</span>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Filter chips</div>
+        <div class="badge-row">
+          <button class="chip selected">All decrees</button>
+          <button class="chip">Legislature</button>
+          <button class="chip">Executive</button>
+          <button class="chip">Cultural</button>
+          <button class="chip">Economic</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FORMS ───────────────────────────────────────────── -->
+    <section class="section" id="forms">
+      <h2 class="section__title">Form Fields</h2>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Text inputs</div>
+        <div style="max-width:480px;">
+          <div class="form-group">
+            <label class="form-label" for="f-name">Full name</label>
+            <span class="form-hint">As registered in the STEMMA system</span>
+            <input class="form-input" id="f-name" type="text" placeholder="e.g. Praeniy Naemal Seok">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-error">Citizen ID</label>
+            <input class="form-input error" id="f-error" type="text" value="XK-00" aria-describedby="f-error-msg">
+            <span class="form-error" id="f-error-msg">Citizen ID must be in format XX-00000</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-select">Crown Land</label>
+            <select class="form-input form-select" id="f-select">
+              <option>Select a Crown Land…</option>
+              <option>Mekniy</option>
+              <option>Lurk</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Checkboxes, radio, toggle</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:480px;">
+          <div>
+            <div class="form-label" style="margin-bottom:12px;">Opt-in services</div>
+            <div class="check-group">
+              <label class="check-label"><input type="checkbox" checked> NVote notifications</label>
+              <label class="check-label"><input type="checkbox"> MBS newsletter</label>
+              <label class="check-label"><input type="checkbox"> Naraeji updates</label>
+            </div>
+          </div>
+          <div>
+            <div class="form-label" style="margin-bottom:12px;">Preferred language</div>
+            <div class="check-group">
+              <label class="check-label"><input type="radio" name="lang" checked> Nissiian</label>
+              <label class="check-label"><input type="radio" name="lang"> Czech</label>
+              <label class="check-label"><input type="radio" name="lang"> English</label>
+              <label class="check-label"><input type="radio" name="lang"> Loringian</label>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:24px;">
+          <label class="toggle">
+            <input class="toggle__input" type="checkbox" id="toggle1" checked>
+            <div class="toggle__track" onclick="this.previousElementSibling.click()"><div class="toggle__thumb"></div></div>
+            <span class="toggle__label">Enable two-factor authentication</span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── NAVIGATION ──────────────────────────────────────── -->
+    <section class="section" id="navigation">
+      <h2 class="section__title">Navigation Patterns</h2>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Tabs</div>
+        <div class="tabs" role="tablist">
+          <button class="tab active" role="tab" aria-selected="true">Overview</button>
+          <button class="tab" role="tab" aria-selected="false">Legislation</button>
+          <button class="tab" role="tab" aria-selected="false">Citizens</button>
+          <button class="tab" role="tab" aria-selected="false">Budget</button>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Breadcrumb</div>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="#">STEMMA Portal</a>
+          <span class="breadcrumb__sep" aria-hidden="true">/</span>
+          <a href="#">Senate</a>
+          <span class="breadcrumb__sep" aria-hidden="true">/</span>
+          <a href="#">Decrees</a>
+          <span class="breadcrumb__sep" aria-hidden="true">/</span>
+          <span class="breadcrumb__current" aria-current="page">Decree No. 42</span>
+        </nav>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Tooltip (hover or focus the button)</div>
+        <div class="tooltip-host">
+          <button class="btn btn--outlined">Download <span aria-hidden="true">↓</span></button>
+          <div class="tooltip-bubble" role="tooltip">Downloads the official PDF (A4)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CARDS ───────────────────────────────────────────── -->
+    <section class="section" id="cards">
+      <h2 class="section__title">Cards</h2>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card">
+          <h3 class="card__title">Standard Card</h3>
+          <p class="card__body">Used for announcements, service summaries, or content groupings. Elevation 1 by default.</p>
+          <div class="card__footer">
+            <button class="btn btn--filled" style="height:36px;font-size:13px;padding:0 16px;">Read more</button>
+            <button class="btn btn--text" style="height:36px;font-size:13px;padding:0 12px;">Dismiss</button>
+          </div>
+        </div>
+        <div class="card card--official">
+          <div class="card__header-bar">
+            <span>⚑ OFFICIAL ANNOUNCEMENT</span>
+          </div>
+          <h3 class="card__title">Senate Session Results</h3>
+          <p class="card__body">The 12th Senate of Mekniy-Lurk has ratified Decree No. 42 with unanimous consent.</p>
+          <div class="card__footer">
+            <span class="badge badge--success">Ratified</span>
+            <span class="badge badge--default">20 Sep 2024</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ACCORDION ───────────────────────────────────────── -->
+    <section class="section" id="accordion">
+      <h2 class="section__title">Accordion</h2>
+      <div class="demo-card">
+        <div class="demo-card__label">FAQ / Legislation sections</div>
+        <div class="accordion">
+          <div class="accordion__item">
+            <button class="accordion__trigger" aria-expanded="true" onclick="toggleAccordion(this)">
+              What is the Mēk?
+              <svg class="accordion__chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="accordion__panel open"><p>The Mēk (Praeniy Naemal Seok) is the constitutional judge and representative of the state, serving as head of state under the Mekkism system of governance.</p></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__trigger" aria-expanded="false" onclick="toggleAccordion(this)">
+              How do Senate elections work?
+              <svg class="accordion__chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="accordion__panel"><p>Elections are held every six months. All registered citizens participate via the NVote system. The Governor of the Senate is drawn from the coalition majority.</p></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__trigger" aria-expanded="false" onclick="toggleAccordion(this)">
+              What currency does Mekniy-Lurk use?
+              <svg class="accordion__chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="accordion__panel"><p>The Corona (CRN) is the official electronic centralised currency, administered via the Veronabank system.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TABLE ───────────────────────────────────────────── -->
+    <section class="section" id="table">
+      <h2 class="section__title">Tables</h2>
+      <div class="demo-card">
+        <div class="demo-card__label">Legislation register</div>
+        <div style="overflow-x:auto;">
+          <table class="mklu-table">
+            <thead>
+              <tr>
+                <th>Decree No.</th>
+                <th>Title</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code style="font-family:var(--font-mono);font-size:13px;">MKL-042</code></td>
+                <td>Currency Digitalisation Act</td>
+                <td>20 Sep 2024</td>
+                <td><span class="badge badge--success">Ratified</span></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:var(--font-mono);font-size:13px;">MKL-041</code></td>
+                <td>Loringian Language Protection</td>
+                <td>14 Jun 2024</td>
+                <td><span class="badge badge--success">Ratified</span></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:var(--font-mono);font-size:13px;">MKL-040</code></td>
+                <td>Prachov Rocks Heritage Declaration</td>
+                <td>02 Mar 2024</td>
+                <td><span class="badge badge--warning">Pending review</span></td>
+              </tr>
+              <tr>
+                <td><code style="font-family:var(--font-mono);font-size:13px;">MKL-039</code></td>
+                <td>MPTA Telecommunications Expansion</td>
+                <td>11 Jan 2024</td>
+                <td><span class="badge badge--error">Vetoed</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── AVATARS ─────────────────────────────────────────── -->
+    <section class="section" id="avatars">
+      <h2 class="section__title">Avatars</h2>
+      <div class="demo-card">
+        <div class="demo-card__label">Sizes and variants</div>
+        <div class="avatar-row">
+          <div class="avatar avatar--sm">M</div>
+          <div class="avatar avatar--md">PNS</div>
+          <div class="avatar avatar--lg avatar--blue">KX</div>
+          <div style="display:flex;">
+            <div class="avatar avatar--md" style="border:2px solid #fff;margin-left:0;">A</div>
+            <div class="avatar avatar--md" style="border:2px solid #fff;margin-left:-12px;">B</div>
+            <div class="avatar avatar--md avatar--blue" style="border:2px solid #fff;margin-left:-12px;">+4</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ALERTS ──────────────────────────────────────────── -->
+    <section class="section" id="alerts">
+      <h2 class="section__title">Alerts</h2>
+      <div class="demo-card">
+        <div class="demo-card__label">Notification banners</div>
+        <div role="status" class="alert alert--info">
+          <span class="alert__icon">ℹ</span>
+          <div class="alert__content">
+            <div class="alert__title">Senate session scheduled</div>
+            The next Senate session will take place on 1 December 2024 via the NVote platform.
+          </div>
+        </div>
+        <div role="status" class="alert alert--success">
+          <span class="alert__icon">✓</span>
+          <div class="alert__content">
+            <div class="alert__title">Application submitted</div>
+            Your citizenship application has been received and will be reviewed within 14 days.
+          </div>
+        </div>
+        <div role="status" class="alert alert--warning">
+          <span class="alert__icon">⚠</span>
+          <div class="alert__content">
+            <div class="alert__title">Document expiring soon</div>
+            Your micronational travel document expires on 20 March 2025.
+          </div>
+        </div>
+        <div role="alert" class="alert alert--error">
+          <span class="alert__icon">✕</span>
+          <div class="alert__content">
+            <div class="alert__title">Validation failed</div>
+            The Citizen ID format is incorrect. Please use the format XX-00000.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PROGRESS ────────────────────────────────────────── -->
+    <section class="section" id="progress">
+      <h2 class="section__title">Progress Indicators</h2>
+      <div class="demo-card">
+        <div class="demo-card__label">Linear progress</div>
+        <div style="margin-bottom:8px;font-size:13px;color:var(--color-text-2);">Decree processing — 65%</div>
+        <div class="progress-track"><div class="progress-fill" style="width:65%"></div></div>
+        <div style="margin-bottom:8px;font-size:13px;color:var(--color-text-2);">Vote count — 92%</div>
+        <div class="progress-track"><div class="progress-fill" style="width:92%"></div></div>
+        <div style="margin-bottom:8px;font-size:13px;color:var(--color-text-2);">Loading…</div>
+        <div class="progress-track" style="overflow:hidden;">
+          <div class="progress-fill" style="width:40%;animation:indeterminate 1.4s ease infinite;" ></div>
+        </div>
+      </div>
+      <div class="demo-card">
+        <div class="demo-card__label">Circular spinner</div>
+        <div class="spinner" aria-label="Loading" role="status"></div>
+      </div>
+    </section>
+
+    <!-- ── TOAST ───────────────────────────────────────────── -->
+    <section class="section" id="toast">
+      <h2 class="section__title">Toast / Snackbar</h2>
+      <div class="demo-card">
+        <div class="demo-card__label">Sample toasts</div>
+        <div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;">
+          <div class="toast" role="status" aria-live="polite">
+            Decree saved successfully.
+            <button class="toast__action">View</button>
+          </div>
+          <div class="toast" role="alert" aria-live="assertive" style="background:#9C1F1F;">
+            Connection lost. Retrying…
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── OFFICIAL DECREE TEMPLATE ────────────────────────── -->
+    <section class="section" id="decree">
+      <h2 class="section__title">Official Decree Template</h2>
+      <p class="section__desc">A preview of the A4 official document layout. The Manticore Mossaesa appears as a 6% opacity watermark.</p>
+
+      <div class="doc-preview">
+        <!-- Manticore watermark -->
+        <div class="doc-header-bar">
+          <div class="doc-header-bar__left">
+            <img src="MKLU-Flag-Small.svg" style="height:20px;" alt="Flag of Mekniy-Lurk">
+            <div class="doc-header-bar__wordmark">
+              United States of Mekniy and Lurk
+              <small>Shinsegye-Aēru · Official Document</small>
+            </div>
+          </div>
+          <img src="Grand_Mekniyan_Seal.svg" style="height:36px;filter:invert(1);opacity:0.8;" alt="Grand Mekniyan Seal" aria-hidden="true">
+        </div>
+        <div class="doc-accent-line"></div>
+        <div class="doc-body" style="position:relative;">
+          <!-- Watermark -->
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0.05;pointer-events:none;" aria-hidden="true">
+            <img src="manticore.svg" style="width:220px;height:220px;object-fit:contain;filter:invert(1);">
+          </div>
+          <div style="position:relative;z-index:1;">
+            <div class="doc-meta">
+              <span>Document No. MKL-042</span>
+              <span>20 September 2024 · Yeoju, Mekniy</span>
+            </div>
+            <h1 class="doc-title">Senate Decree No. 42</h1>
+            <p class="doc-subtitle">On the Digitalisation of the Corona Currency System</p>
+            <hr class="doc-rule">
+            <p class="doc-para">The Senate of the United States of Mekniy and Lurk, convened in ordinary session, hereby decrees the following measures regarding the standardisation and digital expansion of the Corona (CRN) currency under the administration of Veronabank.</p>
+            <p class="doc-para">Article I. The Veronabank system shall adopt the STEMMA API standard for all citizen-facing transactions effective the first day of the following quarter.</p>
+            <p class="doc-para">Article II. All citizens are hereby notified of their obligation to register with the electronic currency platform within sixty (60) calendar days of publication of this decree.</p>
+            <div class="doc-signature-block">
+              <div>
+                <div style="height:32px;"></div>
+                <div class="doc-sig-line">
+                  <div class="doc-sig-name">Praeniy Naemal Seok</div>
+                  Mēk of Mekniy-Lurk
+                </div>
+              </div>
+              <div>
+                <div style="height:32px;"></div>
+                <div class="doc-sig-line">
+                  <div class="doc-sig-name">Siwil Ara-den</div>
+                  Governor of the Senate
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="doc-footer-bar">
+          <span>MKL-042 · Issued 2024-09-20</span>
+          <span>Page 1 of 1</span>
+        </div>
+        <div class="doc-blue-accent-bottom"></div>
+      </div>
+
+      <p style="font-size:12px;color:var(--color-text-2);margin-top:12px;">
+        This document is issued by the United States of Mekniy and Lurk, a micronation. It is not a document of any recognised national government.
+      </p>
+    </section>
+
+    <!-- ── CREATIVE ELEMENTS ───────────────────────────────── -->
+    <section class="section" id="creative">
+      <h2 class="section__title">Creative Elements</h2>
+      <p class="section__desc">Dadaist art-state identity expressed through the diagonal flag geometry and manticore watermark. These motifs differentiate MKLU from real government systems.</p>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Diagonal section break (flag geometry)</div>
+        <div style="background:var(--color-surface-sunken);border-radius:var(--radius-md);overflow:hidden;">
+          <div style="padding:24px;background:#F8F8F8;">
+            <p style="color:var(--color-text-2);font-size:14px;">Section above the break — Hanunkx Pure</p>
+          </div>
+          <div class="diagonal-divider"></div>
+          <div style="background:#2F2F2F;padding:24px 24px 32px;margin-top:-2px;">
+            <p style="color:var(--color-text-inv);font-size:14px;">Section below — Mekniyan Grey</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Manticore watermark surface (hero / official banner)</div>
+        <div class="manticore-surface">
+          <div class="manticore-surface__bg" aria-hidden="true">
+            <img src="manticore.svg" alt="">
+          </div>
+          <div class="manticore-surface__content">
+            <p class="manticore-surface__tagline">Nney esta alta ineul asx</p>
+            <h2 class="manticore-surface__title">Welcome to Mekniy-Lurk</h2>
+            <p class="manticore-surface__body">An art-state founded on cultural experimentation, civic participation, and the enduring spirit of Mossaesa.</p>
+            <button class="btn btn--filled" style="background:#0094FF;margin:0 auto;">Learn more</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-card__label">Blue diagonal variant</div>
+        <div style="background:var(--color-surface-sunken);border-radius:var(--radius-md);overflow:hidden;">
+          <div style="background:var(--color-blue);padding:24px;">
+            <p style="color:#fff;font-size:14px;">Lurkish Sky section</p>
+          </div>
+          <div class="diagonal-divider diagonal-divider--blue" style="background:var(--color-blue);clip-path:polygon(0 0,100% 0,100% 100%,0 55%);"></div>
+          <div style="background:#F8F8F8;padding:24px;">
+            <p style="color:var(--color-text-2);font-size:14px;">Returning to Hanunkx Pure</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ── FOOTER ───────────────────────────────────────────────── -->
+<footer role="contentinfo">
+  <div class="footer-accent"></div>
+  <div style="display:flex;gap:48px;flex-wrap:wrap;">
+    <div>
+      <h3>MKLU Design System</h3>
+      <p>The official visual language of the United States of Mekniy and Lurk. Version 1.0. All typefaces are published under the SIL Open Font Licence.</p>
+      <p class="footer-motto">"Nney esta alta ineul asx" — It's only in us.</p>
+    </div>
+    <div>
+      <h3>Resources</h3>
+      <p style="font-size:13px;line-height:2;">
+        <a href="design.md" style="color:#8EC8FF;">design.md</a><br>
+        <a href="design-guidelines.md" style="color:#8EC8FF;">design-guidelines.md</a><br>
+        <a href="design-components.md" style="color:#8EC8FF;">design-components.md</a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+@keyframes indeterminate {
+  0%   { transform: translateX(-100%); width: 40%; }
+  50%  { width: 60%; }
+  100% { transform: translateX(300%); width: 40%; }
+}
+</style>
+
+<script>
+  // Accordion toggle
+  function toggleAccordion(btn) {
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', !expanded);
+    const panel = btn.nextElementSibling;
+    panel.classList.toggle('open', !expanded);
+  }
+
+  // Highlight active sidenav link on scroll
+  const sections = document.querySelectorAll('.section');
+  const navLinks = document.querySelectorAll('.sidenav__link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.sidenav__link[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+
+  // Tab interaction demo
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      this.closest('.tabs').querySelectorAll('.tab').forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      this.classList.add('active');
+      this.setAttribute('aria-selected', 'true');
+    });
+  });
+
+  // Language switcher demo
+  document.querySelectorAll('.site-header__lang button').forEach(btn => {
+    btn.addEventListener('click', function() {
+      this.closest('.site-header__lang').querySelectorAll('button').forEach(b => {
+        b.classList.remove('active');
+        b.removeAttribute('aria-current');
+      });
+      this.classList.add('active');
+      this.setAttribute('aria-current', 'true');
+    });
+  });
+
+  // Chip toggle demo
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      this.classList.toggle('selected');
+    });
+  });
+</script>
+</body>
+</html>
