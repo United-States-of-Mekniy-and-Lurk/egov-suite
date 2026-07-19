@@ -1,0 +1,60 @@
+name: Helm Release
+
+# Runs after the container build workflow succeeds on main.
+# Updates api.image.tag and web.image.tag in helm/citizen-service/values.yaml
+# with the new SHA-based tag, commits the change back, and lets Argo CD
+# detect it and auto-sync the pinned image.
+on:
+  workflow_run:
+    workflows: ["Containers"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  update-image-tag:
+    name: Bump Helm image tags
+    runs-on: ubuntu-latest
+    # Only run when the Docker workflow was triggered by a push to main and succeeded.
+    if: >
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          # Use a PAT (HELM_RELEASE_TOKEN) if branch protection rules prevent
+          # github-actions[bot] from pushing directly; otherwise GITHUB_TOKEN suffices.
+          token: ${{ secrets.HELM_RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Derive image tag from commit SHA
+        id: tag
+        run: |
+          SHORT_SHA=$(echo "${{ github.event.workflow_run.head_sha }}" | cut -c1-7)
+          echo "tag=sha-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Install yq
+        run: |
+          YQ_VERSION="v4.44.3"
+          wget -qO /usr/local/bin/yq \
+            "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
+          chmod +x /usr/local/bin/yq
+
+      - name: Update image.tag in helm/citizen-service/values.yaml
+        run: |
+          yq e '.api.image.tag = "${{ steps.tag.outputs.tag }}" | .web.image.tag = "${{ steps.tag.outputs.tag }}"' -i sal/helm/citizen-service/values.yaml
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sal/helm/citizen-service/values.yaml
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: bump citizen-service image tags to ${{ steps.tag.outputs.tag }}"
+            git push
+          fi

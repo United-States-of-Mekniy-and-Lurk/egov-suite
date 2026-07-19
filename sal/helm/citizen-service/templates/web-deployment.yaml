@@ -15,8 +15,10 @@ spec:
       labels:
         {{- include "citizen-service.web.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: web
-      {{- with .Values.web.podAnnotations }}
       annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+      {{- with .Values.web.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
     spec:
