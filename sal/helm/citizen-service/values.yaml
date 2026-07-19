@@ -7,7 +7,7 @@ api:
     # -- Image pull policy
     pullPolicy: Always
     # -- Image tag; updated by the Helm release workflow to the SHA-based build tag
-    tag: "sha-51f914c"
+    tag: "sha-5bf2bb3"
   service:
     type: ClusterIP
     port: 80
@@ -45,7 +45,7 @@ web:
     repository: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-citizen-service-web
     pullPolicy: Always
     # -- Image tag; updated by the Helm release workflow to the SHA-based build tag
-    tag: "sha-51f914c"
+    tag: "sha-5bf2bb3"
   service:
     type: ClusterIP
     port: 80
