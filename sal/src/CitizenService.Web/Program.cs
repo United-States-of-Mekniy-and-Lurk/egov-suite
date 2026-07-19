@@ -19,6 +19,9 @@ builder.Services.AddAuthentication(options =>
     options.ResponseType = "code";
     options.SaveTokens = true;
     options.GetClaimsFromUserInfoEndpoint = true;
+    // Some Keycloak setups reject PAR with generic invalid_request errors.
+    // Disable PAR and use the standard authorization code flow endpoint.
+    options.PushedAuthorizationBehavior = PushedAuthorizationBehavior.Disable;
     options.Scope.Add("openid");
     options.Scope.Add("profile");
     options.Scope.Add("email");
