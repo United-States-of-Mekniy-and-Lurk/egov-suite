@@ -1,11 +1,12 @@
 name: Helm Release
 
-# Runs after the CI / Docker workflow succeeds on main.
-# Updates image.tag in helm/ego/values.yaml with the new SHA-based tag,
-# commits the change back, and lets Argo CD detect it and auto-sync.
+# Runs after the container build workflow succeeds on main.
+# Updates the Helm image tags in both SAL and EGO with the new SHA-based tag,
+# commits the change back, and lets Argo CD detect it and auto-sync the
+# pinned images.
 on:
   workflow_run:
-    workflows: ["CI / Docker"]
+    workflows: ["Containers"]
     types:
       - completed
     branches:
@@ -13,7 +14,7 @@ on:
 
 jobs:
   update-image-tag:
-    name: Bump Helm image tag
+    name: Bump Helm image tags
     runs-on: ubuntu-latest
     # Only run when the Docker workflow was triggered by a push to main and succeeded.
     if: >
@@ -44,16 +45,18 @@ jobs:
             "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
           chmod +x /usr/local/bin/yq
 
-      - name: Update image.tag in helm/ego/values.yaml
+      - name: Update image.tag in helm/ego/values.yaml and sal/helm/citizen-service/values.yaml
         run: |
-          yq e '.image.tag = "${{ steps.tag.outputs.tag }}"' -i helm/ego/values.yaml
+          yq e '.image.tag = "${{ steps.tag.outputs.tag }}"' -i ego/helm/ego/values.yaml
+          yq e '.api.image.tag = "${{ steps.tag.outputs.tag }}" | .web.image.tag = "${{ steps.tag.outputs.tag }}"' -i sal/helm/citizen-service/values.yaml
 
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add helm/ego/values.yaml
+          git add ego/helm/ego/values.yaml
+          git add sal/helm/citizen-service/values.yaml
           if ! git diff --staged --quiet; then
-            git commit -m "chore: bump ego image tag to ${{ steps.tag.outputs.tag }}"
+            git commit -m "chore: bump Helm image tags to ${{ steps.tag.outputs.tag }}"
             git push
           fi
