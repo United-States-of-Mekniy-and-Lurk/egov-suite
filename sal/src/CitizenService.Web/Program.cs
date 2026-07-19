@@ -38,16 +38,37 @@ builder.Services.AddAuthentication(options =>
     // Disable PAR and use the standard authorization code flow endpoint.
     options.PushedAuthorizationBehavior = PushedAuthorizationBehavior.Disable;
     options.RequireHttpsMetadata = true;
-    var publicBaseUrl = builder.Configuration["Oidc:PublicBaseUrl"]?.TrimEnd('/');
-    if (!string.IsNullOrWhiteSpace(publicBaseUrl))
+    options.Events = new OpenIdConnectEvents
     {
-        options.Events ??= new OpenIdConnectEvents();
-        options.Events.OnRedirectToIdentityProvider = context =>
+        OnRedirectToIdentityProvider = context =>
         {
-            context.ProtocolMessage.RedirectUri = $"{publicBaseUrl}{options.CallbackPath}";
+            var configuredPublicBaseUrl = builder.Configuration["Oidc:PublicBaseUrl"]?.TrimEnd('/');
+            if (!string.IsNullOrWhiteSpace(configuredPublicBaseUrl))
+            {
+                context.ProtocolMessage.RedirectUri = $"{configuredPublicBaseUrl}{options.CallbackPath}";
+            }
+
+            app.Logger.LogInformation(
+                "OIDC challenge authority={Authority} redirectUri={RedirectUri} requestScheme={Scheme} requestHost={Host} pathBase={PathBase}",
+                options.Authority,
+                context.ProtocolMessage.RedirectUri,
+                context.Request.Scheme,
+                context.Request.Host,
+                context.Request.PathBase);
+
             return Task.CompletedTask;
-        };
-    }
+        },
+        OnRemoteFailure = context =>
+        {
+            app.Logger.LogWarning(
+                context.Failure,
+                "OIDC remote failure error={Error} errorDescription={ErrorDescription}",
+                context.ProtocolMessage?.Error,
+                context.ProtocolMessage?.ErrorDescription);
+            return Task.CompletedTask;
+        }
+    };
+    var publicBaseUrl = builder.Configuration["Oidc:PublicBaseUrl"]?.TrimEnd('/');
     options.Scope.Add("openid");
     options.Scope.Add("profile");
     options.Scope.Add("email");

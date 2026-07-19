@@ -51,7 +51,7 @@ web:
     port: 80
     targetPort: 8080
   ingress:
-    enabled: true
+    enabled: false
     className: ""
     annotations:
       nginx.ingress.kubernetes.io/rewrite-target: /
