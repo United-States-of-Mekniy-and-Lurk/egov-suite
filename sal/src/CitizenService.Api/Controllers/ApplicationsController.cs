@@ -20,11 +20,18 @@ public class ApplicationsController : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> List(
+        [FromQuery] Guid? personId,
         [FromQuery] ApplicationStatus? status,
         [FromQuery] int skip = 0,
         [FromQuery] int take = 20,
         CancellationToken ct = default)
     {
+        if (personId.HasValue)
+        {
+            var byPerson = await _applicationService.ListByPersonIdAsync(personId.Value, ct);
+            return Ok(byPerson);
+        }
+
         var applications = await _applicationService.ListAsync(status, skip, take, ct);
         return Ok(applications);
     }

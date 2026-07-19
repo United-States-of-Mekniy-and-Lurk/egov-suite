@@ -1,31 +1,40 @@
 @page
 @model CitizenService.Web.Pages.Applications.ApplicationsIndexModel
 @{
-    ViewData["Title"] = "Applications";
+    ViewData["Title"] = "My Applications";
 }
 
-<h1>Citizenship Applications</h1>
-<a href="/Applications/New" class="btn btn-primary mb-3">New Application</a>
-<table class="table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Person ID</th>
-            <th>Status</th>
-            <th>Submitted At</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var a in Model.Applications)
-        {
-            <tr>
-                <td>@a.Id</td>
-                <td>@a.PersonId</td>
-                <td>@a.Status</td>
-                <td>@a.SubmittedAt</td>
-                <td><a href="/Applications/Detail?id=@a.Id">Review</a></td>
-            </tr>
-        }
-    </tbody>
-</table>
+<h1 class="mklu-heading-1">My applications</h1>
+
+@if (Model.Applications.Count == 0)
+{
+    <p class="mklu-text-secondary">You have no citizenship applications.</p>
+}
+else
+{
+    @foreach (var a in Model.Applications)
+    {
+        <div class="mklu-card" style="max-width: 560px; margin-bottom: 16px;">
+            <div class="mklu-card-body">
+                <dl class="mklu-dl">
+                    <dt>Status</dt>
+                    <dd><span class="mklu-badge mklu-badge-@(a.Status.ToLowerInvariant())">@a.Status</span></dd>
+                    <dt>Created</dt>
+                    <dd>@a.CreatedAt.ToString("d MMMM yyyy")</dd>
+                    <dt>Submitted</dt>
+                    <dd>@(a.SubmittedAt?.ToString("d MMMM yyyy") ?? "Not yet")</dd>
+                    @if (a.ReviewedAt.HasValue)
+                    {
+                        <dt>Reviewed</dt>
+                        <dd>@a.ReviewedAt.Value.ToString("d MMMM yyyy")</dd>
+                    }
+                    @if (!string.IsNullOrEmpty(a.DecisionReason))
+                    {
+                        <dt>Decision</dt>
+                        <dd>@a.DecisionReason</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    }
+}

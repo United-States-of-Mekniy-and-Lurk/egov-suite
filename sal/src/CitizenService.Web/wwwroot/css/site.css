@@ -67,6 +67,9 @@ body {
   background-color: var(--mklu-surface-page);
   margin: 0;
   line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Focus */
@@ -151,10 +154,20 @@ body {
   padding: 8px 16px;
   border-radius: var(--mklu-radius-sm);
 }
+.mklu-nav-link:visited,
+.mklu-nav-link:link {
+  color: var(--mklu-text-on-brand);
+}
 .mklu-nav-link:hover {
   background-color: rgba(255,255,255,0.1);
   color: var(--mklu-text-on-brand);
   text-decoration: underline;
+}
+
+/* Header brand links */
+.mklu-header-title:visited,
+.mklu-header-title:link {
+  color: var(--mklu-text-on-brand);
 }
 
 /* Page layout */
@@ -162,6 +175,7 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
+  flex: 1;
 }
 .mklu-main {
   padding: 48px 0 64px;
@@ -183,7 +197,8 @@ body {
   margin: 0 auto;
   padding: 0 24px;
 }
-.mklu-footer a {
+.mklu-footer a,
+.mklu-footer a:visited {
   color: var(--mklu-text-on-brand);
 }
 
@@ -290,6 +305,25 @@ body {
 .mklu-badge-active {
   background-color: var(--mklu-success-surface);
   color: var(--mklu-success-text);
+}
+.mklu-badge-draft,
+.mklu-badge-pending {
+  background-color: var(--mklu-warning-surface);
+  color: var(--mklu-warning-text);
+}
+.mklu-badge-submitted,
+.mklu-badge-underreview {
+  background-color: var(--mklu-info-surface);
+  color: var(--mklu-info-text);
+}
+.mklu-badge-approved {
+  background-color: var(--mklu-success-surface);
+  color: var(--mklu-success-text);
+}
+.mklu-badge-rejected,
+.mklu-badge-withdrawn {
+  background-color: var(--mklu-error-surface);
+  color: var(--mklu-error-text);
 }
 .mklu-badge-suspended, .mklu-badge-revoked {
   background-color: var(--mklu-error-surface);

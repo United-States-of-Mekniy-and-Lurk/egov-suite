@@ -12,57 +12,70 @@
         <p>Please try again later or contact support.</p>
     </div>
 }
-else if (Model.UserState == "citizen")
+else
 {
     <section class="mklu-section">
-        <h1 class="mklu-heading-1">Welcome back, @Model.Person?.DisplayName</h1>
-        <p class="mklu-body-lg mklu-text-secondary">You are a registered citizen of Mekniy and Lurk.</p>
-
-        <div class="mklu-card" style="max-width: 480px; margin-top: 32px;">
+        <h1 class="mklu-heading-1">Your identity</h1>
+        <div class="mklu-card" style="max-width: 560px;">
             <div class="mklu-card-body">
-                <p class="mklu-label">Citizen number</p>
-                <p class="mklu-body-lg" style="margin-bottom: 16px;">@Model.Citizen?.CitizenNumber</p>
-
-                <p class="mklu-label">Status</p>
-                <p class="mklu-body-lg" style="margin-bottom: 16px;">
-                    <span class="mklu-badge mklu-badge-@(Model.Citizen?.Status?.ToLowerInvariant())">@Model.Citizen?.Status</span>
-                </p>
-
-                <p class="mklu-label">Granted</p>
-                <p class="mklu-body-lg">@Model.Citizen?.GrantedAt?.ToString("d MMMM yyyy")</p>
-            </div>
-        </div>
-    </section>
-}
-else if (Model.UserState == "new")
-{
-    <section class="mklu-section">
-        <h1 class="mklu-heading-1">Apply for citizenship</h1>
-        <p class="mklu-body-lg mklu-text-secondary" style="max-width: 640px;">
-            Welcome, @Model.Person?.DisplayName. You are not yet a citizen of the United States of Mekniy and Lurk.
-            Submit a citizenship application to begin the process.
-        </p>
-
-        <div class="mklu-card" style="max-width: 560px; margin-top: 32px;">
-            <div class="mklu-card-body">
-                <h2 class="mklu-heading-3">Your identity</h2>
                 <dl class="mklu-dl">
                     <dt>Name</dt>
                     <dd>@Model.Person?.DisplayName</dd>
                     <dt>Email</dt>
                     <dd>@Model.Person?.Email</dd>
-                    <dt>Person ID</dt>
-                    <dd><code>@Model.Person?.Id</code></dd>
+                    <dt>Username</dt>
+                    <dd>@Model.Person?.PreferredUsername</dd>
                 </dl>
-
-                <form method="post" action="/Applications/New" style="margin-top: 24px;">
-                    <input type="hidden" name="personId" value="@Model.Person?.Id" />
-                    <input type="hidden" name="formName" value="citizenship_application" />
-                    <input type="hidden" name="formVersion" value="1" />
-                    <button type="submit" class="mklu-btn mklu-btn-filled">Submit application</button>
-                </form>
             </div>
         </div>
+    </section>
+
+    <section class="mklu-section">
+        <h2 class="mklu-heading-2">Citizenship status</h2>
+
+        @if (Model.UserState == "citizen")
+        {
+            <div class="mklu-card" style="max-width: 560px;">
+                <div class="mklu-card-body">
+                    <dl class="mklu-dl">
+                        <dt>Status</dt>
+                        <dd><span class="mklu-badge mklu-badge-@(Model.Citizen?.Status?.ToLowerInvariant())">@Model.Citizen?.Status</span></dd>
+                        <dt>Citizen number</dt>
+                        <dd>@Model.Citizen?.CitizenNumber</dd>
+                        <dt>Granted</dt>
+                        <dd>@Model.Citizen?.GrantedAt?.ToString("d MMMM yyyy")</dd>
+                    </dl>
+                </div>
+            </div>
+        }
+        else if (Model.UserState == "pending")
+        {
+            <div class="mklu-card" style="max-width: 560px;">
+                <div class="mklu-card-body">
+                    <p class="mklu-body-lg">You have a citizenship application in progress.</p>
+                    <dl class="mklu-dl">
+                        <dt>Status</dt>
+                        <dd><span class="mklu-badge mklu-badge-pending">@Model.PendingApplication?.Status</span></dd>
+                        <dt>Submitted</dt>
+                        <dd>@(Model.PendingApplication?.SubmittedAt?.ToString("d MMMM yyyy") ?? "Not yet submitted")</dd>
+                    </dl>
+                </div>
+            </div>
+        }
+        else if (Model.UserState == "new")
+        {
+            <div class="mklu-card" style="max-width: 560px;">
+                <div class="mklu-card-body">
+                    <p class="mklu-body-lg">You are not yet a citizen of the United States of Mekniy and Lurk.</p>
+                    <p class="mklu-text-secondary" style="margin-bottom: 24px;">
+                        Submit a citizenship application to begin the process.
+                    </p>
+                    <form method="post" asp-page-handler="Apply">
+                        <button type="submit" class="mklu-btn mklu-btn-filled">Apply for citizenship</button>
+                    </form>
+                </div>
+            </div>
+        }
     </section>
 }
 

@@ -97,6 +97,9 @@ public class ApplicationAppService
     public async Task<IEnumerable<CitizenshipApplication>> ListAsync(ApplicationStatus? statusFilter, int skip, int take, CancellationToken ct)
         => await _applicationRepository.ListAsync(statusFilter, skip, take, ct);
 
+    public async Task<IEnumerable<CitizenshipApplication>> ListByPersonIdAsync(Guid personId, CancellationToken ct)
+        => await _applicationRepository.ListByPersonIdAsync(personId, ct);
+
     public async Task<CitizenshipApplication?> GetByIdAsync(Guid id, CancellationToken ct)
         => await _applicationRepository.GetByIdAsync(id, ct);
 }

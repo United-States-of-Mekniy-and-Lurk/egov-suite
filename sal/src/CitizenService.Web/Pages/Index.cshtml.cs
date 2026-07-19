@@ -1,6 +1,7 @@
 using System.Text.Json;
 using CitizenService.Web.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace CitizenService.Web.Pages;
@@ -13,8 +14,11 @@ public class IndexModel : PageModel
 
     public PersonViewModel? Person { get; set; }
     public CitizenViewModel? Citizen { get; set; }
-    public string UserState { get; set; } = "unknown"; // "citizen", "new", "error"
+    public ApplicationViewModel? PendingApplication { get; set; }
+    public string UserState { get; set; } = "unknown"; // "citizen", "pending", "new", "error"
     public string? ErrorMessage { get; set; }
+
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public IndexModel(IHttpClientFactory httpClientFactory, ILogger<IndexModel> logger)
     {
@@ -38,8 +42,7 @@ public class IndexModel : PageModel
             }
 
             var meContent = await meResponse.Content.ReadAsStringAsync(ct);
-            Person = JsonSerializer.Deserialize<PersonViewModel>(meContent,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Person = JsonSerializer.Deserialize<PersonViewModel>(meContent, JsonOptions);
 
             if (Person == null || Person.Id == Guid.Empty)
             {
@@ -64,21 +67,59 @@ public class IndexModel : PageModel
             if (citizenResponse.IsSuccessStatusCode)
             {
                 var citizenContent = await citizenResponse.Content.ReadAsStringAsync(ct);
-                Citizen = JsonSerializer.Deserialize<CitizenViewModel>(citizenContent,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                Citizen = JsonSerializer.Deserialize<CitizenViewModel>(citizenContent, JsonOptions);
                 UserState = "citizen";
                 return;
             }
-
-            // 404 = not a citizen yet
-            UserState = "new";
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to check citizen status");
             UserState = "error";
             ErrorMessage = "Could not verify your citizen status.";
+            return;
         }
+
+        // Step 3: Check for an existing application
+        try
+        {
+            var appsResponse = await citizenClient.GetAsync(
+                $"/citizenship-applications?personId={Person.Id}", ct);
+            if (appsResponse.IsSuccessStatusCode)
+            {
+                var appsContent = await appsResponse.Content.ReadAsStringAsync(ct);
+                var apps = JsonSerializer.Deserialize<List<ApplicationViewModel>>(appsContent, JsonOptions) ?? [];
+                PendingApplication = apps.FirstOrDefault(a =>
+                    a.Status is "Draft" or "Submitted" or "UnderReview");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to check existing applications");
+        }
+
+        UserState = PendingApplication != null ? "pending" : "new";
+    }
+
+    public async Task<IActionResult> OnPostApplyAsync(CancellationToken ct)
+    {
+        // Resolve identity first
+        var egoClient = _httpClientFactory.CreateClient("PersonRegistry");
+        var meResponse = await egoClient.GetAsync("/me", ct);
+        if (!meResponse.IsSuccessStatusCode)
+            return RedirectToPage();
+
+        var meContent = await meResponse.Content.ReadAsStringAsync(ct);
+        var person = JsonSerializer.Deserialize<PersonViewModel>(meContent, JsonOptions);
+        if (person == null || person.Id == Guid.Empty)
+            return RedirectToPage();
+
+        // Submit application using the current user's PersonId, default form
+        var citizenClient = _httpClientFactory.CreateClient("CitizenApi");
+        var body = new { personId = person.Id, formName = "citizenship_application", formVersion = 1 };
+        await citizenClient.PostAsJsonAsync("/citizenship-applications", body, ct);
+
+        return RedirectToPage();
     }
 }
 
