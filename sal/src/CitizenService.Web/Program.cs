@@ -13,7 +13,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
                                ForwardedHeaders.XForwardedHost;
 
     // Cloudflare/ingress proxies are dynamic in many local setups.
-    options.KnownNetworks.Clear();
+    options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
 });
 
@@ -48,7 +48,11 @@ builder.Services.AddAuthentication(options =>
                 context.ProtocolMessage.RedirectUri = $"{configuredPublicBaseUrl}{options.CallbackPath}";
             }
 
-            app.Logger.LogInformation(
+            var logger = context.HttpContext.RequestServices
+                .GetRequiredService<ILoggerFactory>()
+                .CreateLogger("OpenIdConnect");
+
+            logger.LogInformation(
                 "OIDC challenge authority={Authority} redirectUri={RedirectUri} requestScheme={Scheme} requestHost={Host} pathBase={PathBase}",
                 options.Authority,
                 context.ProtocolMessage.RedirectUri,
@@ -60,15 +64,18 @@ builder.Services.AddAuthentication(options =>
         },
         OnRemoteFailure = context =>
         {
-            app.Logger.LogWarning(
+            var logger = context.HttpContext.RequestServices
+                .GetRequiredService<ILoggerFactory>()
+                .CreateLogger("OpenIdConnect");
+
+            logger.LogWarning(
                 context.Failure,
-                "OIDC remote failure error={Error} errorDescription={ErrorDescription}",
-                context.ProtocolMessage?.Error,
-                context.ProtocolMessage?.ErrorDescription);
+                "OIDC remote failure path={Path} query={QueryString}",
+                context.Request.Path,
+                context.Request.QueryString);
             return Task.CompletedTask;
         }
     };
-    var publicBaseUrl = builder.Configuration["Oidc:PublicBaseUrl"]?.TrimEnd('/');
     options.Scope.Add("openid");
     options.Scope.Add("profile");
     options.Scope.Add("email");
