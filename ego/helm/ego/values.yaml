@@ -5,7 +5,7 @@ image:
   repository: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-ego
   pullPolicy: Always
   # Automatically updated by the helm-release workflow after each successful Docker push to main.
-  tag: "sha-39902cf"
+  tag: "sha-cb39c5b"
 serviceAccount:
   create: true
   annotations: {}
