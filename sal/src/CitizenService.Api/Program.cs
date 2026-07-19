@@ -149,27 +149,50 @@ public class KeycloakClaimsTransformation : IClaimsTransformation
             return Task.FromResult(principal);
 
         var realmAccess = principal.FindFirst("realm_access")?.Value;
-        if (realmAccess == null)
-            return Task.FromResult(principal);
-
-        try
+        if (realmAccess != null)
         {
-            using var doc = JsonDocument.Parse(realmAccess);
-            if (doc.RootElement.TryGetProperty("roles", out var roles))
+            try
             {
-                foreach (var role in roles.EnumerateArray())
+                using var doc = JsonDocument.Parse(realmAccess);
+                if (doc.RootElement.TryGetProperty("roles", out var roles))
                 {
-                    var roleName = role.GetString();
-                    if (roleName != null && !identity.HasClaim(ClaimTypes.Role, roleName))
+                    foreach (var role in roles.EnumerateArray())
                     {
-                        identity.AddClaim(new Claim(ClaimTypes.Role, roleName));
+                        AddRole(identity, role.GetString());
                     }
                 }
             }
+            catch (JsonException) { }
         }
-        catch (JsonException) { }
+
+        var resourceAccess = principal.FindFirst("resource_access")?.Value;
+        if (resourceAccess != null)
+        {
+            try
+            {
+                using var resources = JsonDocument.Parse(resourceAccess);
+                foreach (var client in resources.RootElement.EnumerateObject())
+                {
+                    if (!client.Value.TryGetProperty("roles", out var clientRoles) ||
+                        clientRoles.ValueKind != JsonValueKind.Array)
+                    {
+                        continue;
+                    }
+
+                    foreach (var role in clientRoles.EnumerateArray())
+                        AddRole(identity, role.GetString());
+                }
+            }
+            catch (JsonException) { }
+        }
 
         return Task.FromResult(principal);
+    }
+
+    private static void AddRole(ClaimsIdentity identity, string? roleName)
+    {
+        if (!string.IsNullOrWhiteSpace(roleName) && !identity.HasClaim(ClaimTypes.Role, roleName))
+            identity.AddClaim(new Claim(ClaimTypes.Role, roleName));
     }
 }
 

@@ -14,6 +14,7 @@ public class RegistryFieldsModel : PageModel
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IStringLocalizer _localizer;
+    private readonly ILogger<RegistryFieldsModel> _logger;
 
     public List<RegistryFieldDefinitionViewModel> Definitions { get; set; } = [];
 
@@ -32,10 +33,14 @@ public class RegistryFieldsModel : PageModel
     public string? Message { get; set; }
     public bool IsError { get; set; }
 
-    public RegistryFieldsModel(IHttpClientFactory httpClientFactory, IStringLocalizer localizer)
+    public RegistryFieldsModel(
+        IHttpClientFactory httpClientFactory,
+        IStringLocalizer localizer,
+        ILogger<RegistryFieldsModel> logger)
     {
         _httpClientFactory = httpClientFactory;
         _localizer = localizer;
+        _logger = logger;
     }
 
     public async Task OnGetAsync(CancellationToken ct)
@@ -65,11 +70,32 @@ public class RegistryFieldsModel : PageModel
         };
 
         var client = _httpClientFactory.CreateClient("CitizenApi");
-        var response = await client.PostAsJsonAsync("/registry-fields", body, JsonOptions, ct);
+        HttpResponseMessage response;
+        try
+        {
+            response = await client.PostAsJsonAsync("/registry-fields", body, JsonOptions, ct);
+        }
+        catch (HttpRequestException exception)
+        {
+            _logger.LogError(exception, "Registry field creation request failed before receiving a response");
+            IsError = true;
+            Message = _localizer["admin.registry_fields.request_failed"];
+            await LoadDefinitionsAsync(ct);
+            return Page();
+        }
+
         IsError = !response.IsSuccessStatusCode;
         Message = response.IsSuccessStatusCode
             ? _localizer["admin.registry_fields.created"]
-            : await ReadErrorAsync(response, ct);
+            : await ReadErrorAsync(response, _localizer, ct);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogWarning(
+                "Registry field creation returned {StatusCode}: {Error}",
+                (int)response.StatusCode,
+                Message);
+        }
 
         await LoadDefinitionsAsync(ct);
         return Page();
@@ -103,15 +129,30 @@ public class RegistryFieldsModel : PageModel
             .ToList();
     }
 
-    private static async Task<string> ReadErrorAsync(HttpResponseMessage response, CancellationToken ct)
+    private static async Task<string> ReadErrorAsync(
+        HttpResponseMessage response,
+        IStringLocalizer localizer,
+        CancellationToken ct)
     {
         var content = await response.Content.ReadAsStringAsync(ct);
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return response.StatusCode switch
+            {
+                System.Net.HttpStatusCode.Forbidden => localizer["admin.registry_fields.forbidden"],
+                System.Net.HttpStatusCode.NotFound => localizer["admin.registry_fields.endpoint_missing"],
+                _ => localizer["admin.registry_fields.http_error", (int)response.StatusCode]
+            };
+        }
+
         try
         {
             using var document = JsonDocument.Parse(content);
-            return document.RootElement.TryGetProperty("error", out var error)
-                ? error.GetString() ?? content
-                : content;
+            if (document.RootElement.TryGetProperty("error", out var error))
+                return error.GetString() ?? content;
+            if (document.RootElement.TryGetProperty("title", out var title))
+                return title.GetString() ?? content;
+            return content;
         }
         catch (JsonException)
         {

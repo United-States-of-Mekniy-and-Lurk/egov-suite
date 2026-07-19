@@ -24,6 +24,7 @@ public class KeycloakClaimsTransformation : IClaimsTransformation
         var token = handler.ReadJwtToken(accessToken);
         using var payload = JsonDocument.Parse(token.Payload.SerializeToJson());
         AddRealmRoles(identity, payload.RootElement);
+        AddClientRoles(identity, payload.RootElement);
     }
 
     public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
@@ -66,10 +67,30 @@ public class KeycloakClaimsTransformation : IClaimsTransformation
             return;
 
         foreach (var role in roles.EnumerateArray())
+            AddRole(identity, role.GetString());
+    }
+
+    private static void AddClientRoles(ClaimsIdentity identity, JsonElement root)
+    {
+        if (!root.TryGetProperty("resource_access", out var resourceAccess) ||
+            resourceAccess.ValueKind != JsonValueKind.Object)
         {
-            var roleName = role.GetString();
-            if (!string.IsNullOrWhiteSpace(roleName) && !identity.HasClaim(ClaimTypes.Role, roleName))
-                identity.AddClaim(new Claim(ClaimTypes.Role, roleName));
+            return;
         }
+
+        foreach (var client in resourceAccess.EnumerateObject())
+        {
+            if (!client.Value.TryGetProperty("roles", out var roles) || roles.ValueKind != JsonValueKind.Array)
+                continue;
+
+            foreach (var role in roles.EnumerateArray())
+                AddRole(identity, role.GetString());
+        }
+    }
+
+    private static void AddRole(ClaimsIdentity identity, string? roleName)
+    {
+        if (!string.IsNullOrWhiteSpace(roleName) && !identity.HasClaim(ClaimTypes.Role, roleName))
+            identity.AddClaim(new Claim(ClaimTypes.Role, roleName));
     }
 }
