@@ -20,6 +20,14 @@ spec:
       # (e.g. helm-secrets) or set secret.existingSecret to a Sealed Secret.
       valueFiles:
         - values.yaml
+      values: |
+        web:
+          ingress:
+            host: citizen.gov.mklu.org
+        config:
+          jwtAuthority: "https://idna.mklu.org/realms/mklu"
+          oidcAuthority: "https://idna.mklu.org/realms/mklu"
+          publicWebBaseUrl: "https://citizen.gov.mklu.org"
       # Example overrides — replace or remove as needed:
       # parameters:
       #   - name: api.image.tag
