@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Localization;
 using CitizenService.Web.Services;
 using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +44,11 @@ builder.Services.AddAuthentication(options =>
     options.ClientId = builder.Configuration["Oidc:ClientId"];
     options.ClientSecret = builder.Configuration["Oidc:ClientSecret"];
     options.ResponseType = "code";
+    options.ResponseMode = "query";
+    options.CorrelationCookie.SameSite = SameSiteMode.Lax;
+    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.NonceCookie.SameSite = SameSiteMode.Lax;
+    options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
     options.SaveTokens = true;
     options.GetClaimsFromUserInfoEndpoint = true;
     // Some Keycloak setups reject PAR with generic invalid_request errors.
@@ -100,6 +106,8 @@ builder.Services.AddAuthentication(options =>
                 "OIDC remote failure path={Path} query={QueryString}",
                 context.Request.Path,
                 context.Request.QueryString);
+            context.HandleResponse();
+            context.Response.Redirect("/Error");
             return Task.CompletedTask;
         },
         OnRedirectToIdentityProviderForSignOut = context =>
@@ -245,9 +253,10 @@ public class BearerTokenHandler : DelegatingHandler
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var httpContext = _httpContextAccessor.HttpContext;
+        string? accessToken = null;
         if (httpContext != null)
         {
-            var accessToken = await httpContext.GetTokenAsync("access_token");
+            accessToken = await httpContext.GetTokenAsync("access_token");
             if (!string.IsNullOrEmpty(accessToken))
             {
                 request.Headers.Authorization =
@@ -259,9 +268,21 @@ public class BearerTokenHandler : DelegatingHandler
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
             var serviceName = request.RequestUri?.Host ?? "downstream service";
+            var tokenMetadata = "unavailable";
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                if (tokenHandler.CanReadToken(accessToken))
+                {
+                    var token = tokenHandler.ReadJwtToken(accessToken);
+                    tokenMetadata = $"issuer={token.Issuer}, audiences=[{string.Join(", ", token.Audiences)}], expires={token.ValidTo:O}";
+                }
+            }
+
             _logger.LogWarning(
-                "Downstream request to {RequestUri} returned 401 Unauthorized",
-                request.RequestUri);
+                "Downstream request to {RequestUri} returned 401 Unauthorized; token {TokenMetadata}",
+                request.RequestUri,
+                tokenMetadata);
             response.Dispose();
             throw new DownstreamUnauthorizedException(serviceName);
         }

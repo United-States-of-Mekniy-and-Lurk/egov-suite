@@ -56,6 +56,36 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                context.HttpContext.RequestServices
+                    .GetRequiredService<ILoggerFactory>()
+                    .CreateLogger("JwtBearer")
+                    .LogWarning(
+                        context.Exception,
+                        "JWT authentication failed for {Method} {Path}; expected issuer={Issuer} audience={Audience}",
+                        context.Request.Method,
+                        context.Request.Path,
+                        options.Authority,
+                        options.Audience);
+                return Task.CompletedTask;
+            },
+            OnChallenge = context =>
+            {
+                context.HttpContext.RequestServices
+                    .GetRequiredService<ILoggerFactory>()
+                    .CreateLogger("JwtBearer")
+                    .LogWarning(
+                        "JWT challenge for {Method} {Path}: error={Error} description={Description}",
+                        context.Request.Method,
+                        context.Request.Path,
+                        context.Error,
+                        context.ErrorDescription);
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddAuthorization(options =>
