@@ -1,5 +1,6 @@
 using System.Text.Json;
 using CitizenService.Web.Models;
+using CitizenService.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -9,25 +10,24 @@ namespace CitizenService.Web.Pages.Applications;
 public class ApplicationsIndexModel : PageModel
 {
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly CurrentPersonService _currentPersonService;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public PersonViewModel? Person { get; set; }
     public List<ApplicationViewModel> Applications { get; set; } = new();
 
-    public ApplicationsIndexModel(IHttpClientFactory httpClientFactory)
+    public ApplicationsIndexModel(
+        IHttpClientFactory httpClientFactory,
+        CurrentPersonService currentPersonService)
     {
         _httpClientFactory = httpClientFactory;
+        _currentPersonService = currentPersonService;
     }
 
     public async Task OnGetAsync(CancellationToken ct)
     {
         // Resolve current user
-        var egoClient = _httpClientFactory.CreateClient("PersonRegistry");
-        var meResponse = await egoClient.GetAsync("/me", ct);
-        if (!meResponse.IsSuccessStatusCode) return;
-
-        var meContent = await meResponse.Content.ReadAsStringAsync(ct);
-        Person = JsonSerializer.Deserialize<PersonViewModel>(meContent, JsonOptions);
+        Person = await _currentPersonService.GetAsync(ct);
         if (Person == null || Person.Id == Guid.Empty) return;
 
         // Fetch only this user's applications

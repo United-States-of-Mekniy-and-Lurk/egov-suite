@@ -4,24 +4,24 @@
     ViewData["Title"] = "Citizen Detail";
 }
 
-<h1>Citizen Detail</h1>
+<h1 class="mklu-heading-1">Citizen Detail</h1>
 @if (Model.Citizen != null)
 {
-    <dl class="row">
-        <dt class="col-sm-3">Citizen Number</dt>
-        <dd class="col-sm-9">@Model.Citizen.CitizenNumber</dd>
-        <dt class="col-sm-3">Person ID</dt>
-        <dd class="col-sm-9">@Model.Citizen.PersonId</dd>
-        <dt class="col-sm-3">Status</dt>
-        <dd class="col-sm-9">@Model.Citizen.Status</dd>
-        <dt class="col-sm-3">Granted At</dt>
-        <dd class="col-sm-9">@Model.Citizen.GrantedAt</dd>
-        <dt class="col-sm-3">Import Source</dt>
-        <dd class="col-sm-9">@Model.Citizen.ImportSource</dd>
+    <dl class="mklu-dl">
+        <dt>Citizen Number</dt>
+        <dd>@Model.Citizen.CitizenNumber</dd>
+        <dt>Person ID</dt>
+        <dd>@Model.Citizen.PersonId</dd>
+        <dt>Status</dt>
+        <dd>@Model.Citizen.Status</dd>
+        <dt>Granted At</dt>
+        <dd>@Model.Citizen.GrantedAt</dd>
+        <dt>Import Source</dt>
+        <dd>@Model.Citizen.ImportSource</dd>
     </dl>
 }
 else
 {
     <p>Citizen not found.</p>
 }
-<a href="/Citizens" class="btn btn-secondary">Back</a>
+<a href="/Citizens" class="mklu-btn mklu-btn-outlined">Back</a>

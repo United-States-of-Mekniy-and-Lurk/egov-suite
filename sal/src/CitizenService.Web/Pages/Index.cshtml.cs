@@ -1,5 +1,6 @@
 using System.Text.Json;
 using CitizenService.Web.Models;
+using CitizenService.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -10,6 +11,7 @@ namespace CitizenService.Web.Pages;
 public class IndexModel : PageModel
 {
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly CurrentPersonService _currentPersonService;
     private readonly ILogger<IndexModel> _logger;
 
     public PersonViewModel? Person { get; set; }
@@ -21,29 +23,22 @@ public class IndexModel : PageModel
 
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
-    public IndexModel(IHttpClientFactory httpClientFactory, ILogger<IndexModel> logger)
+    public IndexModel(
+        IHttpClientFactory httpClientFactory,
+        CurrentPersonService currentPersonService,
+        ILogger<IndexModel> logger)
     {
         _httpClientFactory = httpClientFactory;
+        _currentPersonService = currentPersonService;
         _logger = logger;
     }
 
     public async Task OnGetAsync(CancellationToken ct)
     {
         // Step 1: Resolve the current user via Ego Person Registry
-        var egoClient = _httpClientFactory.CreateClient("PersonRegistry");
         try
         {
-            var meResponse = await egoClient.GetAsync("/me", ct);
-            if (!meResponse.IsSuccessStatusCode)
-            {
-                _logger.LogWarning("Ego /me returned {StatusCode}", meResponse.StatusCode);
-                UserState = "error";
-                ErrorMessage = "Could not resolve your identity. The Person Registry may be unavailable.";
-                return;
-            }
-
-            var meContent = await meResponse.Content.ReadAsStringAsync(ct);
-            Person = JsonSerializer.Deserialize<PersonViewModel>(meContent, JsonOptions);
+            Person = await _currentPersonService.GetAsync(ct);
 
             if (Person == null || Person.Id == Guid.Empty)
             {

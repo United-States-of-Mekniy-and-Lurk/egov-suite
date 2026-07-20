@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace CitizenService.Web.Models;
 
 public class PersonViewModel
@@ -28,10 +30,12 @@ public class ApplicationViewModel
     public string Status { get; set; } = string.Empty;
     public string FormName { get; set; } = string.Empty;
     public int FormVersion { get; set; }
+    public JsonElement? FormAnswers { get; set; }
     public DateTime? SubmittedAt { get; set; }
     public DateTime? ReviewedAt { get; set; }
     public string? DecisionReason { get; set; }
     public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }
 
 public class ApplicationFormViewModel
@@ -41,6 +45,13 @@ public class ApplicationFormViewModel
     public string DefinitionJson { get; set; } = "{}";
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+}
+
+public class ApplicationFormDraftViewModel
+{
+    public string Name { get; set; } = string.Empty;
+    public string DefinitionJson { get; set; } = "{}";
+    public DateTime UpdatedAt { get; set; }
 }
 
 public class ApplicationFormDefinition

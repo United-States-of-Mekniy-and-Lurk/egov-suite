@@ -70,8 +70,15 @@ public class ApplicationsController : ControllerBase
         if (existing == null) return NotFound();
         if (existing.PersonId != _currentActor.PersonId && !IsStaff()) return Forbid();
 
-        var application = await _applicationService.SaveAnswersAsync(id, request.Answers, ct);
-        return Ok(application);
+        try
+        {
+            var application = await _applicationService.SaveAnswersAsync(id, request.Answers, ct);
+            return Ok(application);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(exception.Message);
+        }
     }
 
     [HttpPost("{id:guid}/transition")]

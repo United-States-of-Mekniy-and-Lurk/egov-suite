@@ -64,6 +64,27 @@ namespace CitizenService.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("CitizenService.Domain.Entities.ApplicationFormDraft", b =>
+                {
+                    b.Property<string>("Name")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("DefinitionJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UpdatedByPersonId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Name");
+
+                    b.ToTable("ApplicationFormDrafts");
+                });
+
             modelBuilder.Entity("CitizenService.Domain.Entities.ApplicationTransition", b =>
                 {
                     b.Property<Guid>("Id")

@@ -34,6 +34,14 @@ else
                         <dd>@a.DecisionReason</dd>
                     }
                 </dl>
+                @if (a.Status == "Draft")
+                {
+                    <a asp-page="/Applications/New"
+                       asp-route-applicationId="@a.Id"
+                       class="mklu-btn mklu-btn-filled">
+                        @L["index.continue_application"]
+                    </a>
+                }
             </div>
         </div>
     }

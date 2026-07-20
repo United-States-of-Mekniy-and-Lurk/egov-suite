@@ -13,3 +13,6 @@ data:
   Oidc__PublicBaseUrl: {{ .Values.config.publicWebBaseUrl | quote }}
   Oidc__Authority: {{ .Values.config.oidcAuthority | quote }}
   Oidc__ClientId: {{ .Values.config.oidcClientId | quote }}
+  {{- if .Values.web.dataProtection.enabled }}
+  DataProtection__KeysPath: "/var/lib/citizen-service/keys"
+  {{- end }}

@@ -14,13 +14,38 @@
 {
     <div class="mklu-alert mklu-alert-error" role="alert">@Model.ErrorMessage</div>
 }
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="mklu-alert mklu-alert-success" role="status">@Model.StatusMessage</div>
+}
+<p class="mklu-draft-status" id="draft-status" aria-live="polite">
+    @if (Model.DraftUpdatedAt.HasValue)
+    {
+        @L["applications.draft_saved_at", Model.DraftUpdatedAt.Value.ToLocalTime().ToString("g")]
+    }
+</p>
 
 <form method="post" class="mklu-form" id="application-form">
+    <input asp-for="ApplicationId" type="hidden" />
     <textarea asp-for="FormSubmissionJson" hidden></textarea>
     <textarea id="FormDefinitionJson" hidden>@Model.FormDefinitionJson</textarea>
-    <div id="formio-application"></div>
-    <a asp-page="/Index" class="mklu-btn mklu-btn-outlined">@L["common.cancel"]</a>
+    <div id="formio-application" class="mklu-formio"></div>
+    <div class="mklu-form-actions">
+        <button type="submit"
+                asp-page-handler="SaveDraft"
+                class="mklu-btn mklu-btn-outlined"
+                id="save-draft"
+                disabled>
+            @L["applications.save_draft"]
+        </button>
+        <a asp-page="/Index" class="mklu-btn mklu-btn-outlined">@L["common.cancel"]</a>
+    </div>
+    <p class="mklu-field-help">@L["applications.draft_help"]</p>
 </form>
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/formio/formio.full.min.css" />
+}
 
 @section Scripts {
     <script src="~/lib/formio/formio.full.min.js"></script>
@@ -30,7 +55,74 @@
             const definition = JSON.parse(document.getElementById('FormDefinitionJson').value);
             const hostForm = document.getElementById('application-form');
             const submissionElement = document.getElementById('FormSubmissionJson');
+            const applicationIdElement = document.getElementById('ApplicationId');
+            const saveDraftButton = document.getElementById('save-draft');
+            const draftStatus = document.getElementById('draft-status');
+            const autosaveUrl = new URL(window.location.href);
+            autosaveUrl.searchParams.set('handler', 'Autosave');
+            const messages = {
+                saving: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(L["applications.saving"].Value)),
+                saved: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(L["applications.draft_saved_at"].Value)),
+                failed: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(L["applications.autosave_failed"].Value))
+            };
             let submissionReady = false;
+            let renderedForm;
+            let autosaveTimer;
+            let autosaveInFlight = false;
+            let autosavePending = false;
+            let lastSavedSnapshot;
+
+            const formatSavedMessage = updatedAt => {
+                const formatted = new Intl.DateTimeFormat(culture, {
+                    dateStyle: 'short',
+                    timeStyle: 'short'
+                }).format(new Date(updatedAt));
+                return messages.saved.replace('{0}', formatted);
+            };
+
+            const saveChangedData = async () => {
+                if (!renderedForm) return;
+                const snapshot = JSON.stringify(renderedForm.data ?? {});
+                if (snapshot === lastSavedSnapshot) return;
+                if (autosaveInFlight) {
+                    autosavePending = true;
+                    return;
+                }
+
+                autosaveInFlight = true;
+                saveDraftButton.disabled = true;
+                draftStatus.textContent = messages.saving;
+                submissionElement.value = snapshot;
+                try {
+                    const body = new FormData(hostForm);
+                    const response = await fetch(autosaveUrl, {
+                        method: 'POST',
+                        body,
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (!response.ok) throw new Error(`Autosave returned ${response.status}`);
+
+                    const result = await response.json();
+                    applicationIdElement.value = result.applicationId;
+                    lastSavedSnapshot = snapshot;
+                    draftStatus.textContent = formatSavedMessage(result.updatedAt);
+                } catch (error) {
+                    console.error('Application autosave failed', error);
+                    draftStatus.textContent = messages.failed;
+                } finally {
+                    autosaveInFlight = false;
+                    saveDraftButton.disabled = false;
+                    if (autosavePending) {
+                        autosavePending = false;
+                        void saveChangedData();
+                    }
+                }
+            };
+
+            const scheduleAutosave = () => {
+                window.clearTimeout(autosaveTimer);
+                autosaveTimer = window.setTimeout(saveChangedData, 1500);
+            };
 
             const translations = {};
             const visit = components => {
@@ -53,6 +145,10 @@
             visit(definition.components);
 
             hostForm.addEventListener('submit', event => {
+                if (event.submitter === saveDraftButton && renderedForm) {
+                    submissionElement.value = JSON.stringify(renderedForm.data ?? {});
+                    return;
+                }
                 if (!submissionReady) event.preventDefault();
             });
 
@@ -61,11 +157,16 @@
                 i18n: { [culture]: translations },
                 noAlerts: true
             }).then(form => {
+                renderedForm = form;
+                saveDraftButton.disabled = false;
                 const existingSubmission = JSON.parse(submissionElement.value || '{}');
                 if (Object.keys(existingSubmission).length > 0) {
                     form.submission = { data: existingSubmission };
                 }
+                lastSavedSnapshot = JSON.stringify(form.data ?? {});
+                form.on('change', scheduleAutosave);
                 form.on('submit', submission => {
+                    window.clearTimeout(autosaveTimer);
                     submissionElement.value = JSON.stringify(submission.data);
                     submissionReady = true;
                     HTMLFormElement.prototype.submit.call(hostForm);

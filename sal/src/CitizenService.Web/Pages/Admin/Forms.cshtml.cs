@@ -35,6 +35,7 @@ public class FormsModel : PageModel
 
     public string? Message { get; set; }
     public bool IsError { get; set; }
+    public DateTime? DraftUpdatedAt { get; set; }
 
     public FormsModel(IHttpClientFactory httpClientFactory, IStringLocalizer localizer)
     {
@@ -45,10 +46,38 @@ public class FormsModel : PageModel
     public async Task OnGetAsync(CancellationToken ct)
     {
         await LoadWorkspaceAsync(ct);
-        await LoadLatestDefinitionAsync(ct);
+        await LoadDefinitionAsync(ct);
     }
 
     public async Task<IActionResult> OnPostAsync(CancellationToken ct)
+    {
+        var result = await SaveDraftAsync(ct);
+        if (result != null) return result;
+
+        var client = _httpClientFactory.CreateClient("CitizenApi");
+        var name = Uri.EscapeDataString(FormName.Trim());
+        var response = await client.PostAsync($"/forms/{name}/draft/publish", null, ct);
+        IsError = !response.IsSuccessStatusCode;
+        Message = response.IsSuccessStatusCode
+            ? _localizer["admin.forms.created"]
+            : await response.Content.ReadAsStringAsync(ct);
+        await LoadWorkspaceAsync(ct);
+        if (response.IsSuccessStatusCode)
+            DraftUpdatedAt = null;
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostSaveDraftAsync(CancellationToken ct)
+    {
+        var result = await SaveDraftAsync(ct);
+        if (result != null) return result;
+
+        Message = _localizer["admin.forms.draft_saved"];
+        DraftUpdatedAt = DateTime.UtcNow;
+        return Page();
+    }
+
+    private async Task<IActionResult?> SaveDraftAsync(CancellationToken ct)
     {
         var client = _httpClientFactory.CreateClient("CitizenApi");
         await LoadWorkspaceAsync(ct);
@@ -73,17 +102,19 @@ public class FormsModel : PageModel
         properties["titles"] = JsonSerializer.SerializeToNode(titles, JsonOptions);
         definition["properties"] = properties;
         var definitionJson = definition.ToJsonString(JsonOptions);
-        var response = await client.PostAsJsonAsync(
-            $"/forms/{Uri.EscapeDataString(FormName.Trim())}",
+        var response = await client.PutAsJsonAsync(
+            $"/forms/{Uri.EscapeDataString(FormName.Trim())}/draft",
             new { definitionJson }, ct);
 
         IsError = !response.IsSuccessStatusCode;
-        Message = response.IsSuccessStatusCode
-            ? _localizer["admin.forms.created"]
-            : await response.Content.ReadAsStringAsync(ct);
-        if (response.IsSuccessStatusCode)
-            await LoadWorkspaceAsync(ct);
-        return Page();
+        if (!response.IsSuccessStatusCode)
+        {
+            Message = await response.Content.ReadAsStringAsync(ct);
+            return Page();
+        }
+
+        FormDefinitionJson = definitionJson;
+        return null;
     }
 
     private async Task LoadWorkspaceAsync(CancellationToken ct)
@@ -104,16 +135,34 @@ public class FormsModel : PageModel
         }
     }
 
-    private async Task LoadLatestDefinitionAsync(CancellationToken ct)
+    private async Task LoadDefinitionAsync(CancellationToken ct)
     {
         var client = _httpClientFactory.CreateClient("CitizenApi");
-        var response = await client.GetAsync($"/forms/{Uri.EscapeDataString(FormName)}/latest", ct);
+        var name = Uri.EscapeDataString(FormName);
+        var response = await client.GetAsync($"/forms/{name}/draft", ct);
+        if (response.IsSuccessStatusCode)
+        {
+            var draft = await response.Content.ReadFromJsonAsync<ApplicationFormDraftViewModel>(JsonOptions, ct);
+            if (draft != null)
+            {
+                DraftUpdatedAt = draft.UpdatedAt;
+                SetDefinition(draft.DefinitionJson);
+                return;
+            }
+        }
+
+        response = await client.GetAsync($"/forms/{name}/latest", ct);
         if (!response.IsSuccessStatusCode) return;
 
         var form = await response.Content.ReadFromJsonAsync<ApplicationFormViewModel>(JsonOptions, ct);
         if (form == null) return;
 
-        var node = JsonNode.Parse(form.DefinitionJson) as JsonObject;
+        SetDefinition(form.DefinitionJson);
+    }
+
+    private void SetDefinition(string definitionJson)
+    {
+        var node = JsonNode.Parse(definitionJson) as JsonObject;
         if (node?["components"] is JsonArray)
         {
             FormDefinitionJson = node.ToJsonString(JsonOptions);
@@ -124,7 +173,7 @@ public class FormsModel : PageModel
             return;
         }
 
-        var legacy = JsonSerializer.Deserialize<ApplicationFormDefinition>(form.DefinitionJson, JsonOptions);
+        var legacy = JsonSerializer.Deserialize<ApplicationFormDefinition>(definitionJson, JsonOptions);
         if (legacy == null) return;
 
         TitleEn = legacy.Titles.GetValueOrDefault("en", legacy.Title);

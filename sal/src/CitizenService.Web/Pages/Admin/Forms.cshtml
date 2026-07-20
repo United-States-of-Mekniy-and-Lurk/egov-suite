@@ -36,6 +36,12 @@
             </div>
 
             <form method="post" class="mklu-admin-form" id="form-builder-form">
+                @if (Model.DraftUpdatedAt.HasValue)
+                {
+                    <p class="mklu-draft-status">
+                        @L["admin.forms.draft_saved_at", Model.DraftUpdatedAt.Value.ToLocalTime().ToString("g")]
+                    </p>
+                }
                 <div class="mklu-form-grid">
                     <div class="mklu-field">
                         <label asp-for="FormName">@L["admin.forms.name"]</label>
@@ -55,6 +61,13 @@
                 <div id="formio-builder" class="mklu-form-builder" aria-label="@L["admin.forms.builder"]"></div>
 
                 <div class="mklu-form-actions">
+                    <button type="submit"
+                            asp-page-handler="SaveDraft"
+                            class="mklu-btn mklu-btn-outlined"
+                            id="save-form-draft"
+                            disabled>
+                        @L["admin.forms.save_draft"]
+                    </button>
                     <button type="submit" class="mklu-btn mklu-btn-filled" id="publish-form" disabled>@L["admin.forms.publish"]</button>
                     <span class="mklu-text-secondary">@L["admin.forms.publish_help"]</span>
                 </div>
@@ -70,7 +83,7 @@
             else
             {
                 <div class="mklu-table-wrap">
-                    <table class="table mklu-admin-table">
+                    <table class="mklu-table mklu-admin-table">
                         <thead>
                             <tr>
                                 <th>@L["admin.forms.name"]</th>
@@ -96,6 +109,10 @@
         </section>
     </div>
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/formio/formio.full.min.css" />
+}
 
 @section Scripts {
     <script src="~/lib/formio/formio.full.min.js"></script>
@@ -171,6 +188,7 @@
                 }
             ).then(builder => {
                 document.getElementById('publish-form').disabled = false;
+                document.getElementById('save-form-draft').disabled = false;
                 formElement.addEventListener('submit', () => {
                     const definition = builder.form;
                     definition.title = document.getElementById('TitleEn').value.trim();

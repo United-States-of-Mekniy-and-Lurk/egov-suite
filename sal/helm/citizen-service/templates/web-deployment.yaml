@@ -38,7 +38,18 @@ spec:
                 name: {{ include "citizen-service.fullname" . }}-config
             - secretRef:
                 name: {{ include "citizen-service.secretName" . }}
+          {{- if .Values.web.dataProtection.enabled }}
+          volumeMounts:
+            - name: data-protection-keys
+              mountPath: /var/lib/citizen-service/keys
+          {{- end }}
           {{- with .Values.web.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+      {{- if .Values.web.dataProtection.enabled }}
+      volumes:
+        - name: data-protection-keys
+          persistentVolumeClaim:
+            claimName: {{ include "citizen-service.fullname" . }}-web-keys-pvc
+      {{- end }}

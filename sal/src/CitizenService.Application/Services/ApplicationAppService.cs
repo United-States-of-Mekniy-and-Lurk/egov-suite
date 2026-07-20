@@ -59,6 +59,9 @@ public class ApplicationAppService
         var application = await _applicationRepository.GetByIdAsync(applicationId, ct)
             ?? throw new InvalidOperationException($"Application {applicationId} not found.");
 
+        if (application.Status != ApplicationStatus.Draft)
+            throw new InvalidOperationException("Answers can only be changed while an application is a draft.");
+
         application.FormAnswers?.Dispose();
         application.FormAnswers = answers;
         application.UpdatedAt = DateTime.UtcNow;

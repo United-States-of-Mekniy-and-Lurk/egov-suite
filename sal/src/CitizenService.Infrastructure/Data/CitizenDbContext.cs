@@ -13,6 +13,7 @@ public class CitizenDbContext : DbContext
     public DbSet<CitizenshipApplication> Applications { get; set; }
     public DbSet<ApplicationTransition> ApplicationTransitions { get; set; }
     public DbSet<ApplicationForm> ApplicationForms { get; set; }
+    public DbSet<ApplicationFormDraft> ApplicationFormDrafts { get; set; }
     public DbSet<RegistryFieldDefinition> RegistryFieldDefinitions { get; set; }
     public DbSet<CitizenFieldValue> CitizenFieldValues { get; set; }
 
@@ -52,6 +53,12 @@ public class CitizenDbContext : DbContext
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => new { x.Name, x.Version }).IsUnique();
+        });
+
+        modelBuilder.Entity<ApplicationFormDraft>(e =>
+        {
+            e.HasKey(x => x.Name);
+            e.Property(x => x.Name).HasMaxLength(128);
         });
 
         modelBuilder.Entity<ApplicationForm>().HasData(new ApplicationForm

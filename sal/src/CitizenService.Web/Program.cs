@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Localization;
 using CitizenService.Web.Services;
@@ -17,6 +18,14 @@ builder.Services.AddSingleton(sp => sp.GetRequiredService<IStringLocalizerFactor
 builder.Services.AddLocalization();
 
 builder.Services.AddRazorPages();
+
+var dataProtectionKeysPath = builder.Configuration["DataProtection:KeysPath"];
+if (!string.IsNullOrWhiteSpace(dataProtectionKeysPath))
+{
+    builder.Services.AddDataProtection()
+        .SetApplicationName("CitizenService.Web")
+        .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
+}
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -141,6 +150,9 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<AccessTokenService>();
+builder.Services.AddScoped<CurrentPersonService>();
 
 builder.Services.AddTransient<BearerTokenHandler>();
 
@@ -252,30 +264,24 @@ app.Run();
 
 public class BearerTokenHandler : DelegatingHandler
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly AccessTokenService _accessTokenService;
     private readonly ILogger<BearerTokenHandler> _logger;
 
     public BearerTokenHandler(
-        IHttpContextAccessor httpContextAccessor,
+        AccessTokenService accessTokenService,
         ILogger<BearerTokenHandler> logger)
     {
-        _httpContextAccessor = httpContextAccessor;
+        _accessTokenService = accessTokenService;
         _logger = logger;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var httpContext = _httpContextAccessor.HttpContext;
-        string? accessToken = null;
-        if (httpContext != null)
+        var accessToken = await _accessTokenService.GetAccessTokenAsync(cancellationToken);
+        if (!string.IsNullOrEmpty(accessToken))
         {
-            accessToken = await httpContext.GetTokenAsync("access_token");
-            if (!string.IsNullOrEmpty(accessToken))
-            {
-                request.Headers.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-            }
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         }
 
         var response = await base.SendAsync(request, cancellationToken);

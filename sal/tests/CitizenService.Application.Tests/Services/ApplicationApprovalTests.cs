@@ -21,6 +21,38 @@ public class ApplicationApprovalTests
     private readonly Mock<ICitizenNumberGenerator> _citizenNumbers = new();
 
     [Fact]
+    public async Task SaveAnswersAsync_UpdatesDraftAnswers()
+    {
+        var application = CreateApplication("{}", ApplicationStatus.Draft);
+        _applications.Setup(repository => repository.GetByIdAsync(application.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(application);
+        _applications.Setup(repository => repository.UpdateAsync(application, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(application);
+        using var answers = JsonDocument.Parse("""{"motivation":"Updated"}""");
+
+        var result = await CreateService().SaveAnswersAsync(application.Id, answers, CancellationToken.None);
+
+        result.FormAnswers!.RootElement.GetProperty("motivation").GetString().Should().Be("Updated");
+        _applications.Verify(repository => repository.UpdateAsync(application, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveAnswersAsync_RejectsSubmittedApplication()
+    {
+        var application = CreateApplication("{}", ApplicationStatus.Submitted);
+        _applications.Setup(repository => repository.GetByIdAsync(application.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(application);
+        using var answers = JsonDocument.Parse("""{"motivation":"Changed"}""");
+
+        var action = () => CreateService().SaveAnswersAsync(application.Id, answers, CancellationToken.None);
+
+        await action.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*draft*");
+        _applications.Verify(repository => repository.UpdateAsync(
+            It.IsAny<CitizenshipApplication>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task ApproveAsync_CreatesCitizenAndCopiesMatchingAnswers()
     {
         var application = CreateApplication("""{"date_of_birth":"2000-01-02","motivation":"Hello"}""");
@@ -179,12 +211,14 @@ public class ApplicationApprovalTests
             new ImmediateUnitOfWork());
     }
 
-    private CitizenshipApplication CreateApplication(string answers)
+    private CitizenshipApplication CreateApplication(
+        string answers,
+        ApplicationStatus status = ApplicationStatus.UnderReview)
         => new()
         {
             Id = Guid.NewGuid(),
             PersonId = _personId,
-            Status = ApplicationStatus.UnderReview,
+            Status = status,
             FormName = "citizenship_application",
             FormVersion = 1,
             FormAnswers = JsonDocument.Parse(answers)

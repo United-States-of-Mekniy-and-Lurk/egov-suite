@@ -62,6 +62,11 @@ web:
     #      - citizen-admin.local
   resources: {}
   podAnnotations: {}
+  dataProtection:
+    # -- Persist cookie encryption keys so sessions survive web pod restarts.
+    enabled: true
+    storageSize: 100Mi
+    accessMode: ReadWriteOnce
 # -- Configuration values rendered into the ConfigMap / environment
 config:
   aspnetcoreEnvironment: "Production"
