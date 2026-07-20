@@ -648,10 +648,126 @@ body {
   display: inline-flex;
   gap: 4px;
 }
+
+/* Form.io emits Bootstrap grid class names but does not ship the grid itself. */
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-inline: -12px;
+}
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > [class*="col-"] {
+  flex: 0 0 100%;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding-inline: 12px;
+}
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > :is(.col-1, .col-xs-1) { flex-basis: 8.333333%; max-width: 8.333333%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > :is(.col-2, .col-xs-2) { flex-basis: 16.666667%; max-width: 16.666667%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > :is(.col-3, .col-xs-3) { flex-basis: 25%; max-width: 25%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > :is(.col-4, .col-xs-4) { flex-basis: 33.333333%; max-width: 33.333333%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > :is(.col-5, .col-xs-5) { flex-basis: 41.666667%; max-width: 41.666667%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > :is(.col-6, .col-xs-6) { flex-basis: 50%; max-width: 50%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > :is(.col-7, .col-xs-7) { flex-basis: 58.333333%; max-width: 58.333333%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > :is(.col-8, .col-xs-8) { flex-basis: 66.666667%; max-width: 66.666667%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > :is(.col-9, .col-xs-9) { flex-basis: 75%; max-width: 75%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > :is(.col-10, .col-xs-10) { flex-basis: 83.333333%; max-width: 83.333333%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > :is(.col-11, .col-xs-11) { flex-basis: 91.666667%; max-width: 91.666667%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > :is(.col-12, .col-xs-12) { flex-basis: 100%; max-width: 100%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xs-1 { margin-left: 8.333333%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xs-2 { margin-left: 16.666667%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xs-3 { margin-left: 25%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xs-4 { margin-left: 33.333333%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xs-5 { margin-left: 41.666667%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xs-6 { margin-left: 50%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xs-7 { margin-left: 58.333333%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xs-8 { margin-left: 66.666667%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xs-9 { margin-left: 75%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xs-10 { margin-left: 83.333333%; }
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xs-11 { margin-left: 91.666667%; }
+
+/* Form.io layout components mapped to MKLU containment. */
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .formio-component-panel > .card,
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .formio-component-well > .card {
+  margin-bottom: 24px;
+  overflow: hidden;
+  background: var(--mklu-surface-raised);
+  border: 1px solid var(--mklu-border) !important;
+  border-radius: var(--mklu-radius-md);
+  box-shadow: none;
+}
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .formio-component-panel > .card > .card-header {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: var(--mklu-text-primary);
+  background: var(--mklu-surface-sunken);
+  border-bottom: 1px solid var(--mklu-border);
+}
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .formio-component-panel .card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: inherit !important;
+  font: 600 20px/1.4 var(--mklu-font-serif);
+}
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .formio-component-panel > .card > .card-body {
+  padding: 24px;
+}
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .formio-component-panel > .card > .card-header[tabindex="0"] {
+  cursor: pointer;
+}
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .formio-component-panel > .card > .card-header[tabindex="0"]:hover {
+  background: var(--mklu-interactive-subtle);
+}
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .formio-collapse-icon {
+  color: var(--mklu-text-link) !important;
+  font-size: 18px;
+}
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .formio-component-panel > .card > :is(.bg-primary, .bg-info) {
+  color: var(--mklu-info-text);
+  background: var(--mklu-info-surface) !important;
+}
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .formio-component-panel > .card > .bg-success {
+  color: var(--mklu-success-text);
+  background: var(--mklu-success-surface) !important;
+}
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .formio-component-panel > .card > .bg-warning {
+  color: #995700;
+  background: var(--mklu-warning-surface) !important;
+}
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .formio-component-panel > .card > .bg-danger {
+  color: var(--mklu-error-text);
+  background: var(--mklu-error-surface) !important;
+}
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .formio-component-fieldset > fieldset {
+  min-width: 0;
+  margin: 0 0 24px;
+  padding: 20px 20px 4px;
+  background: transparent;
+  border: 1px solid var(--mklu-border);
+  border-radius: var(--mklu-radius-sm);
+}
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .formio-component-fieldset > fieldset > legend {
+  width: auto;
+  padding-inline: 8px;
+  font: 600 18px/1.45 var(--mklu-font-serif);
+}
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) .formio-component-well > .card {
+  padding: 20px;
+  background: var(--mklu-surface-sunken) !important;
+  border-radius: var(--mklu-radius-sm);
+}
+:where(.mklu-form-builder, .mklu-formio, .formio-dialog) :is(.formio-component-panel, .formio-component-fieldset, .formio-component-well) .formio-component:last-child {
+  margin-bottom: 0;
+}
 .mklu-form-builder .formbuilder {
   display: grid;
   grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
   gap: 20px;
+  margin-inline: 0;
 }
 .mklu-form-builder .formbuilder > :is(.col, [class*="col-"]) {
   width: auto;
@@ -723,6 +839,110 @@ body {
   max-width: min(720px, calc(100vw - 32px));
   border-radius: var(--mklu-radius-md);
   box-shadow: var(--mklu-elevation-2);
+}
+
+@media (min-width: 576px) {
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-sm-1 { flex-basis: 8.333333%; max-width: 8.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-sm-2 { flex-basis: 16.666667%; max-width: 16.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-sm-3 { flex-basis: 25%; max-width: 25%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-sm-4 { flex-basis: 33.333333%; max-width: 33.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-sm-5 { flex-basis: 41.666667%; max-width: 41.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-sm-6 { flex-basis: 50%; max-width: 50%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-sm-7 { flex-basis: 58.333333%; max-width: 58.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-sm-8 { flex-basis: 66.666667%; max-width: 66.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-sm-9 { flex-basis: 75%; max-width: 75%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-sm-10 { flex-basis: 83.333333%; max-width: 83.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-sm-11 { flex-basis: 91.666667%; max-width: 91.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-sm-12 { flex-basis: 100%; max-width: 100%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-sm-1 { margin-left: 8.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-sm-2 { margin-left: 16.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-sm-3 { margin-left: 25%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-sm-4 { margin-left: 33.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-sm-5 { margin-left: 41.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-sm-6 { margin-left: 50%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-sm-7 { margin-left: 58.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-sm-8 { margin-left: 66.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-sm-9 { margin-left: 75%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-sm-10 { margin-left: 83.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-sm-11 { margin-left: 91.666667%; }
+}
+
+@media (min-width: 768px) {
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-md-1 { flex-basis: 8.333333%; max-width: 8.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-md-2 { flex-basis: 16.666667%; max-width: 16.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-md-3 { flex-basis: 25%; max-width: 25%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-md-4 { flex-basis: 33.333333%; max-width: 33.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-md-5 { flex-basis: 41.666667%; max-width: 41.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-md-6 { flex-basis: 50%; max-width: 50%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-md-7 { flex-basis: 58.333333%; max-width: 58.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-md-8 { flex-basis: 66.666667%; max-width: 66.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-md-9 { flex-basis: 75%; max-width: 75%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-md-10 { flex-basis: 83.333333%; max-width: 83.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-md-11 { flex-basis: 91.666667%; max-width: 91.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-md-12 { flex-basis: 100%; max-width: 100%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-md-1 { margin-left: 8.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-md-2 { margin-left: 16.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-md-3 { margin-left: 25%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-md-4 { margin-left: 33.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-md-5 { margin-left: 41.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-md-6 { margin-left: 50%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-md-7 { margin-left: 58.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-md-8 { margin-left: 66.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-md-9 { margin-left: 75%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-md-10 { margin-left: 83.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-md-11 { margin-left: 91.666667%; }
+}
+
+@media (min-width: 992px) {
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-lg-1 { flex-basis: 8.333333%; max-width: 8.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-lg-2 { flex-basis: 16.666667%; max-width: 16.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-lg-3 { flex-basis: 25%; max-width: 25%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-lg-4 { flex-basis: 33.333333%; max-width: 33.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-lg-5 { flex-basis: 41.666667%; max-width: 41.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-lg-6 { flex-basis: 50%; max-width: 50%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-lg-7 { flex-basis: 58.333333%; max-width: 58.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-lg-8 { flex-basis: 66.666667%; max-width: 66.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-lg-9 { flex-basis: 75%; max-width: 75%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-lg-10 { flex-basis: 83.333333%; max-width: 83.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-lg-11 { flex-basis: 91.666667%; max-width: 91.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-lg-12 { flex-basis: 100%; max-width: 100%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-lg-1 { margin-left: 8.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-lg-2 { margin-left: 16.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-lg-3 { margin-left: 25%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-lg-4 { margin-left: 33.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-lg-5 { margin-left: 41.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-lg-6 { margin-left: 50%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-lg-7 { margin-left: 58.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-lg-8 { margin-left: 66.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-lg-9 { margin-left: 75%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-lg-10 { margin-left: 83.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-lg-11 { margin-left: 91.666667%; }
+}
+
+@media (min-width: 1200px) {
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-xl-1 { flex-basis: 8.333333%; max-width: 8.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-xl-2 { flex-basis: 16.666667%; max-width: 16.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-xl-3 { flex-basis: 25%; max-width: 25%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-xl-4 { flex-basis: 33.333333%; max-width: 33.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-xl-5 { flex-basis: 41.666667%; max-width: 41.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-xl-6 { flex-basis: 50%; max-width: 50%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-xl-7 { flex-basis: 58.333333%; max-width: 58.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-xl-8 { flex-basis: 66.666667%; max-width: 66.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-xl-9 { flex-basis: 75%; max-width: 75%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-xl-10 { flex-basis: 83.333333%; max-width: 83.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-xl-11 { flex-basis: 91.666667%; max-width: 91.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .row > .col-xl-12 { flex-basis: 100%; max-width: 100%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xl-1 { margin-left: 8.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xl-2 { margin-left: 16.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xl-3 { margin-left: 25%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xl-4 { margin-left: 33.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xl-5 { margin-left: 41.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xl-6 { margin-left: 50%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xl-7 { margin-left: 58.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xl-8 { margin-left: 66.666667%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xl-9 { margin-left: 75%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xl-10 { margin-left: 83.333333%; }
+  :where(.mklu-form-builder, .mklu-formio, .formio-dialog) .offset-xl-11 { margin-left: 91.666667%; }
 }
 .mklu-form-section {
   margin: 0 0 28px;
