@@ -7,6 +7,7 @@ using Microsoft.Extensions.Localization;
 using CitizenService.Web.Services;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 

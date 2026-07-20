@@ -60,6 +60,12 @@ public sealed class AccessTokenService(
         }
 
         var options = oidcOptions.Get(OpenIdConnectDefaults.AuthenticationScheme);
+        if (string.IsNullOrWhiteSpace(options.ClientId))
+        {
+            logger.LogError("OIDC token refresh cannot run because the client ID is not configured");
+            return properties.GetTokenValue("access_token");
+        }
+
         var oidcConfiguration = await options.ConfigurationManager!.GetConfigurationAsync(ct);
         using var request = new HttpRequestMessage(HttpMethod.Post, oidcConfiguration.TokenEndpoint)
         {
