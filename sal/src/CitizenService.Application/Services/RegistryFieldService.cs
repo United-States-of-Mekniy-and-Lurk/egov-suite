@@ -199,10 +199,7 @@ public partial class RegistryFieldService
         return definition.FieldType switch
         {
             RegistryFieldType.Text or RegistryFieldType.MultilineText => trimmed,
-            RegistryFieldType.Date => DateOnly.TryParse(
-                trimmed, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
-                    ? date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
-                    : throw InvalidValue(definition, "an ISO date"),
+            RegistryFieldType.Date => NormalizeDate(definition, trimmed),
             RegistryFieldType.Integer => long.TryParse(
                 trimmed, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integer)
                     ? integer.ToString(CultureInfo.InvariantCulture)
@@ -230,17 +227,72 @@ public partial class RegistryFieldService
         return value;
     }
 
+    private static string NormalizeDate(RegistryFieldDefinition definition, string value)
+    {
+        if (DateOnly.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+            return date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        if (DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var timestamp))
+            return DateOnly.FromDateTime(timestamp.Date).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        throw InvalidValue(definition, "an ISO date");
+    }
+
     private static HashSet<string> ReadFormFieldKeys(JsonElement definition)
     {
-        if (!definition.TryGetProperty("fields", out var fields) || fields.ValueKind != JsonValueKind.Array)
-            return [];
+        if (definition.TryGetProperty("fields", out var fields) && fields.ValueKind == JsonValueKind.Array)
+        {
+            return fields.EnumerateArray()
+                .Where(field => field.TryGetProperty("name", out var name) && name.ValueKind == JsonValueKind.String)
+                .Select(field => field.GetProperty("name").GetString())
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Select(name => name!)
+                .ToHashSet(StringComparer.Ordinal);
+        }
 
-        return fields.EnumerateArray()
-            .Where(field => field.TryGetProperty("name", out var name) && name.ValueKind == JsonValueKind.String)
-            .Select(field => field.GetProperty("name").GetString())
-            .Where(name => !string.IsNullOrWhiteSpace(name))
-            .Select(name => name!)
-            .ToHashSet(StringComparer.Ordinal);
+        var keys = new HashSet<string>(StringComparer.Ordinal);
+        if (definition.TryGetProperty("components", out var components) &&
+            components.ValueKind == JsonValueKind.Array)
+        {
+            ReadFormioRegistryFieldKeys(components, keys);
+        }
+
+        return keys;
+    }
+
+    private static void ReadFormioRegistryFieldKeys(JsonElement components, HashSet<string> keys)
+    {
+        foreach (var component in components.EnumerateArray())
+        {
+            if (component.TryGetProperty("key", out var key) &&
+                key.ValueKind == JsonValueKind.String &&
+                component.TryGetProperty("properties", out var properties) &&
+                properties.ValueKind == JsonValueKind.Object &&
+                properties.TryGetProperty("persistence", out var persistence) &&
+                persistence.ValueKind == JsonValueKind.String &&
+                persistence.GetString() == "registry")
+            {
+                var value = key.GetString();
+                if (!string.IsNullOrWhiteSpace(value)) keys.Add(value);
+            }
+
+            if (component.TryGetProperty("components", out var nested) &&
+                nested.ValueKind == JsonValueKind.Array)
+            {
+                ReadFormioRegistryFieldKeys(nested, keys);
+            }
+
+            if (component.TryGetProperty("columns", out var columns) &&
+                columns.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var column in columns.EnumerateArray())
+                {
+                    if (column.TryGetProperty("components", out var columnComponents) &&
+                        columnComponents.ValueKind == JsonValueKind.Array)
+                    {
+                        ReadFormioRegistryFieldKeys(columnComponents, keys);
+                    }
+                }
+            }
+        }
     }
 
     private static string? JsonValueToString(JsonElement value)

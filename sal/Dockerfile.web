@@ -1,3 +1,10 @@
+FROM node:24-alpine AS web-assets
+WORKDIR /web
+
+COPY sal/src/CitizenService.Web/package.json sal/src/CitizenService.Web/package-lock.json ./
+COPY sal/src/CitizenService.Web/scripts/ scripts/
+RUN npm ci
+
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
@@ -7,6 +14,7 @@ COPY sal/src/CitizenService.Web/CitizenService.Web.csproj src/CitizenService.Web
 RUN dotnet restore src/CitizenService.Web/CitizenService.Web.csproj
 
 COPY sal/ .
+COPY --from=web-assets /web/wwwroot/lib/formio/ src/CitizenService.Web/wwwroot/lib/formio/
 RUN dotnet publish src/CitizenService.Web/CitizenService.Web.csproj -c Release -o /app/publish --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime

@@ -87,7 +87,58 @@ public class ApplicationApprovalTests
             It.IsAny<CitizenshipApplication>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    private void ConfigureCommon(CitizenshipApplication application, RegistryFieldDefinition field)
+        [Fact]
+        public async Task ApproveAsync_RecognizesNestedFormioRegistryFields()
+        {
+                var application = CreateApplication("""{"motivation":"Hello"}""");
+                var field = CreateRequiredDateField();
+                var citizen = new Citizen { Id = Guid.NewGuid(), PersonId = _personId };
+
+                ConfigureCommon(application, field, """
+                        {
+                            "components": [
+                                {
+                                    "type": "panel",
+                                    "components": [
+                                        {
+                                            "key": "date_of_birth",
+                                            "type": "datetime",
+                                            "properties": { "persistence": "registry" }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                        """);
+                _citizens.Setup(repository => repository.GetByPersonIdAsync(_personId, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(citizen);
+                _registry.Setup(repository => repository.GetValueAsync(citizen.Id, field.Id, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync((CitizenFieldValue?)null);
+
+                var service = CreateService();
+                var action = () => service.TransitionAsync(
+                        application.Id, ApplicationStatus.Approved, null, CancellationToken.None);
+
+                await action.Should().ThrowAsync<ArgumentException>()
+                        .WithMessage("*date_of_birth*");
+        }
+
+        [Fact]
+        public void NormalizeValue_AcceptsFormioTimestampForDate()
+        {
+                var registryService = new RegistryFieldService(
+                        _registry.Object, _citizens.Object, _applications.Object, _forms.Object, _actor.Object);
+
+                var result = registryService.NormalizeValue(
+                        CreateRequiredDateField(), "2000-01-02T00:00:00.000Z");
+
+                result.Should().Be("2000-01-02");
+        }
+
+        private void ConfigureCommon(
+                CitizenshipApplication application,
+                RegistryFieldDefinition field,
+                string? definitionJson = null)
     {
         _actor.SetupGet(current => current.PersonId).Returns(_reviewerId);
         _persons.Setup(client => client.PersonExistsAsync(_personId, It.IsAny<CancellationToken>()))
@@ -105,7 +156,8 @@ public class ApplicationApprovalTests
             {
                 Name = application.FormName,
                 Version = application.FormVersion,
-                DefinitionJson = """{"fields":[{"name":"date_of_birth","type":"date","required":true},{"name":"motivation","type":"textarea","required":true}]}"""
+                DefinitionJson = definitionJson
+                    ?? """{"fields":[{"name":"date_of_birth","type":"date","required":true},{"name":"motivation","type":"textarea","required":true}]}"""
             });
         _registry.Setup(repository => repository.ListDefinitionsAsync(false, It.IsAny<CancellationToken>()))
             .ReturnsAsync([field]);

@@ -8,48 +8,69 @@
     var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 }
 
-<h1 class="mklu-heading-1">@Model.FormDefinition.GetTitle(culture)</h1>
+<h1 class="mklu-heading-1">@Model.FormTitle</h1>
 
 @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
 {
     <div class="mklu-alert mklu-alert-error" role="alert">@Model.ErrorMessage</div>
 }
 
-<form method="post" class="mklu-form">
-    @foreach (var field in Model.FormDefinition.Fields)
-    {
-        <div class="mklu-field">
-            @if (field.Type != "checkbox")
-            {
-                <label for="@field.Name">@field.GetLabel(culture)</label>
-            }
-            @if (field.Type == "textarea")
-            {
-                <textarea id="@field.Name" name="@field.Name" required="@field.Required"></textarea>
-            }
-            else if (field.Type == "select")
-            {
-                <select id="@field.Name" name="@field.Name" required="@field.Required">
-                    <option value=""></option>
-                    @foreach (var option in field.Options)
-                    {
-                        <option value="@option.Value">@option.GetLabel(culture)</option>
-                    }
-                </select>
-            }
-            else if (field.Type == "checkbox")
-            {
-                <label class="mklu-checkbox-option">
-                    <input id="@field.Name" name="@field.Name" type="checkbox" value="true" required="@field.Required" />
-                    <span>@field.GetLabel(culture)</span>
-                </label>
-            }
-            else
-            {
-                <input id="@field.Name" name="@field.Name" type="@field.Type" step="@field.Step" required="@field.Required" />
-            }
-        </div>
-    }
-    <button type="submit" class="mklu-btn mklu-btn-filled">@L["applications.submit"]</button>
+<form method="post" class="mklu-form" id="application-form">
+    <textarea asp-for="FormSubmissionJson" hidden></textarea>
+    <textarea id="FormDefinitionJson" hidden>@Model.FormDefinitionJson</textarea>
+    <div id="formio-application"></div>
     <a asp-page="/Index" class="mklu-btn mklu-btn-outlined">@L["common.cancel"]</a>
 </form>
+
+@section Scripts {
+    <script src="~/lib/formio/formio.full.min.js"></script>
+    <script>
+        (() => {
+            const culture = '@culture';
+            const definition = JSON.parse(document.getElementById('FormDefinitionJson').value);
+            const hostForm = document.getElementById('application-form');
+            const submissionElement = document.getElementById('FormSubmissionJson');
+            let submissionReady = false;
+
+            const translations = {};
+            const visit = components => {
+                for (const component of components ?? []) {
+                    if (component.properties?.labels) {
+                        const labels = JSON.parse(component.properties.labels);
+                        if (labels[culture] && component.label) translations[component.label] = labels[culture];
+                    }
+                    if (component.properties?.optionLabels) {
+                        const optionLabels = JSON.parse(component.properties.optionLabels);
+                        for (const option of component.data?.values ?? []) {
+                            const label = optionLabels[option.value]?.[culture];
+                            if (label) translations[option.label] = label;
+                        }
+                    }
+                    visit(component.components);
+                    for (const column of component.columns ?? []) visit(column.components);
+                }
+            };
+            visit(definition.components);
+
+            hostForm.addEventListener('submit', event => {
+                if (!submissionReady) event.preventDefault();
+            });
+
+            Formio.createForm(document.getElementById('formio-application'), definition, {
+                language: culture,
+                i18n: { [culture]: translations },
+                noAlerts: true
+            }).then(form => {
+                const existingSubmission = JSON.parse(submissionElement.value || '{}');
+                if (Object.keys(existingSubmission).length > 0) {
+                    form.submission = { data: existingSubmission };
+                }
+                form.on('submit', submission => {
+                    submissionElement.value = JSON.stringify(submission.data);
+                    submissionReady = true;
+                    HTMLFormElement.prototype.submit.call(hostForm);
+                });
+            });
+        })();
+    </script>
+}

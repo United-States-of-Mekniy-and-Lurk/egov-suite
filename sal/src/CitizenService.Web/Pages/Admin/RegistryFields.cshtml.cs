@@ -29,6 +29,8 @@ public class RegistryFieldsModel : PageModel
     [BindProperty] public string? StaticOptions { get; set; }
     [BindProperty] public string? OptionSourceService { get; set; }
     [BindProperty] public string? OptionSourcePath { get; set; }
+    [BindProperty] public Guid? EditingId { get; set; }
+    [BindProperty] public bool IsActive { get; set; } = true;
 
     public string? Message { get; set; }
     public bool IsError { get; set; }
@@ -43,9 +45,28 @@ public class RegistryFieldsModel : PageModel
         _logger = logger;
     }
 
-    public async Task OnGetAsync(CancellationToken ct)
+    public async Task<IActionResult> OnGetAsync(Guid? edit, CancellationToken ct)
     {
         await LoadDefinitionsAsync(ct);
+        if (edit is null) return Page();
+
+        var definition = Definitions.SingleOrDefault(field => field.Id == edit);
+        if (definition is null) return NotFound();
+
+        EditingId = definition.Id;
+        Key = definition.Key;
+        LabelEn = definition.Labels.GetValueOrDefault("en", definition.Key);
+        LabelCs = definition.Labels.GetValueOrDefault("cs", string.Empty);
+        FieldType = definition.FieldType;
+        IsRequired = definition.IsRequired;
+        UserEditable = definition.UserEditable;
+        SortOrder = definition.SortOrder;
+        OptionSourceType = definition.OptionSourceType;
+        StaticOptions = FormatStaticOptions(definition.StaticOptions);
+        OptionSourceService = definition.OptionSourceService;
+        OptionSourcePath = definition.OptionSourcePath;
+        IsActive = definition.IsActive;
+        return Page();
     }
 
     public async Task<IActionResult> OnPostAsync(CancellationToken ct)
@@ -66,18 +87,20 @@ public class RegistryFieldsModel : PageModel
             staticOptions = options,
             optionSourceService = OptionSourceService,
             optionSourcePath = OptionSourcePath,
-            isActive = true
+            isActive = IsActive
         };
 
         var client = _httpClientFactory.CreateClient("CitizenApi");
         HttpResponseMessage response;
         try
         {
-            response = await client.PostAsJsonAsync("/registry-fields", body, JsonOptions, ct);
+            response = EditingId is { } id
+                ? await client.PutAsJsonAsync($"/registry-fields/{id}", body, JsonOptions, ct)
+                : await client.PostAsJsonAsync("/registry-fields", body, JsonOptions, ct);
         }
         catch (HttpRequestException exception)
         {
-            _logger.LogError(exception, "Registry field creation request failed before receiving a response");
+            _logger.LogError(exception, "Registry field save request failed before receiving a response");
             IsError = true;
             Message = _localizer["admin.registry_fields.request_failed"];
             await LoadDefinitionsAsync(ct);
@@ -86,13 +109,15 @@ public class RegistryFieldsModel : PageModel
 
         IsError = !response.IsSuccessStatusCode;
         Message = response.IsSuccessStatusCode
-            ? _localizer["admin.registry_fields.created"]
+            ? _localizer[EditingId is null
+                ? "admin.registry_fields.created"
+                : "admin.registry_fields.updated"]
             : await ReadErrorAsync(response, _localizer, ct);
 
         if (!response.IsSuccessStatusCode)
         {
             _logger.LogWarning(
-                "Registry field creation returned {StatusCode}: {Error}",
+                "Registry field save returned {StatusCode}: {Error}",
                 (int)response.StatusCode,
                 Message);
         }
@@ -127,6 +152,16 @@ public class RegistryFieldsModel : PageModel
                 }
             })
             .ToList();
+    }
+
+    private static string? FormatStaticOptions(List<RegistryFieldOptionViewModel>? options)
+    {
+        if (options is null || options.Count == 0) return null;
+
+        return string.Join('\n', options.Select(option => string.Join(" | ",
+            option.Value,
+            option.Labels.GetValueOrDefault("en", option.Value),
+            option.Labels.GetValueOrDefault("cs", option.Labels.GetValueOrDefault("en", option.Value)))));
     }
 
     private static async Task<string> ReadErrorAsync(

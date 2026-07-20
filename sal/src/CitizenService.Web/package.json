@@ -1,0 +1,13 @@
+{
+  "name": "citizenservice.web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Frontend dependencies for Citizen Service Web",
+  "license": "UNLICENSED",
+  "scripts": {
+    "postinstall": "node scripts/copy-formio-assets.mjs"
+  },
+  "dependencies": {
+    "@formio/js": "5.4.2"
+  }
+}

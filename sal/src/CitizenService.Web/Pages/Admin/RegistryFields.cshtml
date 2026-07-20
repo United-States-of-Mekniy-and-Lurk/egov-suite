@@ -24,13 +24,15 @@
         <section class="mklu-admin-section">
             <div class="mklu-section-heading">
                 <div>
-                    <h2 class="mklu-heading-2">@L["admin.registry_fields.add"]</h2>
-                    <p class="mklu-text-secondary">@L["admin.registry_fields.add_help"]</p>
+                    <h2 class="mklu-heading-2">@(Model.EditingId is null ? L["admin.registry_fields.add"] : L["admin.registry_fields.edit"])</h2>
+                    <p class="mklu-text-secondary">@(Model.EditingId is null ? L["admin.registry_fields.add_help"] : L["admin.registry_fields.edit_help"])</p>
                 </div>
                 <span class="mklu-count-summary">@Model.Definitions.Count @L["admin.registry_fields.total"]</span>
             </div>
 
             <form method="post" class="mklu-admin-form" data-registry-field-form>
+                <input asp-for="EditingId" type="hidden" />
+                <input asp-for="IsActive" type="hidden" />
                 <fieldset class="mklu-form-section">
                     <legend>@L["admin.registry_fields.identity"]</legend>
                     <div class="mklu-form-grid">
@@ -115,8 +117,12 @@
                 </fieldset>
 
                 <div class="mklu-form-actions">
-                    <button type="submit" class="mklu-btn mklu-btn-filled">@L["admin.registry_fields.create"]</button>
-                    <span class="mklu-text-secondary">@L["admin.registry_fields.create_help"]</span>
+                    <button type="submit" class="mklu-btn mklu-btn-filled">@(Model.EditingId is null ? L["admin.registry_fields.create"] : L["admin.registry_fields.save"])</button>
+                    @if (Model.EditingId is not null)
+                    {
+                        <a asp-page="/Admin/RegistryFields" class="mklu-btn mklu-btn-outlined">@L["admin.registry_fields.cancel"]</a>
+                    }
+                    <span class="mklu-text-secondary">@(Model.EditingId is null ? L["admin.registry_fields.create_help"] : L["admin.registry_fields.save_help"])</span>
                 </div>
             </form>
         </section>

@@ -48,10 +48,13 @@ public class FormsController : ControllerBase
         try
         {
             using var definition = JsonDocument.Parse(request.DefinitionJson);
-            if (!definition.RootElement.TryGetProperty("fields", out var fields) ||
-                fields.ValueKind != JsonValueKind.Array)
+            var hasLegacyFields = definition.RootElement.TryGetProperty("fields", out var fields) &&
+                fields.ValueKind == JsonValueKind.Array;
+            var hasFormioComponents = definition.RootElement.TryGetProperty("components", out var components) &&
+                components.ValueKind == JsonValueKind.Array;
+            if (!hasLegacyFields && !hasFormioComponents)
             {
-                return BadRequest("Form definition must contain a fields array.");
+                return BadRequest("Form definition must contain a fields or components array.");
             }
         }
         catch (JsonException)

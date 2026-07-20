@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using CitizenService.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,17 +20,18 @@ public class FormsModel : PageModel
     public string FormName { get; set; } = "citizenship_application";
 
     [BindProperty]
-        public string TitleEn { get; set; } = "Citizenship Application";
+    public string TitleEn { get; set; } = "Citizenship Application";
 
-        [BindProperty]
-        public string TitleCs { get; set; } = string.Empty;
+    [BindProperty]
+    public string TitleCs { get; set; } = string.Empty;
 
-        [BindProperty]
-        public List<string> SelectedFieldKeys { get; set; } = [];
+    [BindProperty]
+    public string FormDefinitionJson { get; set; } = """
+        {"title":"Citizenship Application","display":"form","components":[]}
+        """;
 
-        public List<RegistryFieldDefinitionViewModel> Definitions { get; set; } = [];
-        public List<ApplicationFormViewModel> Forms { get; set; } = [];
-        public List<string> UnavailableFieldKeys { get; set; } = [];
+    public List<RegistryFieldDefinitionViewModel> Definitions { get; set; } = [];
+    public List<ApplicationFormViewModel> Forms { get; set; } = [];
 
     public string? Message { get; set; }
     public bool IsError { get; set; }
@@ -51,36 +53,28 @@ public class FormsModel : PageModel
         var client = _httpClientFactory.CreateClient("CitizenApi");
         await LoadWorkspaceAsync(ct);
 
-        var selected = Definitions
-            .Where(definition => definition.IsActive && SelectedFieldKeys.Contains(definition.Key))
-            .OrderBy(definition => definition.SortOrder)
-            .ToList();
-        if (selected.Count == 0)
+        JsonObject definition;
+        try
         {
-            IsError = true;
-            Message = _localizer["admin.forms.fields_required"];
-            return Page();
+            definition = JsonNode.Parse(FormDefinitionJson) as JsonObject
+                ?? throw new JsonException();
         }
-
-        if (selected.Any(definition =>
-                definition.FieldType == "Select" && definition.OptionSourceType != "Static"))
+        catch (JsonException)
         {
             IsError = true;
-            Message = _localizer["admin.forms.remote_select_unsupported"];
+            Message = _localizer["admin.forms.invalid_definition"];
             return Page();
         }
 
         var titles = new Dictionary<string, string> { ["en"] = TitleEn.Trim() };
         if (!string.IsNullOrWhiteSpace(TitleCs)) titles["cs"] = TitleCs.Trim();
-        var definition = new ApplicationFormDefinition
-        {
-            Title = TitleEn.Trim(),
-            Titles = titles,
-            Fields = selected.Select(ToFormField).ToList()
-        };
-        var definitionJson = JsonSerializer.Serialize(definition, JsonOptions);
+        definition["title"] = TitleEn.Trim();
+        var properties = definition["properties"] as JsonObject ?? new JsonObject();
+        properties["titles"] = JsonSerializer.SerializeToNode(titles, JsonOptions);
+        definition["properties"] = properties;
+        var definitionJson = definition.ToJsonString(JsonOptions);
         var response = await client.PostAsJsonAsync(
-            $"/forms/{Uri.EscapeDataString(FormName)}",
+            $"/forms/{Uri.EscapeDataString(FormName.Trim())}",
             new { definitionJson }, ct);
 
         IsError = !response.IsSuccessStatusCode;
@@ -119,42 +113,23 @@ public class FormsModel : PageModel
         var form = await response.Content.ReadFromJsonAsync<ApplicationFormViewModel>(JsonOptions, ct);
         if (form == null) return;
 
-        var definition = JsonSerializer.Deserialize<ApplicationFormDefinition>(form.DefinitionJson, JsonOptions);
-        if (definition == null) return;
-
-        TitleEn = definition.Titles.GetValueOrDefault("en", definition.Title);
-        TitleCs = definition.Titles.GetValueOrDefault("cs", string.Empty);
-        SelectedFieldKeys = definition.Fields.Select(field => field.Name).ToList();
-        var registryKeys = Definitions.Select(field => field.Key).ToHashSet(StringComparer.Ordinal);
-        UnavailableFieldKeys = SelectedFieldKeys.Where(key => !registryKeys.Contains(key)).ToList();
-    }
-
-    private static ApplicationFormField ToFormField(RegistryFieldDefinitionViewModel definition)
-        => new()
+        var node = JsonNode.Parse(form.DefinitionJson) as JsonObject;
+        if (node?["components"] is JsonArray)
         {
-            Name = definition.Key,
-            Type = definition.FieldType switch
-            {
-                "MultilineText" => "textarea",
-                "Date" => "date",
-                "Integer" or "Decimal" => "number",
-                "Boolean" => "checkbox",
-                "Select" => "select",
-                _ => "text"
-            },
-            Step = definition.FieldType switch
-            {
-                "Integer" => "1",
-                "Decimal" => "any",
-                _ => null
-            },
-            Label = definition.GetLabel("en"),
-            Labels = definition.Labels,
-            Required = definition.IsRequired,
-            Options = definition.StaticOptions?.Select(option => new ApplicationFormFieldOption
-            {
-                Value = option.Value,
-                Labels = option.Labels
-            }).ToList() ?? []
-        };
+            FormDefinitionJson = node.ToJsonString(JsonOptions);
+            TitleEn = node["properties"]?["titles"]?["en"]?.GetValue<string>()
+                ?? node["title"]?.GetValue<string>()
+                ?? TitleEn;
+            TitleCs = node["properties"]?["titles"]?["cs"]?.GetValue<string>() ?? string.Empty;
+            return;
+        }
+
+        var legacy = JsonSerializer.Deserialize<ApplicationFormDefinition>(form.DefinitionJson, JsonOptions);
+        if (legacy == null) return;
+
+        TitleEn = legacy.Titles.GetValueOrDefault("en", legacy.Title);
+        TitleCs = legacy.Titles.GetValueOrDefault("cs", string.Empty);
+        FormDefinitionJson = FormioDefinitionAdapter.ConvertLegacy(legacy, JsonOptions)
+            .ToJsonString(JsonOptions);
+    }
 }

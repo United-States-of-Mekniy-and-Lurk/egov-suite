@@ -30,7 +30,15 @@
                 @foreach (var field in Model.Fields.Where(field => field.IsActive).OrderBy(field => field.SortOrder))
                 {
                     <li>
-                        <span class="mklu-field-catalog-label">@field.GetLabel(culture)</span>
+                        <span class="mklu-field-catalog-title">
+                            <span class="mklu-field-catalog-label">@field.GetLabel(culture)</span>
+                            @if (Model.ActiveSection == "fields")
+                            {
+                                <a asp-page="/Admin/RegistryFields"
+                                   asp-route-edit="@field.Id"
+                                   class="mklu-field-catalog-edit">@L["admin.registry_fields.edit_action"]</a>
+                            }
+                        </span>
                         <span class="mklu-field-catalog-meta">
                             <code>@field.Key</code>
                             <span>@field.FieldType</span>

@@ -1,5 +1,6 @@
 @page
 @model CitizenService.Web.Pages.Admin.FormsModel
+@using System.Text.Json
 @{
     ViewData["Title"] = L["admin.forms.title"].Value;
 }
@@ -21,14 +22,6 @@
             </div>
         }
 
-        @if (Model.UnavailableFieldKeys.Count > 0)
-        {
-            <div class="mklu-alert mklu-alert-warning" role="status">
-                <strong>@L["admin.forms.unavailable_fields"]</strong>
-                <p>@string.Join(", ", Model.UnavailableFieldKeys)</p>
-            </div>
-        }
-
         <section class="mklu-admin-section">
             <div class="mklu-section-heading">
                 <div>
@@ -42,7 +35,7 @@
                 }
             </div>
 
-            <form method="post" class="mklu-admin-form">
+            <form method="post" class="mklu-admin-form" id="form-builder-form">
                 <div class="mklu-form-grid">
                     <div class="mklu-field">
                         <label asp-for="FormName">@L["admin.forms.name"]</label>
@@ -58,48 +51,11 @@
                     </div>
                 </div>
 
-                <fieldset class="mklu-field-picker">
-                    <legend>@L["admin.forms.choose_fields"]</legend>
-                    <p class="mklu-text-secondary">@L["admin.forms.choose_fields_help"]</p>
-                    @if (!Model.Definitions.Any(field => field.IsActive))
-                    {
-                        <div class="mklu-empty-state">
-                            <p>@L["admin.forms.no_registry_fields"]</p>
-                            <a asp-page="/Admin/RegistryFields" class="mklu-btn mklu-btn-outlined">@L["admin.registry_fields.add"]</a>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="mklu-field-picker-list">
-                            @foreach (var field in Model.Definitions.Where(field => field.IsActive).OrderBy(field => field.SortOrder))
-                            {
-                                var unavailable = field.FieldType == "Select" && field.OptionSourceType != "Static";
-                                <label class="mklu-field-picker-item @(unavailable ? "is-disabled" : null)">
-                                    <input type="checkbox"
-                                           name="SelectedFieldKeys"
-                                           value="@field.Key"
-                                           checked="@Model.SelectedFieldKeys.Contains(field.Key)"
-                                           disabled="@unavailable" />
-                                    <span class="mklu-field-picker-copy">
-                                        <strong>@field.GetLabel("en")</strong>
-                                        <span><code>@field.Key</code> · @field.FieldType</span>
-                                    </span>
-                                    @if (field.IsRequired)
-                                    {
-                                        <span class="mklu-badge mklu-badge-required">@L["admin.forms.required"]</span>
-                                    }
-                                    @if (unavailable)
-                                    {
-                                        <span class="mklu-badge mklu-badge-pending">@L["admin.forms.remote_pending"]</span>
-                                    }
-                                </label>
-                            }
-                        </div>
-                    }
-                </fieldset>
+                <textarea asp-for="FormDefinitionJson" hidden></textarea>
+                <div id="formio-builder" class="mklu-form-builder" aria-label="@L["admin.forms.builder"]"></div>
 
                 <div class="mklu-form-actions">
-                    <button type="submit" class="mklu-btn mklu-btn-filled">@L["admin.forms.publish"]</button>
+                    <button type="submit" class="mklu-btn mklu-btn-filled" id="publish-form" disabled>@L["admin.forms.publish"]</button>
                     <span class="mklu-text-secondary">@L["admin.forms.publish_help"]</span>
                 </div>
             </form>
@@ -140,3 +96,92 @@
         </section>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/lib/formio/formio.full.min.js"></script>
+    <script>
+        (() => {
+            const formElement = document.getElementById('form-builder-form');
+            const definitionElement = document.getElementById('FormDefinitionJson');
+            const registryFields = @Html.Raw(JsonSerializer.Serialize(
+                Model.Definitions.Where(field => field.IsActive).OrderBy(field => field.SortOrder),
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+
+            const typeMap = {
+                MultilineText: 'textarea',
+                Date: 'datetime',
+                Integer: 'number',
+                Decimal: 'number',
+                Boolean: 'checkbox',
+                Select: 'select'
+            };
+            const registryComponents = {};
+
+            for (const field of registryFields) {
+                if (field.fieldType === 'Select' && field.optionSourceType !== 'Static') continue;
+
+                const schema = {
+                    label: field.labels.en ?? field.key,
+                    key: field.key,
+                    type: typeMap[field.fieldType] ?? 'textfield',
+                    input: true,
+                    validate: { required: field.isRequired },
+                    properties: {
+                        persistence: 'registry',
+                        labels: JSON.stringify(field.labels)
+                    }
+                };
+                if (field.fieldType === 'Date') schema.enableTime = false;
+                if (field.fieldType === 'Integer') schema.validate.integer = true;
+                if (field.fieldType === 'Select') {
+                    schema.data = {
+                        values: (field.staticOptions ?? []).map(option => ({
+                            label: option.labels.en ?? option.value,
+                            value: option.value
+                        }))
+                    };
+                    schema.properties.optionLabels = JSON.stringify(
+                        Object.fromEntries((field.staticOptions ?? []).map(option => [option.value, option.labels])));
+                }
+
+                registryComponents[field.key] = {
+                    title: field.labels.en ?? field.key,
+                    key: field.key,
+                    icon: 'database',
+                    schema
+                };
+            }
+
+            Formio.builder(
+                document.getElementById('formio-builder'),
+                JSON.parse(definitionElement.value),
+                {
+                    noDefaultSubmitButton: false,
+                    builder: {
+                        premium: false,
+                        resource: false,
+                        registry: {
+                            title: '@L["nav.registry_fields"]',
+                            weight: -10,
+                            default: true,
+                            components: registryComponents
+                        },
+                        basic: { components: { password: false } }
+                    }
+                }
+            ).then(builder => {
+                document.getElementById('publish-form').disabled = false;
+                formElement.addEventListener('submit', () => {
+                    const definition = builder.form;
+                    definition.title = document.getElementById('TitleEn').value.trim();
+                    definition.properties ??= {};
+                    definition.properties.titles = {
+                        en: definition.title,
+                        cs: document.getElementById('TitleCs').value.trim()
+                    };
+                    definitionElement.value = JSON.stringify(definition);
+                });
+            });
+        })();
+    </script>
+}
