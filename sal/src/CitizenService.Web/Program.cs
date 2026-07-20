@@ -59,9 +59,23 @@ builder.Services.AddAuthentication(options =>
     {
         OnTokenValidated = context =>
         {
+            var accessToken = context.TokenEndpointResponse?.AccessToken;
+            var requiredAudience = builder.Configuration["Jwt:Audience"];
+            if (!string.IsNullOrWhiteSpace(requiredAudience) &&
+                !string.IsNullOrWhiteSpace(accessToken))
+            {
+                var token = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
+                if (!token.Audiences.Contains(requiredAudience, StringComparer.Ordinal))
+                {
+                    throw new AuthenticationFailureException(
+                        $"The access token does not contain the required audience '{requiredAudience}'. " +
+                        "Configure the Keycloak OIDC client with an audience mapper for this API.");
+                }
+            }
+
             KeycloakClaimsTransformation.AddRolesFromAccessToken(
                 context.Principal,
-                context.TokenEndpointResponse?.AccessToken);
+                accessToken);
 
             var roles = context.Principal?.FindAll(ClaimTypes.Role)
                 .Select(claim => claim.Value)
