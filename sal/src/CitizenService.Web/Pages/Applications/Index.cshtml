@@ -66,6 +66,14 @@ else
                         </button>
                     </form>
                 }
+                else if (a.Status is "Approved" or "Rejected")
+                {
+                    <a asp-page="/Applications/DecisionDocument"
+                       asp-route-id="@a.Id"
+                       class="mklu-btn mklu-btn-outlined">
+                        @L["applications.decision_document.download"]
+                    </a>
+                }
             </div>
         </div>
     }

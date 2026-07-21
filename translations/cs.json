@@ -88,6 +88,7 @@
   "applications.review.begin": "Zahájit posouzení",
   "applications.review.reason": "Odůvodnění rozhodnutí",
   "applications.review.back": "Zpět na frontu",
+  "applications.decision_document.download": "Stáhnout rozhodnutí v PDF",
 
   "admin.forms.title": "Správa formulářů",
   "admin.forms.description": "Práci uložte jako koncept a poté ji publikujte jako novou aktivní verzi. Stávající žádosti si zachovají původní verzi.",

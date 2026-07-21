@@ -13,11 +13,16 @@ namespace CitizenService.Api.Controllers;
 public class ApplicationsController : ControllerBase
 {
     private readonly ApplicationAppService _applicationService;
+    private readonly DecisionDocumentService _decisionDocumentService;
     private readonly ICurrentActor _currentActor;
 
-    public ApplicationsController(ApplicationAppService applicationService, ICurrentActor currentActor)
+    public ApplicationsController(
+        ApplicationAppService applicationService,
+        DecisionDocumentService decisionDocumentService,
+        ICurrentActor currentActor)
     {
         _applicationService = applicationService;
+        _decisionDocumentService = decisionDocumentService;
         _currentActor = currentActor;
     }
 
@@ -105,6 +110,25 @@ public class ApplicationsController : ControllerBase
         catch (ArgumentException exception)
         {
             return BadRequest(exception.Message);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(exception.Message);
+        }
+    }
+
+    [HttpGet("{id:guid}/decision-document")]
+    [Produces("application/pdf")]
+    public async Task<IActionResult> DownloadDecisionDocument(Guid id, CancellationToken ct)
+    {
+        var application = await _applicationService.GetByIdAsync(id, ct);
+        if (application == null) return NotFound();
+        if (application.PersonId != _currentActor.PersonId && !IsStaff()) return Forbid();
+
+        try
+        {
+            var document = await _decisionDocumentService.GenerateAsync(id, ct);
+            return File(document.Content, document.ContentType, document.FileName);
         }
         catch (InvalidOperationException exception)
         {

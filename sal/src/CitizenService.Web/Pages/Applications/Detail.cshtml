@@ -62,6 +62,14 @@
             </div>
         </form>
     }
+    else if (Model.Application.Status is "Approved" or "Rejected")
+    {
+        <a asp-page="/Applications/DecisionDocument"
+           asp-route-id="@Model.Application.Id"
+           class="mklu-btn mklu-btn-filled">
+            @L["applications.decision_document.download"]
+        </a>
+    }
 }
 <a asp-page="/Applications/Queue" class="mklu-btn mklu-btn-outlined mklu-review-back">@L["applications.review.back"]</a>
 

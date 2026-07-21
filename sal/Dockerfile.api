@@ -16,6 +16,11 @@ RUN dotnet publish src/CitizenService.Api/CitizenService.Api.csproj -c Release -
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
+USER root
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends fonts-noto-core \
+	&& rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/publish .
 
 USER 1001:1001

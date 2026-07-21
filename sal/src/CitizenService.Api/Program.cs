@@ -1,6 +1,7 @@
 using CitizenService.Application.Interfaces;
 using CitizenService.Application.Services;
 using CitizenService.Infrastructure.Data;
+using CitizenService.Infrastructure.Documents;
 using CitizenService.Infrastructure.Http;
 using CitizenService.Infrastructure.Repositories;
 using CitizenService.Infrastructure.Services;
@@ -111,7 +112,9 @@ builder.Services.AddSingleton<ICitizenNumberGenerator, RandomCitizenNumberGenera
 
 builder.Services.AddScoped<CitizenAppService>();
 builder.Services.AddScoped<ApplicationAppService>();
+builder.Services.AddScoped<DecisionDocumentService>();
 builder.Services.AddScoped<RegistryFieldService>();
+builder.Services.AddSingleton<IOfficialDocumentRenderer, PdfSharpOfficialDocumentRenderer>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentActor, CurrentActorService>();

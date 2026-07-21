@@ -88,6 +88,7 @@
   "applications.review.begin": "Begin review",
   "applications.review.reason": "Decision reason",
   "applications.review.back": "Back to queue",
+  "applications.decision_document.download": "Download decision PDF",
 
   "admin.forms.title": "Form administration",
   "admin.forms.description": "Save work as a draft, then publish it as a new active version. Existing applications keep their original version.",
