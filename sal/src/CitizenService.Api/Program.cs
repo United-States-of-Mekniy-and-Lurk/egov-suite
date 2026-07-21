@@ -1,7 +1,6 @@
 using CitizenService.Application.Interfaces;
 using CitizenService.Application.Services;
 using CitizenService.Infrastructure.Data;
-using CitizenService.Infrastructure.Documents;
 using CitizenService.Infrastructure.Http;
 using CitizenService.Infrastructure.Repositories;
 using CitizenService.Infrastructure.Services;
@@ -14,7 +13,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Refit;
 using System.Security.Claims;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -170,64 +168,4 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
-
-/// <summary>
-/// Extracts Keycloak realm roles from the realm_access JWT claim
-/// into standard ClaimTypes.Role so [Authorize(Roles/Policy)] works.
-/// </summary>
-public class KeycloakClaimsTransformation : IClaimsTransformation
-{
-    public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
-    {
-        var identity = principal.Identity as ClaimsIdentity;
-        if (identity == null)
-            return Task.FromResult(principal);
-
-        var realmAccess = principal.FindFirst("realm_access")?.Value;
-        if (realmAccess != null)
-        {
-            try
-            {
-                using var doc = JsonDocument.Parse(realmAccess);
-                if (doc.RootElement.TryGetProperty("roles", out var roles))
-                {
-                    foreach (var role in roles.EnumerateArray())
-                    {
-                        AddRole(identity, role.GetString());
-                    }
-                }
-            }
-            catch (JsonException) { }
-        }
-
-        var resourceAccess = principal.FindFirst("resource_access")?.Value;
-        if (resourceAccess != null)
-        {
-            try
-            {
-                using var resources = JsonDocument.Parse(resourceAccess);
-                foreach (var client in resources.RootElement.EnumerateObject())
-                {
-                    if (!client.Value.TryGetProperty("roles", out var clientRoles) ||
-                        clientRoles.ValueKind != JsonValueKind.Array)
-                    {
-                        continue;
-                    }
-
-                    foreach (var role in clientRoles.EnumerateArray())
-                        AddRole(identity, role.GetString());
-                }
-            }
-            catch (JsonException) { }
-        }
-
-        return Task.FromResult(principal);
-    }
-
-    private static void AddRole(ClaimsIdentity identity, string? roleName)
-    {
-        if (!string.IsNullOrWhiteSpace(roleName) && !identity.HasClaim(ClaimTypes.Role, roleName))
-            identity.AddClaim(new Claim(ClaimTypes.Role, roleName));
-    }
-}
 

@@ -1,0 +1,13 @@
+/src/platform/src/Egov.Platform.Documents/bin/Release/net10.0/Egov.Platform.Documents.deps.json
+/src/platform/src/Egov.Platform.Documents/bin/Release/net10.0/Egov.Platform.Documents.dll
+/src/platform/src/Egov.Platform.Documents/bin/Release/net10.0/Egov.Platform.Documents.pdb
+/src/platform/src/Egov.Platform.Documents/obj/Release/net10.0/Egov.Platform.Documents.csproj.AssemblyReference.cache
+/src/platform/src/Egov.Platform.Documents/obj/Release/net10.0/Egov.Platform.Documents.GeneratedMSBuildEditorConfig.editorconfig
+/src/platform/src/Egov.Platform.Documents/obj/Release/net10.0/Egov.Platform.Documents.AssemblyInfoInputs.cache
+/src/platform/src/Egov.Platform.Documents/obj/Release/net10.0/Egov.Platform.Documents.AssemblyInfo.cs
+/src/platform/src/Egov.Platform.Documents/obj/Release/net10.0/Egov.Platform.Documents.csproj.CoreCompileInputs.cache
+/src/platform/src/Egov.Platform.Documents/obj/Release/net10.0/Egov.Platform.Documents.sourcelink.json
+/src/platform/src/Egov.Platform.Documents/obj/Release/net10.0/Egov.Platform.Documents.dll
+/src/platform/src/Egov.Platform.Documents/obj/Release/net10.0/refint/Egov.Platform.Documents.dll
+/src/platform/src/Egov.Platform.Documents/obj/Release/net10.0/Egov.Platform.Documents.pdb
+/src/platform/src/Egov.Platform.Documents/obj/Release/net10.0/ref/Egov.Platform.Documents.dll

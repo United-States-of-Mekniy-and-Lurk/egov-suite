@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageId>Egov.Platform.Forms</PackageId>
+    <Description>Reusable versioned form contracts and Form.io schema adaptation.</Description>
+  </PropertyGroup>
+</Project>

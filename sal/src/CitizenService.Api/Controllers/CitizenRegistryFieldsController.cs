@@ -1,4 +1,5 @@
 using CitizenService.Application.Interfaces;
+using CitizenService.Application.Models;
 using CitizenService.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

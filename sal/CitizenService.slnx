@@ -1,4 +1,9 @@
 <Solution>
+  <Folder Name="/platform/">
+    <Project Path="../platform/src/Egov.Platform.Documents/Egov.Platform.Documents.csproj" />
+    <Project Path="../platform/src/Egov.Platform.Forms/Egov.Platform.Forms.csproj" />
+    <Project Path="../platform/src/Egov.Platform.Identity/Egov.Platform.Identity.csproj" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/CitizenService.Api/CitizenService.Api.csproj" />
     <Project Path="src/CitizenService.Application/CitizenService.Application.csproj" />

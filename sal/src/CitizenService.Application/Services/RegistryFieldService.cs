@@ -396,7 +396,7 @@ public partial class RegistryFieldService
         definition.IsActive = input.IsActive;
     }
 
-    private static RegistryFieldDefinitionDto ToDto(RegistryFieldDefinition definition)
+    internal static RegistryFieldDefinitionDto ToDto(RegistryFieldDefinition definition)
         => new(
             definition.Id,
             definition.Key,

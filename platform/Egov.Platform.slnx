@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Egov.Platform.Documents/Egov.Platform.Documents.csproj" />
+    <Project Path="src/Egov.Platform.Forms/Egov.Platform.Forms.csproj" />
+    <Project Path="src/Egov.Platform.Identity/Egov.Platform.Identity.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Egov.Platform.Tests/Egov.Platform.Tests.csproj" />
+  </Folder>
+</Solution>

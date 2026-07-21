@@ -10,10 +10,13 @@ WORKDIR /src
 
 COPY sal/CitizenService.slnx ./
 COPY sal/src/CitizenService.Web/CitizenService.Web.csproj src/CitizenService.Web/
+COPY platform/src/Egov.Platform.Forms/Egov.Platform.Forms.csproj ../platform/src/Egov.Platform.Forms/
+COPY platform/src/Egov.Platform.Identity/Egov.Platform.Identity.csproj ../platform/src/Egov.Platform.Identity/
 
 RUN dotnet restore src/CitizenService.Web/CitizenService.Web.csproj
 
 COPY sal/ .
+COPY platform/ ../platform/
 COPY --from=web-assets /web/wwwroot/lib/formio/ src/CitizenService.Web/wwwroot/lib/formio/
 RUN dotnet publish src/CitizenService.Web/CitizenService.Web.csproj -c Release -o /app/publish --no-restore
 

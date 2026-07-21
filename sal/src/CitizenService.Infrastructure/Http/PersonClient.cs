@@ -1,5 +1,3 @@
-using CitizenService.Application.Interfaces;
-
 namespace CitizenService.Infrastructure.Http;
 
 public class PersonClient : IPersonClient

@@ -1,0 +1,13 @@
+/src/platform/src/Egov.Platform.Identity/bin/Release/net10.0/Egov.Platform.Identity.deps.json
+/src/platform/src/Egov.Platform.Identity/bin/Release/net10.0/Egov.Platform.Identity.dll
+/src/platform/src/Egov.Platform.Identity/bin/Release/net10.0/Egov.Platform.Identity.pdb
+/src/platform/src/Egov.Platform.Identity/obj/Release/net10.0/Egov.Platform.Identity.csproj.AssemblyReference.cache
+/src/platform/src/Egov.Platform.Identity/obj/Release/net10.0/Egov.Platform.Identity.GeneratedMSBuildEditorConfig.editorconfig
+/src/platform/src/Egov.Platform.Identity/obj/Release/net10.0/Egov.Platform.Identity.AssemblyInfoInputs.cache
+/src/platform/src/Egov.Platform.Identity/obj/Release/net10.0/Egov.Platform.Identity.AssemblyInfo.cs
+/src/platform/src/Egov.Platform.Identity/obj/Release/net10.0/Egov.Platform.Identity.csproj.CoreCompileInputs.cache
+/src/platform/src/Egov.Platform.Identity/obj/Release/net10.0/Egov.Platform.Identity.sourcelink.json
+/src/platform/src/Egov.Platform.Identity/obj/Release/net10.0/Egov.Platform.Identity.dll
+/src/platform/src/Egov.Platform.Identity/obj/Release/net10.0/refint/Egov.Platform.Identity.dll
+/src/platform/src/Egov.Platform.Identity/obj/Release/net10.0/Egov.Platform.Identity.pdb
+/src/platform/src/Egov.Platform.Identity/obj/Release/net10.0/ref/Egov.Platform.Identity.dll

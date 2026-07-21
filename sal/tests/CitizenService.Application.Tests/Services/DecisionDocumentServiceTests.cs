@@ -1,9 +1,8 @@
-using CitizenService.Application.Documents;
 using CitizenService.Application.Interfaces;
 using CitizenService.Application.Services;
 using CitizenService.Domain.Entities;
 using CitizenService.Domain.Enums;
-using CitizenService.Infrastructure.Documents;
+using Egov.Platform.Documents;
 using FluentAssertions;
 using Moq;
 

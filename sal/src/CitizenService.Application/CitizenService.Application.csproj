@@ -2,6 +2,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CitizenService.Domain\CitizenService.Domain.csproj" />
+    <ProjectReference Include="..\..\..\platform\src\Egov.Platform.Documents\Egov.Platform.Documents.csproj" />
+    <ProjectReference Include="..\..\..\platform\src\Egov.Platform.Identity\Egov.Platform.Identity.csproj" />
   </ItemGroup>
 
   <ItemGroup>

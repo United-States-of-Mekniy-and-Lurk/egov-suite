@@ -1,5 +1,15 @@
 # SAL
 
+## Build images
+
+The service references the reusable projects under `platform/`, so Docker
+builds must use the repository root as their context:
+
+```sh
+docker build -f sal/Dockerfile.api .
+docker build -f sal/Dockerfile.web .
+```
+
 ## Keycloak audience
 
 The web application forwards the access token issued to the `citizen-admin`

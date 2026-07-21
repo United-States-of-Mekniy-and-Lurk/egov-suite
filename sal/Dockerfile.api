@@ -1,17 +1,19 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-COPY CitizenService.slnx ./
-COPY src/CitizenService.Domain/CitizenService.Domain.csproj src/CitizenService.Domain/
-COPY src/CitizenService.Application/CitizenService.Application.csproj src/CitizenService.Application/
-COPY src/CitizenService.Infrastructure/CitizenService.Infrastructure.csproj src/CitizenService.Infrastructure/
-COPY src/CitizenService.Api/CitizenService.Api.csproj src/CitizenService.Api/
-COPY src/CitizenService.Web/CitizenService.Web.csproj src/CitizenService.Web/
+COPY sal/CitizenService.slnx sal/
+COPY sal/src/CitizenService.Domain/CitizenService.Domain.csproj sal/src/CitizenService.Domain/
+COPY sal/src/CitizenService.Application/CitizenService.Application.csproj sal/src/CitizenService.Application/
+COPY sal/src/CitizenService.Infrastructure/CitizenService.Infrastructure.csproj sal/src/CitizenService.Infrastructure/
+COPY sal/src/CitizenService.Api/CitizenService.Api.csproj sal/src/CitizenService.Api/
+COPY platform/src/Egov.Platform.Documents/Egov.Platform.Documents.csproj platform/src/Egov.Platform.Documents/
+COPY platform/src/Egov.Platform.Identity/Egov.Platform.Identity.csproj platform/src/Egov.Platform.Identity/
 
-RUN dotnet restore src/CitizenService.Api/CitizenService.Api.csproj
+RUN dotnet restore sal/src/CitizenService.Api/CitizenService.Api.csproj
 
-COPY . .
-RUN dotnet publish src/CitizenService.Api/CitizenService.Api.csproj -c Release -o /app/publish --no-restore
+COPY sal/ sal/
+COPY platform/ platform/
+RUN dotnet publish sal/src/CitizenService.Api/CitizenService.Api.csproj -c Release -o /app/publish --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app

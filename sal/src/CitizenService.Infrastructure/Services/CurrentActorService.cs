@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using System.Text.Json;
-using CitizenService.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 
 namespace CitizenService.Infrastructure.Services;

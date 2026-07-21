@@ -32,7 +32,6 @@ public class CitizenDbContext : DbContext
         {
             e.HasKey(x => x.Id);
             e.Property(x => x.Status).HasConversion<string>();
-            e.Property(x => x.Version).IsConcurrencyToken();
 
             var converter = new ValueConverter<JsonDocument?, string?>(
                 v => v == null ? null : v.RootElement.GetRawText(),
@@ -115,6 +114,7 @@ public class CitizenDbContext : DbContext
         {
             e.HasKey(x => x.Id);
             e.Property(x => x.Status).HasConversion<string>();
+            e.Property(x => x.Version).IsConcurrencyToken();
             e.HasIndex(x => x.CitizenId);
             e.HasIndex(x => x.Status);
             e.HasIndex(x => new { x.CitizenId, x.FieldDefinitionId })
