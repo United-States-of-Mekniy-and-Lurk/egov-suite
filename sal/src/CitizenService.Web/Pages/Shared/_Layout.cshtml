@@ -25,9 +25,11 @@
             <nav class="mklu-header-nav" aria-label="Main navigation">
                 <a class="mklu-nav-link" asp-page="/Index">@L["nav.home"]</a>
                 <a class="mklu-nav-link" asp-page="/Applications/Index">@L["nav.my_applications"]</a>
+                <a class="mklu-nav-link" asp-page="/Corrections/Index">@L["nav.my_corrections"]</a>
                 @if (User.IsInRole("citizen-service:clerk") || User.IsInRole("citizen-service:admin"))
                 {
                     <a class="mklu-nav-link" asp-page="/Applications/Queue">@L["nav.review_applications"]</a>
+                    <a class="mklu-nav-link" asp-page="/Corrections/Queue">@L["nav.review_corrections"]</a>
                     <a class="mklu-nav-link" asp-page="/Citizens/Index">@L["nav.citizens"]</a>
                 }
                 @if (User.IsInRole("citizen-service:admin"))

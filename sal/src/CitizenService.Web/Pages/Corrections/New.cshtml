@@ -1,0 +1,67 @@
+@page
+@model CitizenService.Web.Pages.Corrections.NewCorrectionModel
+@{
+    ViewData["Title"] = L["corrections.new.title"].Value;
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+}
+
+<h1 class="mklu-heading-1">@L["corrections.new.title"]</h1>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="mklu-alert mklu-alert-error" role="alert">@Model.ErrorMessage</div>
+}
+
+@if (Model.Field != null)
+{
+    <form method="post" class="mklu-form">
+        <input asp-for="FieldKey" type="hidden" />
+        <div class="mklu-field">
+            <span class="mklu-label">@L["corrections.field"]</span>
+            <p>@Model.Field.Definition.GetLabel(culture)</p>
+        </div>
+        <div class="mklu-field">
+            <span class="mklu-label">@L["corrections.current_value"]</span>
+            <p>@(string.IsNullOrWhiteSpace(Model.Field.Value) ? L["common.not_yet"].Value : Model.Field.Value)</p>
+        </div>
+        <div class="mklu-field">
+            <label asp-for="ProposedValue">@L["corrections.proposed_value"]</label>
+            @if (Model.Field.Definition.FieldType == "Boolean")
+            {
+                <select asp-for="ProposedValue" required>
+                    <option value="true">@L["common.yes"]</option>
+                    <option value="false">@L["common.no"]</option>
+                </select>
+            }
+            else if (Model.Field.Definition.FieldType == "Select" && Model.Field.Definition.StaticOptions != null)
+            {
+                <select asp-for="ProposedValue" required>
+                    @foreach (var option in Model.Field.Definition.StaticOptions)
+                    {
+                        <option value="@option.Value">@option.GetLabel(culture)</option>
+                    }
+                </select>
+            }
+            else if (Model.Field.Definition.FieldType == "MultilineText")
+            {
+                <textarea asp-for="ProposedValue" required></textarea>
+            }
+            else
+            {
+                <input asp-for="ProposedValue"
+                       type="@(Model.Field.Definition.FieldType == "Date" ? "date" : Model.Field.Definition.FieldType is "Integer" or "Decimal" ? "number" : "text")"
+                       step="@(Model.Field.Definition.FieldType == "Decimal" ? "any" : null)"
+                       required="@Model.Field.Definition.IsRequired" />
+            }
+        </div>
+        <div class="mklu-field">
+            <label asp-for="RequestReason">@L["corrections.request_reason"]</label>
+            <textarea asp-for="RequestReason" required></textarea>
+            <p class="mklu-field-help">@L["corrections.request_reason_help"]</p>
+        </div>
+        <div class="mklu-form-actions">
+            <button type="submit" class="mklu-btn mklu-btn-filled">@L["corrections.submit"]</button>
+            <a asp-page="/Index" class="mklu-btn mklu-btn-outlined">@L["common.cancel"]</a>
+        </div>
+    </form>
+}

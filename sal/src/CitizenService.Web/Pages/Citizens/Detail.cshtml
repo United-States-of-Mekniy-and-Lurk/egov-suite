@@ -1,27 +1,97 @@
 @page
 @model CitizenService.Web.Pages.Citizens.CitizenDetailModel
 @{
-    ViewData["Title"] = "Citizen Detail";
+    ViewData["Title"] = L["citizens.detail.title"].Value;
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 }
 
-<h1 class="mklu-heading-1">Citizen Detail</h1>
+<h1 class="mklu-heading-1">@L["citizens.detail.title"]</h1>
 @if (Model.Citizen != null)
 {
     <dl class="mklu-dl">
-        <dt>Citizen Number</dt>
+        <dt>@L["index.citizen_number"]</dt>
         <dd>@Model.Citizen.CitizenNumber</dd>
-        <dt>Person ID</dt>
+        <dt>@L["citizens.detail.person_id"]</dt>
         <dd>@Model.Citizen.PersonId</dd>
-        <dt>Status</dt>
+        <dt>@L["common.status"]</dt>
         <dd>@Model.Citizen.Status</dd>
-        <dt>Granted At</dt>
+        <dt>@L["index.granted"]</dt>
         <dd>@Model.Citizen.GrantedAt</dd>
-        <dt>Import Source</dt>
+        <dt>@L["citizens.detail.source"]</dt>
         <dd>@Model.Citizen.ImportSource</dd>
     </dl>
+
+    <section class="mklu-section">
+        <h2 class="mklu-heading-2">@L["index.registry_data"]</h2>
+        @if (Model.RegistryFields.Count == 0)
+        {
+            <p class="mklu-text-secondary">@L["index.registry_data_empty"]</p>
+        }
+        else
+        {
+            <dl class="mklu-dl mklu-registry-fields">
+                @foreach (var field in Model.RegistryFields)
+                {
+                    <dt>@field.Definition.GetLabel(culture)</dt>
+                    <dd>@(string.IsNullOrWhiteSpace(field.Value) ? L["common.not_yet"].Value : field.Value)</dd>
+                }
+            </dl>
+        }
+    </section>
+
+    <section class="mklu-section">
+        <h2 class="mklu-heading-2">@L["citizens.detail.history"]</h2>
+        @if (Model.FieldHistory.Count == 0)
+        {
+            <p class="mklu-text-secondary">@L["citizens.detail.history_empty"]</p>
+        }
+        else
+        {
+            <div class="mklu-table-wrap">
+                <table class="mklu-table">
+                    <thead>
+                        <tr>
+                            <th>@L["corrections.field"]</th>
+                            <th>@L["corrections.current_value"]</th>
+                            <th>@L["citizens.detail.validity"]</th>
+                            <th>@L["citizens.detail.provenance"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var value in Model.FieldHistory)
+                        {
+                            <tr>
+                                <td>@value.Definition.GetLabel(culture)</td>
+                                <td>@value.Value</td>
+                                <td>
+                                    @value.ValidFrom.ToLocalTime().ToString("g") –
+                                    @(value.ValidTo?.ToLocalTime().ToString("g") ?? L["citizens.detail.current"].Value)
+                                </td>
+                                <td>
+                                    @if (value.SourceCorrectionRequestId.HasValue)
+                                    {
+                                        <span>@L["citizens.detail.correction"]</span>
+                                    }
+                                    else if (value.SourceApplicationId.HasValue)
+                                    {
+                                        <span>@L["citizens.detail.application"]</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@L["citizens.detail.administrative"]</span>
+                                    }
+                                    <span class="mklu-field-policy">@L["citizens.detail.recorded_by"] @value.RecordedByPersonId</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
 }
 else
 {
-    <p>Citizen not found.</p>
+    <p>@L["citizens.detail.not_found"]</p>
 }
-<a href="/Citizens" class="mklu-btn mklu-btn-outlined">Back</a>
+<a asp-page="/Citizens/Index" class="mklu-btn mklu-btn-outlined">@L["citizens.detail.back"]</a>

@@ -1,0 +1,51 @@
+@page
+@model CitizenService.Web.Pages.Corrections.CorrectionsIndexModel
+@{
+    ViewData["Title"] = L["corrections.title"].Value;
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+}
+
+<h1 class="mklu-heading-1">@L["corrections.title"]</h1>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="mklu-alert mklu-alert-error" role="alert">@Model.ErrorMessage</div>
+}
+else if (Model.Requests.Count == 0)
+{
+    <div class="mklu-empty-state"><p>@L["corrections.empty"]</p></div>
+}
+else
+{
+    <div class="mklu-table-wrap">
+        <table class="mklu-table">
+            <thead>
+                <tr>
+                    <th>@L["corrections.field"]</th>
+                    <th>@L["corrections.change"]</th>
+                    <th>@L["common.status"]</th>
+                    <th>@L["common.submitted"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var request in Model.Requests)
+                {
+                    <tr>
+                        <td>@request.Definition.GetLabel(culture)</td>
+                        <td>
+                            <span class="mklu-change-value">@(request.CurrentValue ?? L["common.not_yet"].Value)</span>
+                            <span aria-hidden="true">→</span>
+                            <span class="mklu-change-value">@request.ProposedValue</span>
+                            @if (!string.IsNullOrWhiteSpace(request.ReviewReason))
+                            {
+                                <span class="mklu-field-policy">@request.ReviewReason</span>
+                            }
+                        </td>
+                        <td><span class="mklu-badge mklu-badge-@request.Status.ToLowerInvariant()">@request.Status</span></td>
+                        <td>@request.SubmittedAt.ToLocalTime().ToString("g")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

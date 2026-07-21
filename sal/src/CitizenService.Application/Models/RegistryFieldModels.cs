@@ -38,3 +38,13 @@ public record CitizenRegistryFieldDto(
     string? Value,
     DateTime? UpdatedAt,
     Guid? SourceApplicationId);
+
+public record CitizenRegistryFieldHistoryDto(
+    RegistryFieldDefinitionDto Definition,
+    string Value,
+    DateTime ValidFrom,
+    DateTime? ValidTo,
+    DateTime RecordedAt,
+    Guid RecordedByPersonId,
+    Guid? SourceApplicationId,
+    Guid? SourceCorrectionRequestId);

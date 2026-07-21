@@ -72,9 +72,12 @@ public class ApplicationApprovalTests
             .ReturnsAsync(field);
         _registry.Setup(repository => repository.GetValueAsync(It.IsAny<Guid>(), field.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync((CitizenFieldValue?)null);
-        _registry.Setup(repository => repository.SaveValueAsync(It.IsAny<CitizenFieldValue>(), It.IsAny<CancellationToken>()))
-            .Callback<CitizenFieldValue, CancellationToken>((value, _) => savedValue = value)
-            .ReturnsAsync((CitizenFieldValue value, CancellationToken _) => value);
+        _registry.Setup(repository => repository.ReplaceCurrentValueAsync(
+                It.IsAny<CitizenFieldValue?>(),
+                It.IsAny<CitizenFieldValue>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<CitizenFieldValue?, CitizenFieldValue, CancellationToken>((_, value, _) => savedValue = value)
+            .ReturnsAsync((CitizenFieldValue? _, CitizenFieldValue value, CancellationToken _) => value);
 
         var service = CreateService();
         var result = await service.TransitionAsync(

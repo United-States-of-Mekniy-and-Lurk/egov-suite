@@ -105,6 +105,7 @@ public partial class RegistryFieldService
         string fieldKey,
         string? value,
         Guid? sourceApplicationId,
+        Guid? sourceCorrectionRequestId,
         CancellationToken ct)
     {
         var citizen = await _citizenRepository.GetByPersonIdAsync(personId, ct)
@@ -123,26 +124,53 @@ public partial class RegistryFieldService
 
         var normalizedValue = NormalizeValue(definition, value);
         var now = DateTime.UtcNow;
-        var fieldValue = await _registryRepository.GetValueAsync(citizen.Id, definition.Id, ct);
-        if (fieldValue == null)
+        var currentValue = await _registryRepository.GetValueAsync(citizen.Id, definition.Id, ct);
+        if (currentValue?.Value == normalizedValue)
         {
-            fieldValue = new CitizenFieldValue
-            {
-                Id = Guid.NewGuid(),
-                CitizenId = citizen.Id,
-                FieldDefinitionId = definition.Id,
-                CreatedAt = now
-            };
+            return new CitizenRegistryFieldDto(
+                ToDto(definition), currentValue.Value, currentValue.UpdatedAt, currentValue.SourceApplicationId);
         }
 
-        fieldValue.Value = normalizedValue;
-        fieldValue.SourceApplicationId = sourceApplicationId;
-        fieldValue.UpdatedByPersonId = _currentActor.PersonId;
-        fieldValue.UpdatedAt = now;
-        await _registryRepository.SaveValueAsync(fieldValue, ct);
+        var fieldValue = new CitizenFieldValue
+        {
+            Id = Guid.NewGuid(),
+            CitizenId = citizen.Id,
+            FieldDefinitionId = definition.Id,
+            Value = normalizedValue,
+            SourceApplicationId = sourceApplicationId,
+            SourceCorrectionRequestId = sourceCorrectionRequestId,
+            UpdatedByPersonId = _currentActor.PersonId,
+            ValidFrom = now,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+        await _registryRepository.ReplaceCurrentValueAsync(currentValue, fieldValue, ct);
 
         return new CitizenRegistryFieldDto(
             ToDto(definition), fieldValue.Value, fieldValue.UpdatedAt, fieldValue.SourceApplicationId);
+    }
+
+    public async Task<IReadOnlyList<CitizenRegistryFieldHistoryDto>> GetCitizenFieldHistoryAsync(
+        Guid personId,
+        CancellationToken ct)
+    {
+        var citizen = await _citizenRepository.GetByPersonIdAsync(personId, ct)
+            ?? throw new KeyNotFoundException($"Citizen not found for PersonId {personId}.");
+        var definitions = (await _registryRepository.ListDefinitionsAsync(includeInactive: true, ct))
+            .ToDictionary(definition => definition.Id);
+        var values = await _registryRepository.ListValueHistoryAsync(citizen.Id, ct);
+        return values
+            .Where(value => definitions.ContainsKey(value.FieldDefinitionId))
+            .Select(value => new CitizenRegistryFieldHistoryDto(
+                ToDto(definitions[value.FieldDefinitionId]),
+                value.Value,
+                value.ValidFrom,
+                value.ValidTo,
+                value.CreatedAt,
+                value.UpdatedByPersonId,
+                value.SourceApplicationId,
+                value.SourceCorrectionRequestId))
+            .ToList();
     }
 
     public async Task ApplyApplicationAnswersAsync(
@@ -173,6 +201,7 @@ public partial class RegistryFieldService
                     definition.Key,
                     JsonValueToString(answer),
                     application.Id,
+                    null,
                     ct);
                 continue;
             }

@@ -179,11 +179,20 @@ namespace CitizenService.Infrastructure.Migrations
                     b.Property<Guid?>("SourceApplicationId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("SourceCorrectionRequestId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UpdatedByPersonId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ValidTo")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Value")
                         .IsRequired()
@@ -195,8 +204,13 @@ namespace CitizenService.Infrastructure.Migrations
 
                     b.HasIndex("SourceApplicationId");
 
+                    b.HasIndex("SourceCorrectionRequestId");
+
                     b.HasIndex("CitizenId", "FieldDefinitionId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"ValidTo\" IS NULL");
+
+                    b.HasIndex("CitizenId", "FieldDefinitionId", "ValidFrom");
 
                     b.ToTable("CitizenFieldValues");
                 });
@@ -248,6 +262,73 @@ namespace CitizenService.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Applications");
+                });
+
+            modelBuilder.Entity("CitizenService.Domain.Entities.FieldCorrectionRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CitizenId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CurrentValue")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("FieldDefinitionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ProposedValue")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("RequestReason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReviewReason")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReviewedByPersonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RequestedByPersonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CitizenId");
+
+                    b.HasIndex("FieldDefinitionId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("CitizenId", "FieldDefinitionId")
+                        .IsUnique()
+                        .HasFilter("\"Status\" = 'Submitted'");
+
+                    b.ToTable("FieldCorrectionRequests");
                 });
 
             modelBuilder.Entity("CitizenService.Domain.Entities.RegistryFieldDefinition", b =>
@@ -328,6 +409,26 @@ namespace CitizenService.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("SourceApplicationId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("CitizenService.Domain.Entities.FieldCorrectionRequest", null)
+                        .WithMany()
+                        .HasForeignKey("SourceCorrectionRequestId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("CitizenService.Domain.Entities.FieldCorrectionRequest", b =>
+                {
+                    b.HasOne("CitizenService.Domain.Entities.Citizen", null)
+                        .WithMany()
+                        .HasForeignKey("CitizenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CitizenService.Domain.Entities.RegistryFieldDefinition", null)
+                        .WithMany()
+                        .HasForeignKey("FieldDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

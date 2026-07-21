@@ -1,4 +1,4 @@
-using System.Text.Json;
+using System.Net.Http.Json;
 using CitizenService.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -11,6 +11,8 @@ public class CitizenDetailModel : PageModel
     private readonly IHttpClientFactory _httpClientFactory;
 
     public CitizenViewModel? Citizen { get; set; }
+    public List<CitizenRegistryFieldViewModel> RegistryFields { get; set; } = [];
+    public List<CitizenRegistryFieldHistoryViewModel> FieldHistory { get; set; } = [];
 
     public CitizenDetailModel(IHttpClientFactory httpClientFactory)
     {
@@ -23,8 +25,12 @@ public class CitizenDetailModel : PageModel
         var response = await client.GetAsync($"/citizens/{id}", ct);
         if (response.IsSuccessStatusCode)
         {
-            var content = await response.Content.ReadAsStringAsync(ct);
-            Citizen = JsonSerializer.Deserialize<CitizenViewModel>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Citizen = await response.Content.ReadFromJsonAsync<CitizenViewModel>(cancellationToken: ct);
+            if (Citizen == null) return;
+            RegistryFields = await client.GetFromJsonAsync<List<CitizenRegistryFieldViewModel>>(
+                $"/citizens/{Citizen.PersonId}/fields", ct) ?? [];
+            FieldHistory = await client.GetFromJsonAsync<List<CitizenRegistryFieldHistoryViewModel>>(
+                $"/citizens/{Citizen.PersonId}/field-history", ct) ?? [];
         }
     }
 }

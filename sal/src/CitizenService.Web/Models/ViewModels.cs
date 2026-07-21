@@ -141,3 +141,32 @@ public class CitizenRegistryFieldViewModel
     public DateTime? UpdatedAt { get; set; }
     public Guid? SourceApplicationId { get; set; }
 }
+
+public class CitizenRegistryFieldHistoryViewModel
+{
+    public RegistryFieldDefinitionViewModel Definition { get; set; } = new();
+    public string Value { get; set; } = string.Empty;
+    public DateTime ValidFrom { get; set; }
+    public DateTime? ValidTo { get; set; }
+    public DateTime RecordedAt { get; set; }
+    public Guid RecordedByPersonId { get; set; }
+    public Guid? SourceApplicationId { get; set; }
+    public Guid? SourceCorrectionRequestId { get; set; }
+}
+
+public class FieldCorrectionRequestViewModel
+{
+    public Guid Id { get; set; }
+    public Guid CitizenId { get; set; }
+    public Guid PersonId { get; set; }
+    public RegistryFieldDefinitionViewModel Definition { get; set; } = new();
+    public string? CurrentValue { get; set; }
+    public string ProposedValue { get; set; } = string.Empty;
+    public string RequestReason { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public Guid RequestedByPersonId { get; set; }
+    public DateTime SubmittedAt { get; set; }
+    public Guid? ReviewedByPersonId { get; set; }
+    public DateTime? ReviewedAt { get; set; }
+    public string? ReviewReason { get; set; }
+}

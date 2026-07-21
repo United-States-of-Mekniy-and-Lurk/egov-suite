@@ -1,0 +1,54 @@
+@page
+@model CitizenService.Web.Pages.Corrections.CorrectionsQueueModel
+@{
+    ViewData["Title"] = L["corrections.queue.title"].Value;
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+}
+
+<h1 class="mklu-heading-1">@L["corrections.queue.title"]</h1>
+<p class="mklu-text-secondary">@L["corrections.queue.description"]</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="mklu-alert mklu-alert-error" role="alert">@Model.ErrorMessage</div>
+}
+else if (Model.Requests.Count == 0)
+{
+    <div class="mklu-empty-state"><p>@L["corrections.queue.empty"]</p></div>
+}
+else
+{
+    <div class="mklu-correction-queue">
+        @foreach (var request in Model.Requests)
+        {
+            <article class="mklu-card">
+                <div class="mklu-card-body">
+                    <h2 class="mklu-heading-3">@request.Definition.GetLabel(culture)</h2>
+                    <dl class="mklu-dl">
+                        <dt>@L["corrections.queue.citizen"]</dt>
+                        <dd><code>@request.PersonId</code></dd>
+                        <dt>@L["corrections.current_value"]</dt>
+                        <dd>@(request.CurrentValue ?? L["common.not_yet"].Value)</dd>
+                        <dt>@L["corrections.proposed_value"]</dt>
+                        <dd>@request.ProposedValue</dd>
+                        <dt>@L["corrections.request_reason"]</dt>
+                        <dd>@request.RequestReason</dd>
+                        <dt>@L["common.submitted"]</dt>
+                        <dd>@request.SubmittedAt.ToLocalTime().ToString("g")</dd>
+                    </dl>
+                    <form method="post" asp-page-handler="Review" class="mklu-form">
+                        <input type="hidden" name="id" value="@request.Id" />
+                        <div class="mklu-field">
+                            <label for="reason-@request.Id">@L["corrections.review_reason"]</label>
+                            <textarea id="reason-@request.Id" name="reason" required></textarea>
+                        </div>
+                        <div class="mklu-form-actions">
+                            <button type="submit" name="decision" value="approve" class="mklu-btn mklu-btn-filled">@L["common.approve"]</button>
+                            <button type="submit" name="decision" value="reject" class="mklu-btn mklu-btn-danger">@L["common.reject"]</button>
+                        </div>
+                    </form>
+                </div>
+            </article>
+        }
+    </div>
+}

@@ -16,6 +16,7 @@ public class CitizenDbContext : DbContext
     public DbSet<ApplicationFormDraft> ApplicationFormDrafts { get; set; }
     public DbSet<RegistryFieldDefinition> RegistryFieldDefinitions { get; set; }
     public DbSet<CitizenFieldValue> CitizenFieldValues { get; set; }
+    public DbSet<FieldCorrectionRequest> FieldCorrectionRequests { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -31,6 +32,7 @@ public class CitizenDbContext : DbContext
         {
             e.HasKey(x => x.Id);
             e.Property(x => x.Status).HasConversion<string>();
+            e.Property(x => x.Version).IsConcurrencyToken();
 
             var converter = new ValueConverter<JsonDocument?, string?>(
                 v => v == null ? null : v.RootElement.GetRawText(),
@@ -87,7 +89,10 @@ public class CitizenDbContext : DbContext
         modelBuilder.Entity<CitizenFieldValue>(e =>
         {
             e.HasKey(x => x.Id);
-            e.HasIndex(x => new { x.CitizenId, x.FieldDefinitionId }).IsUnique();
+            e.HasIndex(x => new { x.CitizenId, x.FieldDefinitionId, x.ValidFrom });
+            e.HasIndex(x => new { x.CitizenId, x.FieldDefinitionId })
+                .IsUnique()
+                .HasFilter("\"ValidTo\" IS NULL");
             e.HasOne<Citizen>()
                 .WithMany()
                 .HasForeignKey(x => x.CitizenId)
@@ -100,6 +105,29 @@ public class CitizenDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(x => x.SourceApplicationId)
                 .OnDelete(DeleteBehavior.SetNull);
+            e.HasOne<FieldCorrectionRequest>()
+                .WithMany()
+                .HasForeignKey(x => x.SourceCorrectionRequestId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<FieldCorrectionRequest>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Status).HasConversion<string>();
+            e.HasIndex(x => x.CitizenId);
+            e.HasIndex(x => x.Status);
+            e.HasIndex(x => new { x.CitizenId, x.FieldDefinitionId })
+                .IsUnique()
+                .HasFilter("\"Status\" = 'Submitted'");
+            e.HasOne<Citizen>()
+                .WithMany()
+                .HasForeignKey(x => x.CitizenId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<RegistryFieldDefinition>()
+                .WithMany()
+                .HasForeignKey(x => x.FieldDefinitionId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

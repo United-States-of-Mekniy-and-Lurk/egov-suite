@@ -105,6 +105,14 @@ else
                                     <span class="mklu-field-policy">
                                         @(field.Definition.UserEditable ? L["index.change_request_allowed"] : L["index.registry_managed"])
                                     </span>
+                                    @if (field.Definition.UserEditable)
+                                    {
+                                        <a asp-page="/Corrections/New"
+                                           asp-route-fieldKey="@field.Definition.Key"
+                                           class="mklu-field-action">
+                                            @L["index.request_correction"]
+                                        </a>
+                                    }
                                 </dd>
                             }
                         </dl>

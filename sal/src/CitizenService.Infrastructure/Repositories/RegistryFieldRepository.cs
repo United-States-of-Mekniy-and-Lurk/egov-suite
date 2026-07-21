@@ -47,26 +47,57 @@ public class RegistryFieldRepository : IRegistryFieldRepository
 
     public async Task<IReadOnlyList<CitizenFieldValue>> ListValuesAsync(Guid citizenId, CancellationToken ct)
         => await _context.CitizenFieldValues
+            .Where(value => value.CitizenId == citizenId &&
+                value.ValidFrom <= DateTime.UtcNow &&
+                (value.ValidTo == null || value.ValidTo > DateTime.UtcNow))
+            .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<CitizenFieldValue>> ListValueHistoryAsync(
+        Guid citizenId,
+        CancellationToken ct)
+        => await _context.CitizenFieldValues
             .Where(value => value.CitizenId == citizenId)
+            .OrderBy(value => value.FieldDefinitionId)
+            .ThenByDescending(value => value.ValidFrom)
             .ToListAsync(ct);
 
     public async Task<IReadOnlyList<CitizenFieldValue>> ListValuesByDefinitionAsync(
         Guid fieldDefinitionId, CancellationToken ct)
         => await _context.CitizenFieldValues
-            .Where(value => value.FieldDefinitionId == fieldDefinitionId)
+            .Where(value => value.FieldDefinitionId == fieldDefinitionId &&
+                value.ValidFrom <= DateTime.UtcNow &&
+                (value.ValidTo == null || value.ValidTo > DateTime.UtcNow))
             .ToListAsync(ct);
 
     public async Task<CitizenFieldValue?> GetValueAsync(
         Guid citizenId, Guid fieldDefinitionId, CancellationToken ct)
         => await _context.CitizenFieldValues.FirstOrDefaultAsync(
-            value => value.CitizenId == citizenId && value.FieldDefinitionId == fieldDefinitionId, ct);
+            value => value.CitizenId == citizenId &&
+                value.FieldDefinitionId == fieldDefinitionId &&
+                value.ValidFrom <= DateTime.UtcNow &&
+                (value.ValidTo == null || value.ValidTo > DateTime.UtcNow), ct);
 
-    public async Task<CitizenFieldValue> SaveValueAsync(CitizenFieldValue value, CancellationToken ct)
+    public async Task<CitizenFieldValue> ReplaceCurrentValueAsync(
+        CitizenFieldValue? currentValue,
+        CitizenFieldValue replacement,
+        CancellationToken ct)
     {
-        if (_context.Entry(value).State == EntityState.Detached)
-            _context.CitizenFieldValues.Add(value);
+        if (currentValue != null)
+        {
+            currentValue.ValidTo = replacement.ValidFrom;
+            currentValue.UpdatedAt = replacement.CreatedAt;
+        }
+        _context.CitizenFieldValues.Add(replacement);
 
-        await _context.SaveChangesAsync(ct);
-        return value;
+        try
+        {
+            await _context.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException exception)
+        {
+            throw new InvalidOperationException(
+                "The registry value changed concurrently. Reload the record and try again.", exception);
+        }
+        return replacement;
     }
 }
