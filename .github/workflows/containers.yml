@@ -27,7 +27,7 @@ jobs:
             dockerfile: ./ego/Dockerfile
             image: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-ego
           - name: citizen-service-api
-            context: ./sal
+            context: .
             dockerfile: ./sal/Dockerfile.api
             image: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-citizen-service-api
           - name: citizen-service-web
