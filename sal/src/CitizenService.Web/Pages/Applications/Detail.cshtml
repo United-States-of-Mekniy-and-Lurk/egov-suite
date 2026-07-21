@@ -1,10 +1,11 @@
 @page
 @model CitizenService.Web.Pages.Applications.ApplicationDetailModel
 @{
-    ViewData["Title"] = "Application Detail";
+    ViewData["Title"] = L["applications.review.title"].Value;
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 }
 
-<h1 class="mklu-heading-1">Application Detail</h1>
+<h1 class="mklu-heading-1">@L["applications.review.title"]</h1>
 @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
 {
     <div class="mklu-alert mklu-alert-error" role="alert">
@@ -14,36 +15,76 @@
 }
 @if (Model.Application != null)
 {
-    <dl class="mklu-dl">
-        <dt>ID</dt>
+    <dl class="mklu-dl mklu-review-summary">
+        <dt>@L["applications.review.id"]</dt>
         <dd>@Model.Application.Id</dd>
-        <dt>Person ID</dt>
+        <dt>@L["applications.queue.applicant"]</dt>
         <dd>@Model.Application.PersonId</dd>
-        <dt>Status</dt>
-        <dd>@Model.Application.Status</dd>
-        <dt>Form</dt>
+        <dt>@L["common.status"]</dt>
+        <dd><span class="mklu-badge mklu-badge-@Model.Application.Status.ToLowerInvariant()">@Model.Application.Status</span></dd>
+        <dt>@L["applications.review.form"]</dt>
         <dd>@Model.Application.FormName v@Model.Application.FormVersion</dd>
-        <dt>Submitted At</dt>
-        <dd>@Model.Application.SubmittedAt</dd>
-        <dt>Decision Reason</dt>
-        <dd>@Model.Application.DecisionReason</dd>
+        <dt>@L["common.submitted"]</dt>
+        <dd>@Model.Application.SubmittedAt?.ToLocalTime().ToString("g")</dd>
+        @if (!string.IsNullOrWhiteSpace(Model.Application.DecisionReason))
+        {
+            <dt>@L["common.decision"]</dt>
+            <dd>@Model.Application.DecisionReason</dd>
+        }
     </dl>
 
-    <form method="post" class="mklu-form">
-        <input type="hidden" name="id" value="@Model.Application.Id" />
-        <div class="mklu-field">
-            <label>Transition To</label>
-            <select name="targetState">
-                <option value="UnderReview">Under Review</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
-            </select>
-        </div>
-        <div class="mklu-field">
-            <label>Reason</label>
-            <textarea name="reason"></textarea>
-        </div>
-        <button type="submit" class="mklu-btn mklu-btn-filled">Apply Transition</button>
-    </form>
+    <section class="mklu-section" aria-labelledby="submitted-answers-heading">
+        <h2 id="submitted-answers-heading" class="mklu-heading-2">@L["applications.review.answers"]</h2>
+        <textarea id="FormDefinitionJson" hidden>@Model.FormDefinitionJson</textarea>
+        <textarea id="FormSubmissionJson" hidden>@Model.FormSubmissionJson</textarea>
+        <div id="formio-review" class="mklu-formio mklu-formio-review"></div>
+    </section>
+
+    @if (Model.Application.Status == "Submitted")
+    {
+        <form method="post" class="mklu-form">
+            <input type="hidden" name="id" value="@Model.Application.Id" />
+            <input type="hidden" name="targetState" value="UnderReview" />
+            <button type="submit" class="mklu-btn mklu-btn-filled">@L["applications.review.begin"]</button>
+        </form>
+    }
+    else if (Model.Application.Status == "UnderReview")
+    {
+        <form method="post" class="mklu-form">
+            <input type="hidden" name="id" value="@Model.Application.Id" />
+            <div class="mklu-field">
+                <label for="decision-reason">@L["applications.review.reason"]</label>
+                <textarea id="decision-reason" name="reason" required></textarea>
+            </div>
+            <div class="mklu-form-actions">
+                <button type="submit" name="targetState" value="Approved" class="mklu-btn mklu-btn-filled">@L["common.approve"]</button>
+                <button type="submit" name="targetState" value="Rejected" class="mklu-btn mklu-btn-danger">@L["common.reject"]</button>
+            </div>
+        </form>
+    }
 }
-<a href="/Applications" class="mklu-btn mklu-btn-outlined">Back</a>
+<a asp-page="/Applications/Queue" class="mklu-btn mklu-btn-outlined mklu-review-back">@L["applications.review.back"]</a>
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/formio/formio.full.min.css" />
+}
+
+@section Scripts {
+    <script src="~/lib/formio/formio.full.min.js"></script>
+    <script>
+        (() => {
+            const definition = JSON.parse(document.getElementById('FormDefinitionJson').value);
+            const submission = JSON.parse(document.getElementById('FormSubmissionJson').value || '{}');
+            if (!Array.isArray(definition.components)) return;
+
+            Formio.createForm(document.getElementById('formio-review'), definition, {
+                language: '@culture',
+                readOnly: true,
+                noAlerts: true
+            }).then(form => {
+                form.submission = { data: submission };
+                form.disabled = true;
+            });
+        })();
+    </script>
+}

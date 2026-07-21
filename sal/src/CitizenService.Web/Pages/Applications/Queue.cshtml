@@ -1,0 +1,67 @@
+@page
+@model CitizenService.Web.Pages.Applications.ApplicationQueueModel
+@{
+    ViewData["Title"] = L["applications.queue.title"].Value;
+}
+
+<div class="mklu-section-heading">
+    <div>
+        <h1 class="mklu-heading-1">@L["applications.queue.title"]</h1>
+        <p class="mklu-text-secondary">@L["applications.queue.description"]</p>
+    </div>
+    <form method="get" class="mklu-queue-filter">
+        <label for="queue-status">@L["common.status"]</label>
+        <select id="queue-status" asp-for="Status" onchange="this.form.submit()">
+            <option value="Pending">@L["applications.queue.pending"]</option>
+            <option value="Submitted">@L["applications.status.submitted"]</option>
+            <option value="UnderReview">@L["applications.status.under_review"]</option>
+            <option value="Approved">@L["applications.status.approved"]</option>
+            <option value="Rejected">@L["applications.status.rejected"]</option>
+            <option value="Withdrawn">@L["applications.status.withdrawn"]</option>
+            <option value="All">@L["applications.queue.all"]</option>
+        </select>
+    </form>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="mklu-alert mklu-alert-error" role="alert">@L["applications.queue.load_failed"]</div>
+}
+else if (Model.Applications.Count == 0)
+{
+    <div class="mklu-empty-state">
+        <p>@L["applications.queue.empty"]</p>
+    </div>
+}
+else
+{
+    <div class="mklu-table-wrap">
+        <table class="mklu-table">
+            <thead>
+                <tr>
+                    <th>@L["applications.queue.applicant"]</th>
+                    <th>@L["common.status"]</th>
+                    <th>@L["common.submitted"]</th>
+                    <th><span class="mklu-visually-hidden">@L["applications.queue.action"]</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var application in Model.Applications)
+                {
+                    <tr>
+                        <td><code>@application.PersonId</code></td>
+                        <td><span class="mklu-badge mklu-badge-@application.Status.ToLowerInvariant()">@application.Status</span></td>
+                        <td>@(application.SubmittedAt?.ToLocalTime().ToString("g") ?? L["common.not_yet"].Value)</td>
+                        <td>
+                            <a asp-page="/Applications/Detail"
+                               asp-route-id="@application.Id"
+                               class="mklu-btn mklu-btn-outlined">
+                                @L["applications.queue.review"]
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -304,6 +304,15 @@ body {
 .mklu-btn-outlined:hover {
   background-color: var(--mklu-interactive-subtle);
 }
+.mklu-btn-danger {
+  color: var(--mklu-error-text);
+  background-color: var(--mklu-error-surface);
+  border: 2px solid var(--mklu-error-text);
+}
+.mklu-btn-danger:hover {
+  color: var(--mklu-text-on-brand);
+  background-color: var(--mklu-error-text);
+}
 .mklu-page-action {
   margin-bottom: 24px;
 }
@@ -1046,7 +1055,42 @@ body {
 .mklu-form-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
+}
+.mklu-form-actions form {
+  margin: 0;
+}
+.mklu-queue-filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mklu-queue-filter label {
+  font-size: 14px;
+  font-weight: 600;
+}
+.mklu-queue-filter select {
+  min-height: 44px;
+  padding: 8px 36px 8px 12px;
+  color: var(--mklu-text-primary);
+  background: var(--mklu-surface-raised);
+  border: 1px solid var(--mklu-border-strong);
+  border-radius: var(--mklu-radius-sm);
+  font: 16px/1.5 var(--mklu-font-sans);
+}
+.mklu-review-summary {
+  max-width: 760px;
+  margin-bottom: 32px;
+}
+.mklu-formio-review {
+  max-width: 760px;
+}
+.mklu-formio-review .formio-component-button {
+  display: none;
+}
+.mklu-review-back {
+  margin-top: 32px;
 }
 .mklu-draft-status {
   margin: -8px 0 24px;

@@ -6,6 +6,11 @@
 
 <h1 class="mklu-heading-1">@L["applications.title"]</h1>
 
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="mklu-alert mklu-alert-error" role="alert">@L["applications.abandon_failed"]</div>
+}
+
 @if (Model.Applications.Count == 0)
 {
     <p class="mklu-text-secondary">@L["applications.empty"]</p>
@@ -36,11 +41,30 @@ else
                 </dl>
                 @if (a.Status == "Draft")
                 {
-                    <a asp-page="/Applications/New"
-                       asp-route-applicationId="@a.Id"
-                       class="mklu-btn mklu-btn-filled">
-                        @L["index.continue_application"]
-                    </a>
+                    <div class="mklu-form-actions">
+                        <a asp-page="/Applications/New"
+                           asp-route-applicationId="@a.Id"
+                           class="mklu-btn mklu-btn-filled">
+                            @L["index.continue_application"]
+                        </a>
+                        <form method="post" asp-page-handler="Abandon" asp-route-id="@a.Id">
+                            <button type="submit"
+                                    class="mklu-btn mklu-btn-danger"
+                                    onclick="return confirm('@L["applications.abandon_confirm"]')">
+                                @L["applications.abandon"]
+                            </button>
+                        </form>
+                    </div>
+                }
+                else if (a.Status is "Submitted" or "UnderReview")
+                {
+                    <form method="post" asp-page-handler="Abandon" asp-route-id="@a.Id">
+                        <button type="submit"
+                                class="mklu-btn mklu-btn-danger"
+                                onclick="return confirm('@L["applications.abandon_confirm"]')">
+                            @L["applications.abandon"]
+                        </button>
+                    </form>
                 }
             </div>
         </div>
