@@ -1,6 +1,6 @@
 {
   "app.name": "Služba pro občany",
-  "app.country": "Spojené státy Mekniy a Lurk",
+  "app.country": "Spojené státy Meknijska a Lurku",
   "app.skip_to_content": "Přeskočit na hlavní obsah",
 
   "nav.home": "Domů",
@@ -38,7 +38,7 @@
   "index.granted": "Uděleno",
   "index.pending_application": "Máte rozpracovanou žádost o občanství.",
   "index.not_yet_submitted": "Dosud neodesláno",
-  "index.not_citizen": "Zatím nejste občanem Spojených států Mekniy a Lurk.",
+  "index.not_citizen": "Zatím nejste občanem Spojených států Meknijska a Lurku.",
   "index.not_citizen_cta": "Podejte žádost o občanství a zahajte proces.",
   "index.apply_button": "Požádat o občanství",
   "index.continue_application": "Pokračovat v žádosti",
@@ -204,5 +204,5 @@
   "admin.registry_fields.type_boolean": "Ano nebo ne",
   "admin.registry_fields.type_select": "Výběr",
 
-  "footer.copyright": "© {0} Spojené státy Mekniy a Lurk"
+  "footer.copyright": "© {0} Spojené státy Meknijska a Lurku"
 }
