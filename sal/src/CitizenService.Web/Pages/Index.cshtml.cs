@@ -43,7 +43,7 @@ public class IndexModel : PageModel
             if (Person == null || Person.Id == Guid.Empty)
             {
                 UserState = "error";
-                ErrorMessage = "Your identity could not be resolved.";
+                ErrorMessage = "We could not finish setting up your account. Please try again.";
                 return;
             }
         }
@@ -55,7 +55,7 @@ public class IndexModel : PageModel
         {
             _logger.LogError(ex, "Failed to call Ego Person Registry");
             UserState = "error";
-            ErrorMessage = "Could not connect to the Person Registry.";
+            ErrorMessage = "We could not finish setting up your account. Please try again.";
             return;
         }
 

@@ -8,5 +8,7 @@ metadata:
 data:
   ASPNETCORE_ENVIRONMENT: {{ .Values.config.aspnetcoreEnvironment | quote }}
   Keycloak__Authority: {{ .Values.config.keycloak.authority | quote }}
-  Keycloak__Audience: {{ .Values.config.keycloak.audience | quote }}
+  {{- range $index, $audience := .Values.config.keycloak.audiences }}
+  Keycloak__Audiences__{{ $index }}: {{ $audience | quote }}
+  {{- end }}
   Keycloak__RequireHttpsMetadata: {{ .Values.config.keycloak.requireHttpsMetadata | quote }}

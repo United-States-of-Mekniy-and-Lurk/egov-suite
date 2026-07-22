@@ -7,6 +7,7 @@ using Ego.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,7 +34,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.Authority = builder.Configuration["Keycloak:Authority"];
-        options.Audience = builder.Configuration["Keycloak:Audience"];
+        var validAudiences = builder.Configuration.GetSection("Keycloak:Audiences").Get<string[]>()
+            ?? [];
+        if (validAudiences.Length == 0)
+        {
+            var audience = builder.Configuration["Keycloak:Audience"];
+            if (!string.IsNullOrWhiteSpace(audience)) validAudiences = [audience];
+        }
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = true,
+            ValidAudiences = validAudiences
+        };
         options.RequireHttpsMetadata = builder.Configuration.GetValue("Keycloak:RequireHttpsMetadata", true);
     });
 

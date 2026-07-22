@@ -72,7 +72,7 @@ Override the following via environment variables when deploying:
 |---|---|
 | `ConnectionStrings__DefaultConnection` | Full Npgsql connection string (include `****** |
 | `Keycloak__Authority` | Keycloak realm base URL, e.g. `https://keycloak.local/realms/mekniy-and-lurk` |
-| `Keycloak__Audience` | Expected JWT audience, e.g. `account` |
+| `Keycloak__Audiences__0`, `Keycloak__Audiences__1`, ... | Accepted JWT audiences, such as `ego` and calling service audiences |
 
 The `appsettings.json` in the repository does not contain a database password.
 Supply the full connection string at runtime via the environment variable above.

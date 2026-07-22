@@ -44,7 +44,9 @@ services:
     environment:
       ConnectionStrings__DefaultConnection: "Host=postgres;Database=ego;Username=ego"
       Keycloak__Authority: "http://keycloak:8080/realms/mekniy-and-lurk"
-      Keycloak__Audience: "account"
+      Keycloak__Audiences__0: "ego"
+      Keycloak__Audiences__1: "citizen-service"
+      Keycloak__Audiences__2: "account"
       Keycloak__RequireHttpsMetadata: "false"
       ASPNETCORE_ENVIRONMENT: Development
     ports:

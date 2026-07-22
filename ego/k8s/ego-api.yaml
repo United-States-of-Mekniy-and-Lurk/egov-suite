@@ -7,7 +7,9 @@ metadata:
 data:
   ASPNETCORE_ENVIRONMENT: Production
   Keycloak__Authority: "https://keycloak.example.com/realms/mekniy-and-lurk"
-  Keycloak__Audience: "account"
+  Keycloak__Audiences__0: "ego"
+  Keycloak__Audiences__1: "citizen-service"
+  Keycloak__Audiences__2: "account"
   Keycloak__RequireHttpsMetadata: "true"
 ---
 # Ego API Secret — REPLACE the connection string value below before applying.

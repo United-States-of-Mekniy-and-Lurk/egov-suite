@@ -52,7 +52,10 @@ config:
   aspnetcoreEnvironment: Production
   keycloak:
     authority: "https://keycloak.example.com/realms/mekniy-and-lurk"
-    audience: "account"
+    audiences:
+      - "ego"
+      - "citizen-service"
+      - "account"
     requireHttpsMetadata: "true"
 # Plain-text secret values used when externalSecrets.enabled is false.
 # Leave connectionString empty to auto-derive it from postgresql.* values (when postgresql.enabled is true).

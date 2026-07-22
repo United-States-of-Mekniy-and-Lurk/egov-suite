@@ -10,7 +10,10 @@ public interface IPersonRegistryApi
         CancellationToken ct = default);
 
     [Get("/persons/{id}")]
-    Task<ApiResponse<PersonApiResponse>> GetPersonByIdAsync(Guid id, CancellationToken ct = default);
+    Task<ApiResponse<PersonApiResponse>> GetPersonByIdAsync(
+        Guid id,
+        [Header("Authorization")] string authorization,
+        CancellationToken ct = default);
 }
 
 public class PersonApiResponse
