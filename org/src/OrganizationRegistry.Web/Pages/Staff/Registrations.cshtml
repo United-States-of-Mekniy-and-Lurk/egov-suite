@@ -1,0 +1,34 @@
+@page "/staff/registrations"
+@model OrganizationRegistry.Web.Pages.Staff.RegistrationsModel
+@{
+    ViewData["Title"] = L["ReviewRegistrations"];
+}
+
+<div class="content-width workspace-page">
+    <header class="workspace-header"><div><p class="eyebrow">@L["RegistryStaff"]</p><h1>@L["ReviewRegistrations"]</h1><p>@L["ReviewRegistrationsDescription"]</p></div></header>
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage)) { <div class="notice notice-error" role="alert">@Model.ErrorMessage</div> }
+    <form method="get" class="queue-filter"><label asp-for="Status">@L["Status"]</label><select asp-for="Status"><option value="">@L["AllStatuses"]</option><option>Submitted</option><option>UnderReview</option><option>MoreInformationRequired</option></select><button class="secondary-button" type="submit">@L["Filter"]</button></form>
+    <div class="review-list">
+        @foreach (var application in Model.Applications)
+        {
+            <article>
+                <header><div><h2>@application.LegalName</h2><p>@application.LegalFormCode · @application.RegisteredAddress</p></div><span class="status">@application.Status</span></header>
+                <p>@application.Purpose</p>
+                <form method="post" asp-page-handler="Transition" class="review-actions">
+                    <input type="hidden" name="id" value="@application.Id" /><input type="hidden" name="Status" value="@Model.Status" />
+                    <label><span>@L["DecisionReason"]</span><input name="reason" /></label>
+                    @if (application.Status == "Submitted")
+                    {
+                        <button class="secondary-button" name="targetStatus" value="UnderReview">@L["BeginReview"]</button>
+                    }
+                    @if (application.Status == "UnderReview")
+                    {
+                        <button class="secondary-button" name="targetStatus" value="MoreInformationRequired">@L["RequestInformation"]</button>
+                        <button class="danger-button" name="targetStatus" value="Rejected">@L["Reject"]</button>
+                        <button class="primary-button" name="targetStatus" value="Approved">@L["Approve"]</button>
+                    }
+                </form>
+            </article>
+        }
+    </div>
+</div>

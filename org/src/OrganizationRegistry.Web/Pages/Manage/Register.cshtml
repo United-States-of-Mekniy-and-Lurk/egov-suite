@@ -1,0 +1,34 @@
+@page "/manage/register"
+@model OrganizationRegistry.Web.Pages.Manage.RegisterModel
+@{
+    ViewData["Title"] = L["RegisterOrganization"];
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+}
+
+<div class="content-width form-page">
+    <a class="back-link" asp-page="/Manage/Index">@L["BackToManage"]</a>
+    <header><p class="eyebrow">@L["RegistrationApplication"]</p><h1>@L["RegisterOrganization"]</h1><p>@L["RegistrationDescription"]</p></header>
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage)) { <div class="notice notice-error" role="alert">@Model.ErrorMessage</div> }
+    <form method="post" class="registry-form">
+        <input type="hidden" asp-for="Id" />
+        <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+        <fieldset>
+            <legend>@L["OrganizationIdentity"]</legend>
+            <div class="field"><label asp-for="LegalName">@L["LegalName"]</label><input asp-for="LegalName" /><span asp-validation-for="LegalName"></span></div>
+            <div class="field"><label asp-for="TradingName">@L["TradingNameOptional"]</label><input asp-for="TradingName" /></div>
+            <div class="field"><label asp-for="LegalFormCode">@L["LegalForm"]</label><input asp-for="LegalFormCode" /><small>@L["LegalFormHelp"]</small><span asp-validation-for="LegalFormCode"></span></div>
+            <div class="field"><label asp-for="RegisteredAddress">@L["RegisteredAddress"]</label><textarea asp-for="RegisteredAddress" rows="3"></textarea><span asp-validation-for="RegisteredAddress"></span></div>
+        </fieldset>
+        <fieldset>
+            <legend>@L["PurposeAndActivity"]</legend>
+            <div class="field"><label asp-for="Purpose">@L["Purpose"]</label><textarea asp-for="Purpose" rows="5"></textarea><span asp-validation-for="Purpose"></span></div>
+            <div class="field"><span class="field-label">@L["Classifications"]</span><div class="check-list">
+                @foreach (var classification in Model.Classifications)
+                {
+                    <label><input type="checkbox" name="ClassificationCodes" value="@classification.Code" checked="@Model.ClassificationCodes.Contains(classification.Code)" /> <span>@classification.Label(culture)</span></label>
+                }
+            </div></div>
+        </fieldset>
+        <div class="form-actions"><button class="secondary-button" type="submit" name="action" value="draft">@L["SaveDraft"]</button><button class="primary-button" type="submit" name="action" value="submit">@L["SubmitApplication"]</button></div>
+    </form>
+</div>

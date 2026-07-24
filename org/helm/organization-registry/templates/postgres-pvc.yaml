@@ -1,0 +1,15 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "organization-registry.fullname" . }}-postgres-pvc
+  labels:
+    {{- include "organization-registry.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.postgresql.storageSize }}
+{{- end }}

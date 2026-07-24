@@ -15,16 +15,20 @@
     @foreach (var module in Model.Modules)
     {
         <article class="module module-@module.Tone">
-            <svg class="module-icon" aria-hidden="true"><use href="/img/icons.svg#file-check" /></svg>
-            <span class="module-status">@L["portal.overview.available"]</span>
+            <div class="module-heading">
+                <svg class="module-icon" aria-hidden="true"><use href="/img/icons.svg#file-check" /></svg>
+                <span class="module-status">@L["portal.overview.available"]</span>
+            </div>
             <h2>@module.Title</h2>
             <p>@module.Summary</p>
             <a href="@module.ActionUrl">@module.ActionLabel <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#arrow-right" /></svg></a>
         </article>
     }
     <article class="module module-neutral">
-        <svg class="module-icon" aria-hidden="true"><use href="/img/icons.svg#building" /></svg>
-        <span class="module-status">@L["portal.overview.coming_later"]</span>
+        <div class="module-heading">
+            <svg class="module-icon" aria-hidden="true"><use href="/img/icons.svg#building" /></svg>
+            <span class="module-status">@L["portal.overview.coming_later"]</span>
+        </div>
         <h2>@L["portal.overview.companies"]</h2>
         <p>@L["portal.overview.companies_summary"]</p>
     </article>

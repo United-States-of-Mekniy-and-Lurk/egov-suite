@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OrganizationRegistry.Api/OrganizationRegistry.Api.csproj" />
+    <Project Path="src/OrganizationRegistry.Application/OrganizationRegistry.Application.csproj" />
+    <Project Path="src/OrganizationRegistry.Domain/OrganizationRegistry.Domain.csproj" />
+    <Project Path="src/OrganizationRegistry.Infrastructure/OrganizationRegistry.Infrastructure.csproj" />
+    <Project Path="src/OrganizationRegistry.Web/OrganizationRegistry.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OrganizationRegistry.Application.Tests/OrganizationRegistry.Application.Tests.csproj" />
+  </Folder>
+</Solution>

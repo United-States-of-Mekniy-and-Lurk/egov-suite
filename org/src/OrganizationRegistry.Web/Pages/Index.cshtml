@@ -1,0 +1,99 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = L["PublicRegister"];
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+}
+
+<section class="registry-intro">
+    <div class="content-width">
+        <div class="intro-copy">
+            <p class="eyebrow">@L["OfficialRegister"]</p>
+            <h1>@L["FindOrganization"]</h1>
+            <p class="lede">@L["FindOrganizationDescription"]</p>
+        </div>
+    </div>
+    <div class="intro-divider" aria-hidden="true"></div>
+</section>
+
+<section class="search-band" aria-labelledby="search-heading">
+    <div class="content-width">
+        <h2 id="search-heading">@L["SearchRegister"]</h2>
+        <form method="get" class="search-form">
+            <div class="field field-search">
+                <label asp-for="Search">@L["NameOrNumber"]</label>
+                <input asp-for="Search" type="search" placeholder="@L["SearchPlaceholder"]" />
+            </div>
+            <div class="field">
+                <label asp-for="Classification">@L["Classification"]</label>
+                <select asp-for="Classification">
+                    <option value="">@L["AllClassifications"]</option>
+                    @foreach (var classification in Model.Classifications)
+                    {
+                        <option value="@classification.Code">@classification.Label(culture)</option>
+                    }
+                </select>
+            </div>
+            <button class="primary-button" type="submit">@L["Search"]</button>
+        </form>
+    </div>
+</section>
+
+<section class="results-section content-width" aria-live="polite">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">@L["PublicRecords"]</p>
+            <h2>@(string.IsNullOrWhiteSpace(Model.Search) && string.IsNullOrWhiteSpace(Model.Classification) ? L["RegisteredOrganizations"] : L["SearchResults"])</h2>
+        </div>
+        @if (!Model.IsUnavailable)
+        {
+            <span class="result-count">@L["ResultCount", Model.Organizations.Count]</span>
+        }
+    </div>
+
+    @if (Model.IsUnavailable)
+    {
+        <div class="notice notice-error" role="alert">
+            <strong>@L["RegisterUnavailable"]</strong>
+            <span>@L["TryAgainLater"]</span>
+        </div>
+    }
+    else if (Model.Organizations.Count == 0)
+    {
+        <div class="empty-state">
+            <h3>@L["NoOrganizations"]</h3>
+            <p>@L["AdjustSearch"]</p>
+            <a asp-page="/Index">@L["ClearSearch"]</a>
+        </div>
+    }
+    else
+    {
+        <div class="organization-list">
+            @foreach (var organization in Model.Organizations)
+            {
+                <article class="organization-row">
+                    <div class="organization-index" aria-hidden="true">@organization.LegalName[..1].ToUpperInvariant()</div>
+                    <div class="organization-summary">
+                        <h3><a asp-page="/Organizations/Detail" asp-route-identifier="@organization.Slug">@organization.LegalName</a></h3>
+                        @if (!string.IsNullOrWhiteSpace(organization.TradingName))
+                        {
+                            <p class="trading-name">@L["TradingAs"] @organization.TradingName</p>
+                        }
+                        <div class="organization-meta">
+                            <span><strong>@L["RegistrationNumber"]</strong> @organization.RegistrationNumber</span>
+                            <span><strong>@L["LegalForm"]</strong> @organization.LegalFormCode</span>
+                            <span class="status status-active">@L["Active"]</span>
+                        </div>
+                        <div class="classification-list">
+                            @foreach (var classification in organization.Classifications)
+                            {
+                                <span>@classification.Label(culture)</span>
+                            }
+                        </div>
+                    </div>
+                    <a class="row-action" asp-page="/Organizations/Detail" asp-route-identifier="@organization.Slug" aria-label="@L["ViewOrganization", organization.LegalName]">@L["ViewRecord"]</a>
+                </article>
+            }
+        </div>
+    }
+</section>

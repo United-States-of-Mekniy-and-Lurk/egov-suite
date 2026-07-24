@@ -3,6 +3,8 @@ name: Containers
 on:
   push:
     branches: ["main"]
+    paths-ignore:
+      - "**/helm/**/values.yaml"
   pull_request:
     branches: ["main"]
   workflow_dispatch:
@@ -38,6 +40,14 @@ jobs:
             context: .
             dockerfile: ./portal/Dockerfile
             image: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-portal
+          - name: organization-registry-api
+            context: .
+            dockerfile: ./org/Dockerfile.api
+            image: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-organization-registry-api
+          - name: organization-registry-web
+            context: .
+            dockerfile: ./org/Dockerfile.web
+            image: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-organization-registry-web
           - name: gov-cli
             context: ./gov-cli
             dockerfile: ./gov-cli/Dockerfile

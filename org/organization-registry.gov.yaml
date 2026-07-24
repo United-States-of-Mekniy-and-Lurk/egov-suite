@@ -1,0 +1,34 @@
+service: organization-registry
+portal:
+  name: Organisation Registry
+  description: Search the public register or register and manage an organisation.
+  url: https://organizations.mklu.org
+  category: Business and organisations
+  keywords:
+    - organisation
+    - company
+    - public register
+    - registration
+  localizations:
+    cs:
+      name: Rejstřík organizací
+      description: Vyhledejte organizaci ve veřejném rejstříku nebo založte a spravujte vlastní organizaci.
+      category: Podnikání a organizace
+      keywords:
+        - organizace
+        - společnost
+        - veřejný rejstřík
+        - registrace
+  public: true
+auth:
+  clients:
+    web:
+      redirectUris:
+        - https://organizations.mklu.org/signin-oidc
+      scopes:
+        - openid
+        - profile
+        - email
+roles:
+  - clerk
+  - admin

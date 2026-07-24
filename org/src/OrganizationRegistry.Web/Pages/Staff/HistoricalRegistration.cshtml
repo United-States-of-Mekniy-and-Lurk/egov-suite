@@ -1,0 +1,54 @@
+@page "/staff/historical-registration"
+@model OrganizationRegistry.Web.Pages.Staff.HistoricalRegistrationModel
+@{
+    ViewData["Title"] = L["AddExistingOrganization"];
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
+}
+
+<div class="content-width form-page">
+    <a class="back-link" asp-page="/Staff/Registrations">@L["BackToReviewQueue"]</a>
+    <header>
+        <p class="eyebrow">@L["RegistryStaff"]</p>
+        <h1>@L["AddExistingOrganization"]</h1>
+        <p>@L["HistoricalRegistrationDescription"]</p>
+    </header>
+    <div class="record-note historical-note">
+        <strong>@L["HistoricalAuditTitle"]</strong>
+        <p>@L["HistoricalAuditDescription"]</p>
+    </div>
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage)) { <div class="notice notice-error" role="alert">@Model.ErrorMessage</div> }
+    <form method="post" class="registry-form">
+        <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+        <fieldset>
+            <legend>@L["HistoricalRecord"]</legend>
+            <div class="field"><label asp-for="RegistrationNumber">@L["ExistingRegistrationNumber"]</label><input asp-for="RegistrationNumber" /><span asp-validation-for="RegistrationNumber"></span></div>
+            <div class="field"><label asp-for="RegisteredOn">@L["OriginalRegistrationDate"]</label><input asp-for="RegisteredOn" type="date" max="@today" /><span asp-validation-for="RegisteredOn"></span></div>
+            <div class="field"><label asp-for="EstablishedOn">@L["EstablishmentDateOptional"]</label><input asp-for="EstablishedOn" type="date" max="@today" /></div>
+            <div class="field"><label asp-for="SourceReference">@L["SourceReference"]</label><input asp-for="SourceReference" /><small>@L["SourceReferenceHelp"]</small><span asp-validation-for="SourceReference"></span></div>
+            <div class="field"><label asp-for="ImportNote">@L["ImportNoteOptional"]</label><textarea asp-for="ImportNote" rows="3"></textarea></div>
+        </fieldset>
+        <fieldset>
+            <legend>@L["OrganizationIdentity"]</legend>
+            <div class="field"><label asp-for="LegalName">@L["LegalName"]</label><input asp-for="LegalName" /><span asp-validation-for="LegalName"></span></div>
+            <div class="field"><label asp-for="TradingName">@L["TradingNameOptional"]</label><input asp-for="TradingName" /></div>
+            <div class="field"><label asp-for="LegalFormCode">@L["LegalForm"]</label><input asp-for="LegalFormCode" /><small>@L["LegalFormHelp"]</small><span asp-validation-for="LegalFormCode"></span></div>
+            <div class="field"><label asp-for="RegisteredAddress">@L["RegisteredAddress"]</label><textarea asp-for="RegisteredAddress" rows="3"></textarea><span asp-validation-for="RegisteredAddress"></span></div>
+        </fieldset>
+        <fieldset>
+            <legend>@L["PurposeAndActivity"]</legend>
+            <div class="field"><label asp-for="Purpose">@L["Purpose"]</label><textarea asp-for="Purpose" rows="5"></textarea><span asp-validation-for="Purpose"></span></div>
+            <div class="field"><span class="field-label">@L["Classifications"]</span><div class="check-list">
+                @foreach (var classification in Model.Classifications)
+                {
+                    <label><input type="checkbox" name="ClassificationCodes" value="@classification.Code" checked="@Model.ClassificationCodes.Contains(classification.Code)" /> <span>@classification.Label(culture)</span></label>
+                }
+            </div></div>
+        </fieldset>
+        <fieldset>
+            <legend>@L["InitialAccess"]</legend>
+            <div class="field"><label asp-for="OwnerPersonId">@L["OwnerPersonIdOptional"]</label><input asp-for="OwnerPersonId" /><small>@L["OwnerPersonIdHelp"]</small><span asp-validation-for="OwnerPersonId"></span></div>
+        </fieldset>
+        <div class="form-actions"><button class="primary-button" type="submit">@L["CreateHistoricalRecord"]</button></div>
+    </form>
+</div>

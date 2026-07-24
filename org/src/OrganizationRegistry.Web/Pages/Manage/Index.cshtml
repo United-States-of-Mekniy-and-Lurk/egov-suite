@@ -1,0 +1,71 @@
+@page "/manage"
+@model OrganizationRegistry.Web.Pages.Manage.IndexModel
+@{
+    ViewData["Title"] = L["ManageOrganization"];
+}
+
+<div class="content-width workspace-page">
+    <header class="workspace-header">
+        <div>
+            <p class="eyebrow">@L["PrivateArea"]</p>
+            <h1>@L["YourOrganizations"]</h1>
+            <p>@L["YourOrganizationsDescription"]</p>
+        </div>
+        <a class="primary-link" asp-page="/Manage/Register">@L["RegisterOrganization"]</a>
+    </header>
+
+    @if (Model.IsUnavailable)
+    {
+        <div class="notice notice-error" role="alert"><strong>@L["PrivateAreaUnavailable"]</strong><span>@L["TryAgainLater"]</span></div>
+    }
+    else
+    {
+        <section class="workspace-section" aria-labelledby="organizations-heading">
+            <div class="section-heading compact"><h2 id="organizations-heading">@L["OrganizationsYouManage"]</h2></div>
+            @if (Model.Organizations.Count == 0)
+            {
+                <div class="empty-state"><h3>@L["NoManagedOrganizations"]</h3><p>@L["NoManagedOrganizationsDescription"]</p></div>
+            }
+            else
+            {
+                <div class="management-list">
+                    @foreach (var managed in Model.Organizations)
+                    {
+                        <article>
+                            <div><h3>@managed.Organization.LegalName</h3><p>@managed.Organization.RegistrationNumber</p></div>
+                            <div class="role-list">@foreach (var role in managed.Roles) { <span>@role</span> }</div>
+                            <div class="row-links"><a asp-page="/Organizations/Detail" asp-route-identifier="@managed.Organization.Slug">@L["ViewRecord"]</a><a asp-page="/Manage/Corrections" asp-route-organizationId="@managed.Organization.Id">@L["Corrections"]</a></div>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="workspace-section" aria-labelledby="applications-heading">
+            <div class="section-heading compact"><h2 id="applications-heading">@L["RegistrationApplications"]</h2></div>
+            @if (Model.Applications.Count == 0)
+            {
+                <p class="muted-text">@L["NoApplications"]</p>
+            }
+            else
+            {
+                <div class="application-table-wrap">
+                    <table class="application-table">
+                        <thead><tr><th>@L["OrganizationName"]</th><th>@L["Status"]</th><th>@L["Updated"]</th><th></th></tr></thead>
+                        <tbody>
+                        @foreach (var application in Model.Applications)
+                        {
+                            <tr>
+                                <td>@application.LegalName</td>
+                                <td><span class="status">@application.Status</span></td>
+                                <td>@application.UpdatedAt.ToString("d MMM yyyy")</td>
+                                <td>@if (application.Status is "Draft" or "MoreInformationRequired") { <a asp-page="/Manage/Register" asp-route-id="@application.Id">@L["Continue"]</a> }</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    }
+</div>

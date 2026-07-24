@@ -1,0 +1,72 @@
+@page "/organizations/{identifier}"
+@model OrganizationRegistry.Web.Pages.Organizations.DetailModel
+@{
+    ViewData["Title"] = Model.Organization?.LegalName ?? L["OrganizationRecord"];
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+}
+
+<div class="content-width detail-page">
+    <a class="back-link" asp-page="/Index">@L["BackToRegister"]</a>
+
+    @if (Model.IsUnavailable)
+    {
+        <div class="notice notice-error" role="alert">
+            <strong>@L["RegisterUnavailable"]</strong>
+            <span>@L["TryAgainLater"]</span>
+        </div>
+    }
+    else if (Model.Organization is null)
+    {
+        <div class="empty-state">
+            <h1>@L["OrganizationNotFound"]</h1>
+            <p>@L["OrganizationNotFoundDescription"]</p>
+        </div>
+    }
+    else
+    {
+        var organization = Model.Organization;
+        <header class="record-header">
+            <div>
+                <p class="eyebrow">@L["PublicOrganizationRecord"]</p>
+                <h1>@organization.LegalName</h1>
+                @if (!string.IsNullOrWhiteSpace(organization.TradingName))
+                {
+                    <p class="record-trading-name">@L["TradingAs"] @organization.TradingName</p>
+                }
+            </div>
+            <span class="status status-active">@L["Active"]</span>
+        </header>
+
+        <div class="record-grid">
+            <section class="record-section" aria-labelledby="identity-heading">
+                <h2 id="identity-heading">@L["RegistryIdentity"]</h2>
+                <dl class="record-list">
+                    <div><dt>@L["RegistrationNumber"]</dt><dd>@organization.RegistrationNumber</dd></div>
+                    <div><dt>@L["LegalForm"]</dt><dd>@organization.LegalFormCode</dd></div>
+                    @if (organization.EstablishedOn.HasValue)
+                    {
+                        <div><dt>@L["EstablishedOn"]</dt><dd>@organization.EstablishedOn.Value.ToString("d MMMM yyyy")</dd></div>
+                    }
+                    <div><dt>@L["RegisteredOn"]</dt><dd>@organization.RegisteredAt.ToString("d MMMM yyyy")</dd></div>
+                    <div><dt>@L["RegisteredAddress"]</dt><dd>@organization.RegisteredAddress</dd></div>
+                </dl>
+            </section>
+            <section class="record-section" aria-labelledby="activity-heading">
+                <h2 id="activity-heading">@L["Activity"]</h2>
+                <p>@organization.Purpose</p>
+                <h3>@L["Classifications"]</h3>
+                <div class="classification-list">
+                    @foreach (var classification in organization.Classifications)
+                    {
+                        <span>@classification.Label(culture)</span>
+                    }
+                </div>
+            </section>
+        </div>
+
+        <aside class="record-note">
+            <strong>@L["PublicRecordNoteTitle"]</strong>
+            <p>@L["PublicRecordNote"]</p>
+        </aside>
+    }
+</div>

@@ -32,14 +32,24 @@
                 <a class="mklu-nav-link" asp-page="/Applications/Index"><i data-lucide="file-text" aria-hidden="true"></i><span>@L["nav.my_applications"]</span></a>
                 @if (User.IsInRole("citizen-service:clerk") || User.IsInRole("citizen-service:admin"))
                 {
-                    <a class="mklu-nav-link" asp-page="/Applications/Queue">@L["nav.review_applications"]</a>
-                    <a class="mklu-nav-link" asp-page="/Corrections/Queue">@L["nav.review_corrections"]</a>
-                    <a class="mklu-nav-link" asp-page="/Citizens/Index">@L["nav.citizens"]</a>
-                }
-                @if (User.IsInRole("citizen-service:admin"))
-                {
-                    <a class="mklu-nav-link" asp-page="/Admin/Forms">@L["nav.admin"]</a>
-                    <a class="mklu-nav-link" asp-page="/Admin/RegistryFields">@L["nav.registry_fields"]</a>
+                    <details class="mklu-nav-menu">
+                        <summary class="mklu-nav-link">
+                            <i data-lucide="briefcase-business" aria-hidden="true"></i>
+                            <span>@L["nav.staff_tools"]</span>
+                            <i class="mklu-nav-chevron" data-lucide="chevron-down" aria-hidden="true"></i>
+                        </summary>
+                        <div class="mklu-nav-menu-panel">
+                            <a asp-page="/Applications/Queue"><i data-lucide="clipboard-check" aria-hidden="true"></i>@L["nav.review_applications"]</a>
+                            <a asp-page="/Corrections/Queue"><i data-lucide="list-checks" aria-hidden="true"></i>@L["nav.review_corrections"]</a>
+                            <a asp-page="/Citizens/Index"><i data-lucide="users" aria-hidden="true"></i>@L["nav.citizens"]</a>
+                            @if (User.IsInRole("citizen-service:admin"))
+                            {
+                                <span class="mklu-nav-menu-label">@L["nav.admin"]</span>
+                                <a asp-page="/Admin/Forms"><i data-lucide="file-cog" aria-hidden="true"></i>@L["nav.forms"]</a>
+                                <a asp-page="/Admin/RegistryFields"><i data-lucide="table-properties" aria-hidden="true"></i>@L["nav.registry_fields"]</a>
+                            }
+                        </div>
+                    </details>
                 }
                 @if (User.Identity?.IsAuthenticated == true)
                 {

@@ -199,6 +199,72 @@ body {
   color: var(--mklu-text-on-brand);
   text-decoration: underline;
 }
+.mklu-nav-menu {
+  position: relative;
+}
+.mklu-nav-menu summary {
+  min-height: 40px;
+  cursor: pointer;
+  list-style: none;
+}
+.mklu-nav-menu summary::-webkit-details-marker {
+  display: none;
+}
+.mklu-nav-chevron {
+  width: 14px !important;
+  height: 14px !important;
+  transition: transform 120ms ease;
+}
+.mklu-nav-menu[open] .mklu-nav-chevron {
+  transform: rotate(180deg);
+}
+.mklu-nav-menu-panel {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 260px;
+  padding: 8px;
+  background: var(--mklu-surface-raised);
+  border: 1px solid var(--mklu-border);
+  border-radius: var(--mklu-radius-sm);
+  box-shadow: var(--mklu-elevation-2);
+}
+.mklu-nav-menu-panel a {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  color: var(--mklu-text-primary);
+  border-radius: var(--mklu-radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.mklu-nav-menu-panel a:visited {
+  color: var(--mklu-text-primary);
+}
+.mklu-nav-menu-panel a:hover {
+  color: var(--mklu-text-primary);
+  background: var(--mklu-interactive-subtle);
+}
+.mklu-nav-menu-panel svg {
+  width: 18px;
+  height: 18px;
+  color: var(--mklu-info-text);
+  flex: 0 0 auto;
+}
+.mklu-nav-menu-label {
+  display: block;
+  margin: 8px 10px 4px;
+  padding-top: 8px;
+  color: var(--mklu-text-secondary);
+  border-top: 1px solid var(--mklu-border);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
 .mklu-language-switcher {
   display: flex;
   align-items: center;
@@ -1353,6 +1419,34 @@ a:visited {
     width: 100%;
     min-height: 44px;
     padding: 10px 8px;
+  }
+  .mklu-nav-menu,
+  .mklu-nav-menu summary {
+    width: 100%;
+  }
+  .mklu-nav-menu-panel {
+    position: static;
+    width: auto;
+    margin: 2px 0 6px 28px;
+    padding: 4px;
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.2);
+    box-shadow: none;
+  }
+  .mklu-nav-menu-panel a,
+  .mklu-nav-menu-panel a:visited {
+    color: var(--mklu-text-on-brand);
+  }
+  .mklu-nav-menu-panel a:hover {
+    color: var(--mklu-text-on-brand);
+    background: rgba(255,255,255,0.1);
+  }
+  .mklu-nav-menu-panel svg {
+    color: var(--mklu-text-on-brand);
+  }
+  .mklu-nav-menu-label {
+    color: #d0d0d0;
+    border-top-color: rgba(255,255,255,0.2);
   }
   .mklu-language-switcher {
     justify-content: space-between;

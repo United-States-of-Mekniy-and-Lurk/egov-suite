@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "organization-registry.fullname" . }}-api
+  labels:
+    {{- include "organization-registry.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "organization-registry.api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "organization-registry.api.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: api
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+      {{- with .Values.api.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.api.podSecurityContext | nindent 8 }}
+      containers:
+        - name: api
+          image: {{ include "organization-registry.api.image" . }}
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.api.securityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.api.service.targetPort }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "organization-registry.fullname" . }}-config
+            - secretRef:
+                name: {{ include "organization-registry.secretName" . }}
+          {{- if .Values.api.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.api.readinessProbe.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.api.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.api.readinessProbe.periodSeconds }}
+          {{- end }}
+          {{- with .Values.api.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}

@@ -1,0 +1,12 @@
+apiVersion: v2
+name: organization-registry
+description: Public and private organisation registry service
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - organisation
+  - registry
+  - microservice
+maintainers:
+  - name: egov-suite

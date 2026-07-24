@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "organization-registry.fullname" . }}-web
+  labels:
+    {{- include "organization-registry.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+spec:
+  replicas: {{ .Values.web.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "organization-registry.web.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "organization-registry.web.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: web
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+      {{- with .Values.web.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.web.podSecurityContext | nindent 8 }}
+      containers:
+        - name: web
+          image: {{ include "organization-registry.web.image" . }}
+          imagePullPolicy: {{ .Values.web.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.web.securityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.web.service.targetPort }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "organization-registry.fullname" . }}-config
+            - secretRef:
+                name: {{ include "organization-registry.secretName" . }}
+          {{- if .Values.web.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.web.readinessProbe.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.web.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.web.readinessProbe.periodSeconds }}
+          {{- end }}
+          {{- if .Values.web.dataProtection.enabled }}
+          volumeMounts:
+            - name: data-protection-keys
+              mountPath: /var/lib/organization-registry/keys
+          {{- end }}
+          {{- with .Values.web.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.web.dataProtection.enabled }}
+      volumes:
+        - name: data-protection-keys
+          persistentVolumeClaim:
+            claimName: {{ include "organization-registry.fullname" . }}-web-keys-pvc
+      {{- end }}

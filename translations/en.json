@@ -16,6 +16,8 @@
   "nav.main": "Main navigation",
   "nav.menu": "Menu",
   "nav.language": "Language",
+  "nav.staff_tools": "Staff tools",
+  "nav.forms": "Forms",
 
   "common.name": "Name",
   "common.email": "Email",

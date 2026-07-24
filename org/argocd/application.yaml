@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: organization-registry
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/United-States-of-Mekniy-and-Lurk/egov-suite.git
+    targetRevision: HEAD
+    path: org/helm/organization-registry
+    helm:
+      releaseName: organization-registry
+      valueFiles:
+        - values.yaml
+      values: |
+        web:
+          ingress:
+            className: nginx
+            host: organizations.mklu.org
+            tls:
+              - hosts:
+                  - organizations.mklu.org
+                secretName: organization-registry-tls
+        config:
+          jwtAuthority: "https://idna.mklu.org/realms/mklu"
+          jwtAudience: "organization-registry"
+          personRegistryBaseUrl: "http://ego"
+          organizationApiBaseUrl: "http://organization-registry-api"
+          publicWebBaseUrl: "https://organizations.mklu.org"
+          oidcAuthority: "https://idna.mklu.org/realms/mklu"
+          oidcClientId: "organization-registry-web"
+          oidcRequireHttpsMetadata: true
+        secret:
+          # Pre-create this Secret with ConnectionStrings__DefaultConnection
+          # and Oidc__ClientSecret, preferably through External Secrets.
+          existingSecret: "organization-registry-production"
+        postgresql:
+          # Production uses the database configured by the external Secret.
+          enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

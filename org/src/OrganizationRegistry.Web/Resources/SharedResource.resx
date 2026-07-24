@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="AppName" xml:space="preserve"><value>Organisation Registry</value></data>
+  <data name="MetaDescription" xml:space="preserve"><value>Search the public register of organisations in the United States of Mekniy and Lurk.</value></data>
+  <data name="CountryName" xml:space="preserve"><value>United States of Mekniy and Lurk</value></data>
+  <data name="SkipToContent" xml:space="preserve"><value>Skip to main content</value></data>
+  <data name="Menu" xml:space="preserve"><value>Menu</value></data>
+  <data name="MainNavigation" xml:space="preserve"><value>Main navigation</value></data>
+  <data name="PublicRegister" xml:space="preserve"><value>Public register</value></data>
+  <data name="ManageOrganization" xml:space="preserve"><value>Manage an organisation</value></data>
+  <data name="Language" xml:space="preserve"><value>Language</value></data>
+  <data name="FooterDescription" xml:space="preserve"><value>Official public organisation records</value></data>
+  <data name="FooterNavigation" xml:space="preserve"><value>Footer navigation</value></data>
+  <data name="Privacy" xml:space="preserve"><value>Privacy</value></data>
+  <data name="ServiceStatus" xml:space="preserve"><value>Service status</value></data>
+  <data name="OfficialRegister" xml:space="preserve"><value>Official register</value></data>
+  <data name="FindOrganization" xml:space="preserve"><value>Find an organisation</value></data>
+  <data name="FindOrganizationDescription" xml:space="preserve"><value>Search verified public records by legal name, trading name, registration number, or activity.</value></data>
+  <data name="SearchRegister" xml:space="preserve"><value>Search the register</value></data>
+  <data name="NameOrNumber" xml:space="preserve"><value>Name or registration number</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>For example, Assembly Works or ORG-2026-001</value></data>
+  <data name="Classification" xml:space="preserve"><value>Activity</value></data>
+  <data name="AllClassifications" xml:space="preserve"><value>All activities</value></data>
+  <data name="Search" xml:space="preserve"><value>Search</value></data>
+  <data name="PublicRecords" xml:space="preserve"><value>Public records</value></data>
+  <data name="RegisteredOrganizations" xml:space="preserve"><value>Registered organisations</value></data>
+  <data name="SearchResults" xml:space="preserve"><value>Search results</value></data>
+  <data name="ResultCount" xml:space="preserve"><value>{0} records</value></data>
+  <data name="RegisterUnavailable" xml:space="preserve"><value>The register is temporarily unavailable.</value></data>
+  <data name="TryAgainLater" xml:space="preserve"><value>Please try again in a few minutes.</value></data>
+  <data name="NoOrganizations" xml:space="preserve"><value>No organisations found</value></data>
+  <data name="AdjustSearch" xml:space="preserve"><value>Check the spelling or choose a different activity.</value></data>
+  <data name="ClearSearch" xml:space="preserve"><value>Clear search</value></data>
+  <data name="TradingAs" xml:space="preserve"><value>Trading as</value></data>
+  <data name="RegistrationNumber" xml:space="preserve"><value>Registration number</value></data>
+  <data name="LegalForm" xml:space="preserve"><value>Legal form</value></data>
+  <data name="Active" xml:space="preserve"><value>Active</value></data>
+  <data name="ViewOrganization" xml:space="preserve"><value>View record for {0}</value></data>
+  <data name="ViewRecord" xml:space="preserve"><value>View record</value></data>
+  <data name="OrganizationRecord" xml:space="preserve"><value>Organisation record</value></data>
+  <data name="BackToRegister" xml:space="preserve"><value>Back to the register</value></data>
+  <data name="OrganizationNotFound" xml:space="preserve"><value>Organisation not found</value></data>
+  <data name="OrganizationNotFoundDescription" xml:space="preserve"><value>This record may have moved or the identifier may be incorrect.</value></data>
+  <data name="PublicOrganizationRecord" xml:space="preserve"><value>Public organisation record</value></data>
+  <data name="RegistryIdentity" xml:space="preserve"><value>Registry identity</value></data>
+  <data name="RegisteredOn" xml:space="preserve"><value>Registered on</value></data>
+  <data name="RegisteredAddress" xml:space="preserve"><value>Registered address</value></data>
+  <data name="Activity" xml:space="preserve"><value>Purpose and activity</value></data>
+  <data name="Classifications" xml:space="preserve"><value>Classifications</value></data>
+  <data name="PublicRecordNoteTitle" xml:space="preserve"><value>About this public record</value></data>
+  <data name="PublicRecordNote" xml:space="preserve"><value>This view contains the official public projection only. Access grants, representatives, and internal review history are not published.</value></data>
+  <data name="ReviewRegistrations" xml:space="preserve"><value>Review registrations</value></data>
+  <data name="AddExistingOrganization" xml:space="preserve"><value>Add existing organisation</value></data>
+  <data name="BackToReviewQueue" xml:space="preserve"><value>Back to review queue</value></data>
+  <data name="HistoricalRegistrationDescription" xml:space="preserve"><value>Create a registry record for an organisation that was registered before this service existed.</value></data>
+  <data name="HistoricalAuditTitle" xml:space="preserve"><value>Historical facts and audit dates remain separate</value></data>
+  <data name="HistoricalAuditDescription" xml:space="preserve"><value>The original dates are recorded below. This import, classification assignments, and any owner access are timestamped today and attributed to you.</value></data>
+  <data name="HistoricalRecord" xml:space="preserve"><value>Historical record</value></data>
+  <data name="ExistingRegistrationNumber" xml:space="preserve"><value>Existing registration number</value></data>
+  <data name="OriginalRegistrationDate" xml:space="preserve"><value>Original registration date</value></data>
+  <data name="EstablishedOn" xml:space="preserve"><value>Established on</value></data>
+  <data name="EstablishmentDateOptional" xml:space="preserve"><value>Legal establishment date (optional)</value></data>
+  <data name="SourceReference" xml:space="preserve"><value>Source reference</value></data>
+  <data name="SourceReferenceHelp" xml:space="preserve"><value>Reference the legacy register, archival document, or migration batch.</value></data>
+  <data name="ImportNoteOptional" xml:space="preserve"><value>Internal import note (optional)</value></data>
+  <data name="InitialAccess" xml:space="preserve"><value>Initial access</value></data>
+  <data name="OwnerPersonIdOptional" xml:space="preserve"><value>Owner person ID (optional)</value></data>
+  <data name="OwnerPersonIdHelp" xml:space="preserve"><value>If known, grant this Ego person owner access from today.</value></data>
+  <data name="CreateHistoricalRecord" xml:space="preserve"><value>Create historical record</value></data>
+  <data name="LogOut" xml:space="preserve"><value>Log out</value></data>
+  <data name="PrivateArea" xml:space="preserve"><value>Private area</value></data>
+  <data name="YourOrganizations" xml:space="preserve"><value>Your organisations</value></data>
+  <data name="YourOrganizationsDescription" xml:space="preserve"><value>Manage organisations where the registry has granted you an active role.</value></data>
+  <data name="RegisterOrganization" xml:space="preserve"><value>Register an organisation</value></data>
+  <data name="PrivateAreaUnavailable" xml:space="preserve"><value>Your registry information is temporarily unavailable.</value></data>
+  <data name="OrganizationsYouManage" xml:space="preserve"><value>Organisations you manage</value></data>
+  <data name="NoManagedOrganizations" xml:space="preserve"><value>No managed organisations</value></data>
+  <data name="NoManagedOrganizationsDescription" xml:space="preserve"><value>Start a registration application to create an organisation record.</value></data>
+  <data name="RegistrationApplications" xml:space="preserve"><value>Registration applications</value></data>
+  <data name="NoApplications" xml:space="preserve"><value>You have no registration applications.</value></data>
+  <data name="OrganizationName" xml:space="preserve"><value>Organisation</value></data>
+  <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Updated" xml:space="preserve"><value>Updated</value></data>
+  <data name="Continue" xml:space="preserve"><value>Continue</value></data>
+  <data name="RegistrationApplication" xml:space="preserve"><value>Registration application</value></data>
+  <data name="RegistrationDescription" xml:space="preserve"><value>Provide the legal identity, registered address, purpose, and activities of the organisation.</value></data>
+  <data name="BackToManage" xml:space="preserve"><value>Back to your organisations</value></data>
+  <data name="OrganizationIdentity" xml:space="preserve"><value>Organisation identity</value></data>
+  <data name="LegalName" xml:space="preserve"><value>Legal name</value></data>
+  <data name="TradingNameOptional" xml:space="preserve"><value>Trading name (optional)</value></data>
+  <data name="LegalFormHelp" xml:space="preserve"><value>Use the registry code for the legal form, such as COOP or LTD.</value></data>
+  <data name="PurposeAndActivity" xml:space="preserve"><value>Purpose and activity</value></data>
+  <data name="Purpose" xml:space="preserve"><value>Purpose</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Save draft</value></data>
+  <data name="SubmitApplication" xml:space="preserve"><value>Submit application</value></data>
+  <data name="RegistryStaff" xml:space="preserve"><value>Registry staff</value></data>
+  <data name="ReviewRegistrationsDescription" xml:space="preserve"><value>Assess submitted applications and record a traceable registry decision.</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>All statuses</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="DecisionReason" xml:space="preserve"><value>Decision reason</value></data>
+  <data name="RequestInformation" xml:space="preserve"><value>Request information</value></data>
+  <data name="Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="BeginReview" xml:space="preserve"><value>Begin review</value></data>
+  <data name="Corrections" xml:space="preserve"><value>Corrections</value></data>
+  <data name="CorrectionsDescription" xml:space="preserve"><value>Request a reviewed correction when an official public field is inaccurate.</value></data>
+  <data name="RequestCorrection" xml:space="preserve"><value>Request a correction</value></data>
+  <data name="FieldToCorrect" xml:space="preserve"><value>Field to correct</value></data>
+  <data name="ChooseField" xml:space="preserve"><value>Choose a field</value></data>
+  <data name="ProposedValue" xml:space="preserve"><value>Proposed value</value></data>
+  <data name="Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="SubmitCorrection" xml:space="preserve"><value>Submit correction</value></data>
+  <data name="PreviousRequests" xml:space="preserve"><value>Previous requests</value></data>
+  <data name="NoCorrections" xml:space="preserve"><value>No correction requests have been submitted.</value></data>
+</root>

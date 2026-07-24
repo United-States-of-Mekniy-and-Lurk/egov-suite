@@ -1,0 +1,15 @@
+{{- if .Values.web.dataProtection.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "organization-registry.fullname" . }}-web-keys-pvc
+  labels:
+    {{- include "organization-registry.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+spec:
+  accessModes:
+    - {{ .Values.web.dataProtection.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.web.dataProtection.storageSize }}
+{{- end }}

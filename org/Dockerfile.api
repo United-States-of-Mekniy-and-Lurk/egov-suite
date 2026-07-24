@@ -1,0 +1,25 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY org/src/OrganizationRegistry.Domain/OrganizationRegistry.Domain.csproj org/src/OrganizationRegistry.Domain/
+COPY org/src/OrganizationRegistry.Application/OrganizationRegistry.Application.csproj org/src/OrganizationRegistry.Application/
+COPY org/src/OrganizationRegistry.Infrastructure/OrganizationRegistry.Infrastructure.csproj org/src/OrganizationRegistry.Infrastructure/
+COPY org/src/OrganizationRegistry.Api/OrganizationRegistry.Api.csproj org/src/OrganizationRegistry.Api/
+COPY platform/src/Egov.Platform.Identity/Egov.Platform.Identity.csproj platform/src/Egov.Platform.Identity/
+
+RUN dotnet restore org/src/OrganizationRegistry.Api/OrganizationRegistry.Api.csproj
+
+COPY org/ org/
+COPY platform/ platform/
+RUN dotnet publish org/src/OrganizationRegistry.Api/OrganizationRegistry.Api.csproj -c Release -o /app/publish --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+USER 1001:1001
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "OrganizationRegistry.Api.dll"]

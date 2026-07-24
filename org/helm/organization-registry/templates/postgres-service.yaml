@@ -1,0 +1,17 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "organization-registry.postgresServiceName" . }}
+  labels:
+    {{- include "organization-registry.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+spec:
+  selector:
+    app.kubernetes.io/name: {{ include "organization-registry.name" . }}-postgres
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: postgresql
+{{- end }}

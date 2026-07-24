@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="AppName" xml:space="preserve"><value>Rejstřík organizací</value></data>
+  <data name="MetaDescription" xml:space="preserve"><value>Vyhledávání ve veřejném rejstříku organizací Spojených států Meknijska a Lurku.</value></data>
+  <data name="CountryName" xml:space="preserve"><value>Spojené státy Meknijska a Lurku</value></data>
+  <data name="SkipToContent" xml:space="preserve"><value>Přeskočit na hlavní obsah</value></data>
+  <data name="Menu" xml:space="preserve"><value>Nabídka</value></data>
+  <data name="MainNavigation" xml:space="preserve"><value>Hlavní navigace</value></data>
+  <data name="PublicRegister" xml:space="preserve"><value>Veřejný rejstřík</value></data>
+  <data name="ManageOrganization" xml:space="preserve"><value>Spravovat organizaci</value></data>
+  <data name="Language" xml:space="preserve"><value>Jazyk</value></data>
+  <data name="FooterDescription" xml:space="preserve"><value>Oficiální veřejné záznamy organizací</value></data>
+  <data name="FooterNavigation" xml:space="preserve"><value>Navigace v zápatí</value></data>
+  <data name="Privacy" xml:space="preserve"><value>Ochrana soukromí</value></data>
+  <data name="ServiceStatus" xml:space="preserve"><value>Stav služby</value></data>
+  <data name="OfficialRegister" xml:space="preserve"><value>Oficiální rejstřík</value></data>
+  <data name="FindOrganization" xml:space="preserve"><value>Vyhledat organizaci</value></data>
+  <data name="FindOrganizationDescription" xml:space="preserve"><value>Vyhledávejte ověřené veřejné záznamy podle názvu, registračního čísla nebo činnosti.</value></data>
+  <data name="SearchRegister" xml:space="preserve"><value>Vyhledávání v rejstříku</value></data>
+  <data name="NameOrNumber" xml:space="preserve"><value>Název nebo registrační číslo</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Například Assembly Works nebo ORG-2026-001</value></data>
+  <data name="Classification" xml:space="preserve"><value>Činnost</value></data>
+  <data name="AllClassifications" xml:space="preserve"><value>Všechny činnosti</value></data>
+  <data name="Search" xml:space="preserve"><value>Vyhledat</value></data>
+  <data name="PublicRecords" xml:space="preserve"><value>Veřejné záznamy</value></data>
+  <data name="RegisteredOrganizations" xml:space="preserve"><value>Registrované organizace</value></data>
+  <data name="SearchResults" xml:space="preserve"><value>Výsledky vyhledávání</value></data>
+  <data name="ResultCount" xml:space="preserve"><value>Počet záznamů: {0}</value></data>
+  <data name="RegisterUnavailable" xml:space="preserve"><value>Rejstřík je dočasně nedostupný.</value></data>
+  <data name="TryAgainLater" xml:space="preserve"><value>Zkuste to prosím znovu za několik minut.</value></data>
+  <data name="NoOrganizations" xml:space="preserve"><value>Nebyly nalezeny žádné organizace</value></data>
+  <data name="AdjustSearch" xml:space="preserve"><value>Zkontrolujte pravopis nebo zvolte jinou činnost.</value></data>
+  <data name="ClearSearch" xml:space="preserve"><value>Zrušit vyhledávání</value></data>
+  <data name="TradingAs" xml:space="preserve"><value>Obchodní název</value></data>
+  <data name="RegistrationNumber" xml:space="preserve"><value>Registrační číslo</value></data>
+  <data name="LegalForm" xml:space="preserve"><value>Právní forma</value></data>
+  <data name="Active" xml:space="preserve"><value>Aktivní</value></data>
+  <data name="ViewOrganization" xml:space="preserve"><value>Zobrazit záznam organizace {0}</value></data>
+  <data name="ViewRecord" xml:space="preserve"><value>Zobrazit záznam</value></data>
+  <data name="OrganizationRecord" xml:space="preserve"><value>Záznam organizace</value></data>
+  <data name="BackToRegister" xml:space="preserve"><value>Zpět do rejstříku</value></data>
+  <data name="OrganizationNotFound" xml:space="preserve"><value>Organizace nebyla nalezena</value></data>
+  <data name="OrganizationNotFoundDescription" xml:space="preserve"><value>Záznam mohl být přesunut nebo je identifikátor nesprávný.</value></data>
+  <data name="PublicOrganizationRecord" xml:space="preserve"><value>Veřejný záznam organizace</value></data>
+  <data name="RegistryIdentity" xml:space="preserve"><value>Identita v rejstříku</value></data>
+  <data name="RegisteredOn" xml:space="preserve"><value>Datum registrace</value></data>
+  <data name="RegisteredAddress" xml:space="preserve"><value>Adresa sídla</value></data>
+  <data name="Activity" xml:space="preserve"><value>Účel a činnost</value></data>
+  <data name="Classifications" xml:space="preserve"><value>Klasifikace</value></data>
+  <data name="PublicRecordNoteTitle" xml:space="preserve"><value>O tomto veřejném záznamu</value></data>
+  <data name="PublicRecordNote" xml:space="preserve"><value>Toto zobrazení obsahuje pouze oficiální veřejné údaje. Přístupová oprávnění, zástupci ani interní historie posouzení se nezveřejňují.</value></data>
+  <data name="ReviewRegistrations" xml:space="preserve"><value>Posouzení registrací</value></data>
+  <data name="AddExistingOrganization" xml:space="preserve"><value>Přidat existující organizaci</value></data>
+  <data name="BackToReviewQueue" xml:space="preserve"><value>Zpět do fronty posouzení</value></data>
+  <data name="HistoricalRegistrationDescription" xml:space="preserve"><value>Vytvořte záznam organizace, která byla registrována před vznikem této služby.</value></data>
+  <data name="HistoricalAuditTitle" xml:space="preserve"><value>Historické údaje a auditní data zůstávají oddělené</value></data>
+  <data name="HistoricalAuditDescription" xml:space="preserve"><value>Původní data jsou zaznamenána níže. Import, přiřazení klasifikací a případný přístup vlastníka se zaznamenají s dnešním časem a vaším identifikátorem.</value></data>
+  <data name="HistoricalRecord" xml:space="preserve"><value>Historický záznam</value></data>
+  <data name="ExistingRegistrationNumber" xml:space="preserve"><value>Stávající registrační číslo</value></data>
+  <data name="OriginalRegistrationDate" xml:space="preserve"><value>Původní datum registrace</value></data>
+  <data name="EstablishedOn" xml:space="preserve"><value>Datum založení</value></data>
+  <data name="EstablishmentDateOptional" xml:space="preserve"><value>Datum právního založení (nepovinné)</value></data>
+  <data name="SourceReference" xml:space="preserve"><value>Odkaz na zdroj</value></data>
+  <data name="SourceReferenceHelp" xml:space="preserve"><value>Uveďte starší rejstřík, archivní dokument nebo migrační dávku.</value></data>
+  <data name="ImportNoteOptional" xml:space="preserve"><value>Interní poznámka k importu (nepovinná)</value></data>
+  <data name="InitialAccess" xml:space="preserve"><value>Počáteční přístup</value></data>
+  <data name="OwnerPersonIdOptional" xml:space="preserve"><value>Identifikátor osoby vlastníka (nepovinný)</value></data>
+  <data name="OwnerPersonIdHelp" xml:space="preserve"><value>Je-li znám, udělte této osobě v Ego přístup vlastníka ode dneška.</value></data>
+  <data name="CreateHistoricalRecord" xml:space="preserve"><value>Vytvořit historický záznam</value></data>
+  <data name="LogOut" xml:space="preserve"><value>Odhlásit se</value></data>
+  <data name="PrivateArea" xml:space="preserve"><value>Soukromá část</value></data>
+  <data name="YourOrganizations" xml:space="preserve"><value>Vaše organizace</value></data>
+  <data name="YourOrganizationsDescription" xml:space="preserve"><value>Spravujte organizace, ve kterých vám rejstřík udělil aktivní roli.</value></data>
+  <data name="RegisterOrganization" xml:space="preserve"><value>Registrovat organizaci</value></data>
+  <data name="PrivateAreaUnavailable" xml:space="preserve"><value>Vaše údaje v rejstříku jsou dočasně nedostupné.</value></data>
+  <data name="OrganizationsYouManage" xml:space="preserve"><value>Organizace, které spravujete</value></data>
+  <data name="NoManagedOrganizations" xml:space="preserve"><value>Žádné spravované organizace</value></data>
+  <data name="NoManagedOrganizationsDescription" xml:space="preserve"><value>Zahajte žádost o registraci a vytvořte záznam organizace.</value></data>
+  <data name="RegistrationApplications" xml:space="preserve"><value>Žádosti o registraci</value></data>
+  <data name="NoApplications" xml:space="preserve"><value>Nemáte žádné žádosti o registraci.</value></data>
+  <data name="OrganizationName" xml:space="preserve"><value>Organizace</value></data>
+  <data name="Status" xml:space="preserve"><value>Stav</value></data>
+  <data name="Updated" xml:space="preserve"><value>Aktualizováno</value></data>
+  <data name="Continue" xml:space="preserve"><value>Pokračovat</value></data>
+  <data name="RegistrationApplication" xml:space="preserve"><value>Žádost o registraci</value></data>
+  <data name="RegistrationDescription" xml:space="preserve"><value>Uveďte právní identitu, sídlo, účel a činnosti organizace.</value></data>
+  <data name="BackToManage" xml:space="preserve"><value>Zpět k vašim organizacím</value></data>
+  <data name="OrganizationIdentity" xml:space="preserve"><value>Identita organizace</value></data>
+  <data name="LegalName" xml:space="preserve"><value>Právní název</value></data>
+  <data name="TradingNameOptional" xml:space="preserve"><value>Obchodní název (nepovinné)</value></data>
+  <data name="LegalFormHelp" xml:space="preserve"><value>Použijte kód právní formy rejstříku, například COOP nebo LTD.</value></data>
+  <data name="PurposeAndActivity" xml:space="preserve"><value>Účel a činnost</value></data>
+  <data name="Purpose" xml:space="preserve"><value>Účel</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Uložit koncept</value></data>
+  <data name="SubmitApplication" xml:space="preserve"><value>Odeslat žádost</value></data>
+  <data name="RegistryStaff" xml:space="preserve"><value>Pracovníci rejstříku</value></data>
+  <data name="ReviewRegistrationsDescription" xml:space="preserve"><value>Posuzujte odeslané žádosti a zaznamenejte dohledatelné rozhodnutí rejstříku.</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>Všechny stavy</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrovat</value></data>
+  <data name="DecisionReason" xml:space="preserve"><value>Odůvodnění rozhodnutí</value></data>
+  <data name="RequestInformation" xml:space="preserve"><value>Vyžádat informace</value></data>
+  <data name="Reject" xml:space="preserve"><value>Zamítnout</value></data>
+  <data name="Approve" xml:space="preserve"><value>Schválit</value></data>
+  <data name="BeginReview" xml:space="preserve"><value>Zahájit posouzení</value></data>
+  <data name="Corrections" xml:space="preserve"><value>Opravy</value></data>
+  <data name="CorrectionsDescription" xml:space="preserve"><value>Požádejte o posouzení opravy, pokud je oficiální veřejný údaj nepřesný.</value></data>
+  <data name="RequestCorrection" xml:space="preserve"><value>Požádat o opravu</value></data>
+  <data name="FieldToCorrect" xml:space="preserve"><value>Opravovaný údaj</value></data>
+  <data name="ChooseField" xml:space="preserve"><value>Vyberte údaj</value></data>
+  <data name="ProposedValue" xml:space="preserve"><value>Navrhovaná hodnota</value></data>
+  <data name="Reason" xml:space="preserve"><value>Důvod</value></data>
+  <data name="SubmitCorrection" xml:space="preserve"><value>Odeslat opravu</value></data>
+  <data name="PreviousRequests" xml:space="preserve"><value>Předchozí žádosti</value></data>
+  <data name="NoCorrections" xml:space="preserve"><value>Nebyly odeslány žádné žádosti o opravu.</value></data>
+</root>

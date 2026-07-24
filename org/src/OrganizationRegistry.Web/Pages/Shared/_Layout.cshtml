@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - @L["AppName"]</title>
+    <meta name="description" content="@L["MetaDescription"]" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/site.css" />
+</head>
+<body>
+    @{ var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName; }
+    <a class="skip-link" href="#main-content">@L["SkipToContent"]</a>
+    <header class="site-header" role="banner">
+        <div class="header-inner">
+            <a class="brand" asp-page="/Index" aria-label="@L["AppName"]">
+                <img src="/img/MKLU-Flag-Small.svg" alt="" aria-hidden="true" />
+                <span class="brand-copy">
+                    <strong>@L["AppName"]</strong>
+                    <span>@L["CountryName"]</span>
+                </span>
+            </a>
+            <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-navigation">@L["Menu"]</button>
+            <nav id="site-navigation" class="site-nav" aria-label="@L["MainNavigation"]">
+                <a asp-page="/Index">@L["PublicRegister"]</a>
+                <a asp-page="/Manage/Index">@L["ManageOrganization"]</a>
+                @if (User.IsInRole("organization-registry:clerk") || User.IsInRole("organization-registry:admin"))
+                {
+                    <a asp-page="/Staff/Registrations">@L["ReviewRegistrations"]</a>
+                    <a asp-page="/Staff/HistoricalRegistration">@L["AddExistingOrganization"]</a>
+                }
+                <div class="language-switch" aria-label="@L["Language"]">
+                    <a class="@(culture == "en" ? "active" : null)" href="?culture=en">EN</a>
+                    <a class="@(culture == "cs" ? "active" : null)" href="?culture=cs">CS</a>
+                </div>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <form method="post" asp-page="/Logout" class="nav-form">
+                        <button type="submit">@L["LogOut"]</button>
+                    </form>
+                }
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-content" role="main">
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer" role="contentinfo">
+        <div class="footer-inner">
+            <div class="footer-identity">
+                <img src="/img/manticore.svg" alt="" aria-hidden="true" />
+                <div>
+                    <strong>@L["AppName"]</strong>
+                    <span>@L["FooterDescription"]</span>
+                </div>
+            </div>
+            <nav aria-label="@L["FooterNavigation"]">
+                <a asp-page="/Privacy">@L["Privacy"]</a>
+                <a href="/health">@L["ServiceStatus"]</a>
+            </nav>
+        </div>
+    </footer>
+
+    <script src="/js/site.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

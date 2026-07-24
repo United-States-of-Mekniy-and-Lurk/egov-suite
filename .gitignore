@@ -1,2 +1,22 @@
 .DS_Store
 portal/src/GovernmentPortal.Web/catalog/services.json
+
+# .NET build output
+**/bin/
+**/obj/
+**/TestResults/
+**/.vs/
+
+# User-specific and coverage files
+*.user
+*.suo
+*.userprefs
+*.coverage
+*.coveragexml
+coverage*.xml
+
+# Local Helm validation output
+/rendered.yaml
+/production-rendered.yaml
+/template_default.yaml
+/template_prod.yaml

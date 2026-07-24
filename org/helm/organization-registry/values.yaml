@@ -1,0 +1,107 @@
+api:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-organization-registry-api
+    pullPolicy: Always
+    # Automatically updated by the helm-release workflow after a successful push to main.
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    host: organization-registry-api.local
+    tls: []
+  readinessProbe:
+    enabled: true
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 5
+  resources: {}
+  podAnnotations: {}
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    runAsGroup: 1001
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+
+web:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-organization-registry-web
+    pullPolicy: Always
+    # Automatically updated by the helm-release workflow after a successful push to main.
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+  ingress:
+    enabled: true
+    className: ""
+    annotations: {}
+    host: organizations.local
+    tls: []
+  resources: {}
+  podAnnotations: {}
+  readinessProbe:
+    enabled: true
+    path: /health
+    initialDelaySeconds: 5
+    periodSeconds: 5
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    runAsGroup: 1001
+    fsGroup: 1001
+    fsGroupChangePolicy: OnRootMismatch
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+  dataProtection:
+    enabled: true
+    storageSize: 100Mi
+    accessMode: ReadWriteOnce
+
+config:
+  aspnetcoreEnvironment: "Production"
+  jwtAuthority: "http://keycloak:8080/realms/mekniy-and-lurk"
+  jwtAudience: "organization-registry"
+  personRegistryBaseUrl: "http://ego"
+  organizationApiBaseUrl: "http://organization-registry-api"
+  publicWebBaseUrl: "https://organizations.local"
+  oidcAuthority: "http://keycloak:8080/realms/mekniy-and-lurk"
+  oidcClientId: "organization-registry-web"
+  oidcRequireHttpsMetadata: true
+
+secret:
+  existingSecret: ""
+  connectionString: ""
+  oidcClientSecret: "CHANGE_ME"
+
+postgresql:
+  enabled: true
+  image: postgres:16-alpine
+  database: organization_registry
+  username: postgres
+  storageSize: 5Gi
+  password: "CHANGE_THIS_PASSWORD_BEFORE_DEPLOYING"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+nameOverride: ""
+fullnameOverride: ""

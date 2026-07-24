@@ -1,0 +1,25 @@
+@page "/manage/organizations/{organizationId:guid}/corrections"
+@model OrganizationRegistry.Web.Pages.Manage.CorrectionsModel
+@{
+    ViewData["Title"] = L["Corrections"];
+}
+
+<div class="content-width form-page">
+    <a class="back-link" asp-page="/Manage/Index">@L["BackToManage"]</a>
+    <header><p class="eyebrow">@L["PrivateArea"]</p><h1>@L["Corrections"]</h1><p>@L["CorrectionsDescription"]</p></header>
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage)) { <div class="notice notice-error" role="alert">@Model.ErrorMessage</div> }
+    <form method="post" class="registry-form correction-form">
+        <input type="hidden" asp-for="OrganizationId" />
+        <fieldset>
+            <legend>@L["RequestCorrection"]</legend>
+            <div class="field"><label asp-for="FieldKey">@L["FieldToCorrect"]</label><select asp-for="FieldKey"><option value="">@L["ChooseField"]</option><option value="legalName">@L["LegalName"]</option><option value="tradingName">@L["TradingNameOptional"]</option><option value="purpose">@L["Purpose"]</option><option value="registeredAddress">@L["RegisteredAddress"]</option></select><span asp-validation-for="FieldKey"></span></div>
+            <div class="field"><label asp-for="ProposedValue">@L["ProposedValue"]</label><textarea asp-for="ProposedValue" rows="4"></textarea></div>
+            <div class="field"><label asp-for="Reason">@L["Reason"]</label><textarea asp-for="Reason" rows="4"></textarea><span asp-validation-for="Reason"></span></div>
+            <button class="primary-button" type="submit">@L["SubmitCorrection"]</button>
+        </fieldset>
+    </form>
+    <section class="workspace-section"><div class="section-heading compact"><h2>@L["PreviousRequests"]</h2></div>
+        @if (Model.Requests.Count == 0) { <p class="muted-text">@L["NoCorrections"]</p> }
+        else { <div class="management-list">@foreach (var request in Model.Requests) { <article><div><h3>@request.FieldKey</h3><p>@request.SubmittedAt.ToString("d MMM yyyy") · @request.Reason</p></div><span class="status">@request.Status</span></article> }</div> }
+    </section>
+</div>
