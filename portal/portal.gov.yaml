@@ -2,7 +2,7 @@ service: government-portal
 portal:
   name: Government portal
   description: Find government information and services, and see a broad overview after signing in.
-  url: https://portal.gov.test
+  url: https://gov.mklu.org
   category: General
   keywords:
     - government
@@ -22,7 +22,7 @@ auth:
   clients:
     web:
       redirectUris:
-        - https://portal.gov.test/signin-oidc
+        - https://gov.mklu.org/signin-oidc
       scopes:
         - openid
         - profile
