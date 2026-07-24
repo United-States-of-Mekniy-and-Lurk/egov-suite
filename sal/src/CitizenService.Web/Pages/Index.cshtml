@@ -39,7 +39,7 @@ else
                 <div class="mklu-card-body">
                     <dl class="mklu-dl">
                         <dt>@L["common.status"]</dt>
-                        <dd><span class="mklu-badge mklu-badge-@(Model.Citizen?.Status?.ToLowerInvariant())">@StatusLabel(Model.Citizen?.Status)</span></dd>
+                        <dd><span class="mklu-badge mklu-badge-@(Model.Citizen?.Status?.ToLowerInvariant())">@L.StatusLabel(Model.Citizen?.Status)</span></dd>
                         <dt>@L["index.citizen_number"]</dt>
                         <dd>@Model.Citizen?.CitizenNumber</dd>
                         <dt>@L["index.granted"]</dt>
@@ -55,7 +55,7 @@ else
                     <p class="mklu-body-lg">@L["index.pending_application"]</p>
                     <dl class="mklu-dl">
                         <dt>@L["common.status"]</dt>
-                        <dd><span class="mklu-badge mklu-badge-pending">@StatusLabel(Model.PendingApplication?.Status)</span></dd>
+                        <dd><span class="mklu-badge mklu-badge-pending">@L.StatusLabel(Model.PendingApplication?.Status)</span></dd>
                         <dt>@L["common.submitted"]</dt>
                         <dd>@(Model.PendingApplication?.SubmittedAt?.ToString("d MMMM yyyy") ?? L["index.not_yet_submitted"].Value)</dd>
                     </dl>

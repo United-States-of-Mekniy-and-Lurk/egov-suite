@@ -1,19 +1,6 @@
 ﻿@using CitizenService.Web
+@using CitizenService.Web.Services
 @using Microsoft.Extensions.Localization
 @namespace CitizenService.Web.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @inject IStringLocalizer L
-@functions {
-	string StatusLabel(string? status) => status switch
-	{
-		"Draft" => L["applications.status.draft"].Value,
-		"Submitted" => L["applications.status.submitted"].Value,
-		"UnderReview" => L["applications.status.under_review"].Value,
-		"Approved" => L["applications.status.approved"].Value,
-		"Rejected" => L["applications.status.rejected"].Value,
-		"Withdrawn" => L["applications.status.withdrawn"].Value,
-		"Active" => L["common.active"].Value,
-		"Inactive" => L["common.inactive"].Value,
-		_ => status ?? string.Empty
-	};
-}

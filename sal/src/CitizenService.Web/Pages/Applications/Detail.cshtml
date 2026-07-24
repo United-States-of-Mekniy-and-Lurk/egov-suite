@@ -21,7 +21,7 @@
         <dt>@L["applications.queue.applicant"]</dt>
         <dd>@Model.Application.PersonId</dd>
         <dt>@L["common.status"]</dt>
-        <dd><span class="mklu-badge mklu-badge-@Model.Application.Status.ToLowerInvariant()">@StatusLabel(Model.Application.Status)</span></dd>
+        <dd><span class="mklu-badge mklu-badge-@Model.Application.Status.ToLowerInvariant()">@L.StatusLabel(Model.Application.Status)</span></dd>
         <dt>@L["applications.review.form"]</dt>
         <dd>@Model.Application.FormName v@Model.Application.FormVersion</dd>
         <dt>@L["common.submitted"]</dt>

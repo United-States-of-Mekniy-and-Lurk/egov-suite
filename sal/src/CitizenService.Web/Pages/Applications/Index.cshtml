@@ -31,7 +31,7 @@ else
             <div class="mklu-card-body">
                 <dl class="mklu-dl">
                     <dt>@L["common.status"]</dt>
-                    <dd><span class="mklu-badge mklu-badge-@(a.Status.ToLowerInvariant())">@StatusLabel(a.Status)</span></dd>
+                    <dd><span class="mklu-badge mklu-badge-@(a.Status.ToLowerInvariant())">@L.StatusLabel(a.Status)</span></dd>
                     <dt>@L["common.created"]</dt>
                     <dd>@a.CreatedAt.ToString("d MMMM yyyy")</dd>
                     <dt>@L["common.submitted"]</dt>
