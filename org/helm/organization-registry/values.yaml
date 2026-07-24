@@ -4,7 +4,7 @@ api:
     repository: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-organization-registry-api
     pullPolicy: Always
     # Automatically updated by the helm-release workflow after a successful push to main.
-    tag: "latest"
+    tag: "sha-43eab38"
   service:
     type: ClusterIP
     port: 80
@@ -31,14 +31,13 @@ api:
     capabilities:
       drop:
         - ALL
-
 web:
   replicaCount: 1
   image:
     repository: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-organization-registry-web
     pullPolicy: Always
     # Automatically updated by the helm-release workflow after a successful push to main.
-    tag: "latest"
+    tag: "sha-43eab38"
   service:
     type: ClusterIP
     port: 80
@@ -71,7 +70,6 @@ web:
     enabled: true
     storageSize: 100Mi
     accessMode: ReadWriteOnce
-
 config:
   aspnetcoreEnvironment: "Production"
   jwtAuthority: "http://keycloak:8080/realms/mekniy-and-lurk"
@@ -82,12 +80,10 @@ config:
   oidcAuthority: "http://keycloak:8080/realms/mekniy-and-lurk"
   oidcClientId: "organization-registry-web"
   oidcRequireHttpsMetadata: true
-
 secret:
   existingSecret: ""
   connectionString: ""
   oidcClientSecret: "CHANGE_ME"
-
 postgresql:
   enabled: true
   image: postgres:16-alpine
@@ -102,6 +98,5 @@ postgresql:
     limits:
       memory: "512Mi"
       cpu: "500m"
-
 nameOverride: ""
 fullnameOverride: ""
