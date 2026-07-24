@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace CitizenService.Web.Pages.Import;
 
@@ -8,12 +9,14 @@ namespace CitizenService.Web.Pages.Import;
 public class ImportIndexModel : PageModel
 {
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IStringLocalizer _localizer;
 
     public ImportResult? ImportResult { get; set; }
 
-    public ImportIndexModel(IHttpClientFactory httpClientFactory)
+    public ImportIndexModel(IHttpClientFactory httpClientFactory, IStringLocalizer localizer)
     {
         _httpClientFactory = httpClientFactory;
+        _localizer = localizer;
     }
 
     public void OnGet() { }
@@ -22,7 +25,7 @@ public class ImportIndexModel : PageModel
     {
         if (file == null || file.Length == 0)
         {
-            ModelState.AddModelError("", "Please select a CSV file.");
+            ModelState.AddModelError("", _localizer["import.file_required"].Value);
             return Page();
         }
 

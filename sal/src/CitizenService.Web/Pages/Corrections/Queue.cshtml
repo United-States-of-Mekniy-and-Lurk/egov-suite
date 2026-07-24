@@ -10,7 +10,7 @@
 
 @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
 {
-    <div class="mklu-alert mklu-alert-error" role="alert">@Model.ErrorMessage</div>
+    <div class="mklu-alert mklu-alert-error" role="alert">@L[Model.ErrorMessage]</div>
 }
 else if (Model.Requests.Count == 0)
 {

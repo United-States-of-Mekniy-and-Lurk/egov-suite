@@ -50,7 +50,7 @@ else
                 {
                     <tr>
                         <td><code>@application.PersonId</code></td>
-                        <td><span class="mklu-badge mklu-badge-@application.Status.ToLowerInvariant()">@application.Status</span></td>
+                        <td><span class="mklu-badge mklu-badge-@application.Status.ToLowerInvariant()">@StatusLabel(application.Status)</span></td>
                         <td>@(application.SubmittedAt?.ToLocalTime().ToString("g") ?? L["common.not_yet"].Value)</td>
                         <td>
                             <a asp-page="/Applications/Detail"

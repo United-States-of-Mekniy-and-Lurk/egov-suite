@@ -8,6 +8,7 @@
     "postinstall": "node scripts/copy-formio-assets.mjs"
   },
   "dependencies": {
-    "@formio/js": "5.4.2"
+    "@formio/js": "5.4.2",
+    "lucide": "0.468.0"
   }
 }

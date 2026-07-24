@@ -4,7 +4,15 @@
     ViewData["Title"] = L["applications.title"].Value;
 }
 
-<h1 class="mklu-heading-1">@L["applications.title"]</h1>
+<div class="mklu-section-heading">
+    <h1 class="mklu-heading-1">@L["applications.title"]</h1>
+    @if (Model.CanStartApplication)
+    {
+        <a asp-page="/Applications/New" class="mklu-btn mklu-btn-filled">
+            <i data-lucide="file-plus-2" aria-hidden="true"></i>@L["applications.start"]
+        </a>
+    }
+</div>
 
 @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
 {
@@ -23,7 +31,7 @@ else
             <div class="mklu-card-body">
                 <dl class="mklu-dl">
                     <dt>@L["common.status"]</dt>
-                    <dd><span class="mklu-badge mklu-badge-@(a.Status.ToLowerInvariant())">@a.Status</span></dd>
+                    <dd><span class="mklu-badge mklu-badge-@(a.Status.ToLowerInvariant())">@StatusLabel(a.Status)</span></dd>
                     <dt>@L["common.created"]</dt>
                     <dd>@a.CreatedAt.ToString("d MMMM yyyy")</dd>
                     <dt>@L["common.submitted"]</dt>
@@ -45,7 +53,7 @@ else
                         <a asp-page="/Applications/New"
                            asp-route-applicationId="@a.Id"
                            class="mklu-btn mklu-btn-filled">
-                            @L["index.continue_application"]
+                            <i data-lucide="file-pen-line" aria-hidden="true"></i>@L["index.continue_application"]
                         </a>
                         <form method="post" asp-page-handler="Abandon" asp-route-id="@a.Id">
                             <button type="submit"
@@ -71,7 +79,7 @@ else
                     <a asp-page="/Applications/DecisionDocument"
                        asp-route-id="@a.Id"
                        class="mklu-btn mklu-btn-outlined">
-                        @L["applications.decision_document.download"]
+                        <i data-lucide="download" aria-hidden="true"></i>@L["applications.decision_document.download"]
                     </a>
                 }
             </div>

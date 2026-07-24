@@ -46,7 +46,7 @@ public class ApplicationQueueModel : PageModel
             var response = await client.GetAsync(query, ct);
             if (!response.IsSuccessStatusCode)
             {
-                ErrorMessage = "The application queue could not be loaded.";
+                ErrorMessage = "applications.queue.load_failed";
                 Applications.Clear();
                 return;
             }

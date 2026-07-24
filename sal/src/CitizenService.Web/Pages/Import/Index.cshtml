@@ -1,16 +1,16 @@
 @page
 @model CitizenService.Web.Pages.Import.ImportIndexModel
 @{
-    ViewData["Title"] = "CSV Import";
+    ViewData["Title"] = L["import.title"].Value;
 }
 
-<h1 class="mklu-heading-1">Import Citizens from CSV</h1>
-<p>Expected columns: PersonId, CitizenNumber, GrantedAt, ImportSource</p>
+<h1 class="mklu-heading-1">@L["import.title"]</h1>
+<p>@L["import.expected_columns"]</p>
 
 @if (Model.ImportResult != null)
 {
     <div class="mklu-alert mklu-alert-info" role="status">
-        Imported: @Model.ImportResult.Imported rows. Errors: @Model.ImportResult.Errors.Count
+        @L["import.result", Model.ImportResult.Imported, Model.ImportResult.Errors.Count]
         @if (Model.ImportResult.Errors.Any())
         {
             <ul>
@@ -25,8 +25,8 @@
 
 <form method="post" enctype="multipart/form-data" class="mklu-form">
     <div class="mklu-field">
-        <label>CSV File</label>
+        <label>@L["import.file"]</label>
         <input type="file" name="file" accept=".csv" required />
     </div>
-    <button type="submit" class="mklu-btn mklu-btn-filled">Upload</button>
+    <button type="submit" class="mklu-btn mklu-btn-filled"><i data-lucide="upload" aria-hidden="true"></i>@L["import.upload"]</button>
 </form>

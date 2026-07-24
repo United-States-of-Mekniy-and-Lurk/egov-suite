@@ -8,6 +8,7 @@ CLI tool for managing MKLU government portals and tools.
 gov validate service.yaml
 gov plan service.yaml
 gov apply service.yaml
+gov catalog ../ > services.json
 ```
 
 `validate` checks YAML structure and required fields.
@@ -18,3 +19,7 @@ gov apply service.yaml
 - `GOV_KEYCLOAK_REALM`
 - `GOV_KEYCLOAK_CLIENT_ID`
 - `GOV_KEYCLOAK_CLIENT_SECRET`
+
+`catalog` recursively reads `*.gov.yaml` manifests and writes public portal metadata as JSON.
+The generated file can be mounted into the government portal; the portal does not need access to
+deployment credentials or the source repository.

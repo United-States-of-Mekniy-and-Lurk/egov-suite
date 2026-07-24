@@ -2,10 +2,14 @@ import { cp, mkdir } from 'node:fs/promises';
 
 const source = new URL('../node_modules/@formio/js/dist/', import.meta.url);
 const destination = new URL('../wwwroot/lib/formio/', import.meta.url);
+const lucideSource = new URL('../node_modules/lucide/dist/umd/lucide.min.js', import.meta.url);
+const lucideDestination = new URL('../wwwroot/lib/lucide/lucide.min.js', import.meta.url);
 
 await mkdir(destination, { recursive: true });
+await mkdir(new URL('../wwwroot/lib/lucide/', import.meta.url), { recursive: true });
 await Promise.all([
   cp(new URL('formio.full.min.js', source), new URL('formio.full.min.js', destination)),
   cp(new URL('formio.full.min.css', source), new URL('formio.full.min.css', destination)),
-  cp(new URL('fonts/', source), new URL('fonts/', destination), { recursive: true })
+  cp(new URL('fonts/', source), new URL('fonts/', destination), { recursive: true }),
+  cp(lucideSource, lucideDestination)
 ]);

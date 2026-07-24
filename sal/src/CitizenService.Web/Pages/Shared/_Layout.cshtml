@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="~/CitizenService.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
+    @{ var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName; }
     <a class="mklu-skip-link" href="#main-content">@L["app.skip_to_content"]</a>
     <header class="mklu-header" role="banner">
         <div class="mklu-header-inner">
@@ -22,10 +23,13 @@
                     <span class="mklu-header-subtitle">@L["app.country"]</span>
                 </div>
             </div>
-            <nav class="mklu-header-nav" aria-label="Main navigation">
-                <a class="mklu-nav-link" asp-page="/Index">@L["nav.home"]</a>
-                <a class="mklu-nav-link" asp-page="/Applications/Index">@L["nav.my_applications"]</a>
-                <a class="mklu-nav-link" asp-page="/Corrections/Index">@L["nav.my_corrections"]</a>
+            <button type="button" class="mklu-menu-button" aria-expanded="false" aria-controls="main-navigation">
+                <i data-lucide="menu" aria-hidden="true"></i>
+                <span>@L["nav.menu"]</span>
+            </button>
+            <nav id="main-navigation" class="mklu-header-nav" aria-label="@L["nav.main"]">
+                <a class="mklu-nav-link" asp-page="/Index"><i data-lucide="house" aria-hidden="true"></i><span>@L["nav.home"]</span></a>
+                <a class="mklu-nav-link" asp-page="/Applications/Index"><i data-lucide="file-text" aria-hidden="true"></i><span>@L["nav.my_applications"]</span></a>
                 @if (User.IsInRole("citizen-service:clerk") || User.IsInRole("citizen-service:admin"))
                 {
                     <a class="mklu-nav-link" asp-page="/Applications/Queue">@L["nav.review_applications"]</a>
@@ -39,8 +43,25 @@
                 }
                 @if (User.Identity?.IsAuthenticated == true)
                 {
+                    <form method="post" asp-page="/Language" class="mklu-language-switcher">
+                        <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                        <label class="mklu-visually-hidden" for="culture">@L["nav.language"]</label>
+                        <i data-lucide="languages" aria-hidden="true"></i>
+                        <select id="culture" name="culture" onchange="this.form.submit()">
+                            @if (currentCulture == "cs")
+                            {
+                                <option value="en">English</option>
+                                <option value="cs" selected>Čeština</option>
+                            }
+                            else
+                            {
+                                <option value="en" selected>English</option>
+                                <option value="cs">Čeština</option>
+                            }
+                        </select>
+                    </form>
                     <form method="post" asp-page="/Logout" class="mklu-nav-form">
-                        <button type="submit" class="mklu-nav-link mklu-nav-button">@L["nav.logout"]</button>
+                        <button type="submit" class="mklu-nav-link mklu-nav-button"><i data-lucide="log-out" aria-hidden="true"></i><span>@L["nav.logout"]</span></button>
                     </form>
                 }
             </nav>
@@ -58,6 +79,7 @@
         </div>
     </footer>
 
+    <script src="~/lib/lucide/lucide.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)

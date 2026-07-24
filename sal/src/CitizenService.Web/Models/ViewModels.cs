@@ -23,6 +23,12 @@ public class CitizenViewModel
     public DateTime CreatedAt { get; set; }
 }
 
+public sealed class CitizenListItemViewModel
+{
+    public required CitizenViewModel Citizen { get; init; }
+    public PersonViewModel? Person { get; init; }
+}
+
 public class ApplicationViewModel
 {
     public Guid Id { get; set; }

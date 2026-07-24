@@ -1,0 +1,78 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = L["portal.nav.services"].Value;
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+}
+
+<section class="intro-band">
+    <div class="content-width intro-grid">
+        <div>
+            <p class="eyebrow">@L["portal.index.eyebrow"]</p>
+            <h1>@L["portal.index.heading"]</h1>
+            <p>@L["portal.index.lead"]</p>
+        </div>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a class="overview-prompt" asp-page="/Overview">
+                <span><svg class="icon" aria-hidden="true"><use href="/img/icons.svg#user" /></svg>@L["portal.index.your_overview"]</span>
+                <strong>@L["portal.index.continue"]</strong>
+                <small>@L["portal.index.open_overview"] <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#arrow-right" /></svg></small>
+            </a>
+        }
+        else
+        {
+            <a class="overview-prompt" asp-page="/Login" asp-route-returnUrl="/Overview">
+                <span><svg class="icon" aria-hidden="true"><use href="/img/icons.svg#user" /></svg>@L["portal.index.personal_overview"]</span>
+                <strong>@L["portal.index.relevant_services"]</strong>
+                <small>@L["portal.nav.sign_in"] <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#arrow-right" /></svg></small>
+            </a>
+        }
+    </div>
+</section>
+
+<section class="content-width directory" aria-labelledby="services-heading">
+    <div class="directory-heading">
+        <div>
+            <p class="eyebrow">@L["portal.directory.eyebrow"]</p>
+            <h2 id="services-heading">@L["portal.directory.heading"]</h2>
+        </div>
+        <label class="search-field">
+            <span><svg class="icon" aria-hidden="true"><use href="/img/icons.svg#search" /></svg>@L["portal.directory.search"]</span>
+            <input id="service-search" type="search" placeholder="@L["portal.directory.search_placeholder"]" autocomplete="off" />
+        </label>
+    </div>
+
+    @if (Model.Categories.Count > 1)
+    {
+        <div class="category-filter" role="group" aria-label="Filter by category">
+            <button class="active" type="button" data-category="all">@L["portal.directory.all"]</button>
+            @foreach (var category in Model.Categories)
+            {
+                <button type="button" data-category="@category.ToLowerInvariant()">@category</button>
+            }
+        </div>
+    }
+
+    <div class="service-grid" id="service-grid">
+        @foreach (var service in Model.Services)
+        {
+            var localized = service.GetLocalization(culture);
+            var searchText = $"{localized.Name} {localized.Description} {localized.Category} {string.Join(' ', localized.Keywords)}".ToLowerInvariant();
+            <article class="service-card" data-category="@localized.Category.ToLowerInvariant()" data-search="@searchText">
+                <div class="service-mark" aria-hidden="true"><svg class="icon"><use href="/img/icons.svg#file-check" /></svg></div>
+                <div>
+                    <span class="category">@localized.Category</span>
+                    <h3><a href="@service.Url">@localized.Name</a></h3>
+                    <p>@localized.Description</p>
+                    <a class="service-link" href="@service.Url">@L["portal.directory.open"] <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#arrow-right" /></svg></a>
+                </div>
+            </article>
+        }
+    </div>
+    <p id="empty-results" class="empty-results" hidden>@L["portal.directory.empty"]</p>
+</section>
+
+@section Scripts {
+    <script src="~/js/catalog.js" asp-append-version="true"></script>
+}

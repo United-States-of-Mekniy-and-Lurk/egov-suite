@@ -34,6 +34,10 @@ jobs:
             context: .
             dockerfile: ./sal/Dockerfile.web
             image: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-citizen-service-web
+          - name: government-portal
+            context: .
+            dockerfile: ./portal/Dockerfile
+            image: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-portal
           - name: gov-cli
             context: ./gov-cli
             dockerfile: ./gov-cli/Dockerfile

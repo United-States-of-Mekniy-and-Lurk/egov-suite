@@ -9,6 +9,12 @@
 @if (Model.Citizen != null)
 {
     <dl class="mklu-dl">
+        <dt>@L["common.name"]</dt>
+        <dd>@(Model.Person?.DisplayName ?? L["citizens.list.name_unavailable"].Value)</dd>
+        <dt>@L["common.email"]</dt>
+        <dd>@Model.Person?.Email</dd>
+        <dt>@L["common.username"]</dt>
+        <dd>@Model.Person?.PreferredUsername</dd>
         <dt>@L["index.citizen_number"]</dt>
         <dd>@Model.Citizen.CitizenNumber</dd>
         <dt>@L["citizens.detail.person_id"]</dt>

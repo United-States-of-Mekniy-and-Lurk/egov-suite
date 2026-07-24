@@ -149,7 +149,7 @@ public class NewApplicationModel : PageModel
         }
         catch (JsonException)
         {
-            ErrorMessage = "The submitted form data is invalid.";
+            ErrorMessage = _localizer["applications.invalid_data"].Value;
             return Page();
         }
 
@@ -184,7 +184,7 @@ public class NewApplicationModel : PageModel
             var createResponse = await client.PostAsJsonAsync("/citizenship-applications", createBody, ct);
             if (!createResponse.IsSuccessStatusCode)
             {
-                ErrorMessage = "The application could not be created.";
+                ErrorMessage = _localizer["applications.create_failed"].Value;
                 return Page();
             }
 
@@ -199,7 +199,7 @@ public class NewApplicationModel : PageModel
             new { answers = answers.RootElement }, ct);
         if (!answersResponse.IsSuccessStatusCode)
         {
-            ErrorMessage = "The application answers could not be saved.";
+            ErrorMessage = _localizer["applications.save_failed"].Value;
             return Page();
         }
 

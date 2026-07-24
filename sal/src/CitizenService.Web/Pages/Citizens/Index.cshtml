@@ -1,31 +1,51 @@
 @page
 @model CitizenService.Web.Pages.Citizens.CitizensIndexModel
 @{
-    ViewData["Title"] = "Citizens";
+    ViewData["Title"] = L["citizens.list.title"].Value;
 }
 
-<h1 class="mklu-heading-1">Citizens</h1>
-<a href="/Citizens/New" class="mklu-btn mklu-btn-filled mklu-page-action">Add Citizen</a>
+<h1 class="mklu-heading-1">@L["citizens.list.title"]</h1>
+<a href="/Citizens/New" class="mklu-btn mklu-btn-filled mklu-page-action">@L["citizens.list.add"]</a>
+
+<details class="mklu-column-picker">
+    <summary>@L["citizens.list.choose_columns"]</summary>
+    <form method="get">
+        <div class="mklu-column-options">
+            <label><input type="checkbox" name="columns" value="name" checked="@Model.Shows("name")" /> @L["common.name"]</label>
+            <label><input type="checkbox" name="columns" value="email" checked="@Model.Shows("email")" /> @L["common.email"]</label>
+            <label><input type="checkbox" name="columns" value="username" checked="@Model.Shows("username")" /> @L["common.username"]</label>
+            <label><input type="checkbox" name="columns" value="citizenNumber" checked="@Model.Shows("citizenNumber")" /> @L["index.citizen_number"]</label>
+            <label><input type="checkbox" name="columns" value="status" checked="@Model.Shows("status")" /> @L["common.status"]</label>
+            <label><input type="checkbox" name="columns" value="grantedAt" checked="@Model.Shows("grantedAt")" /> @L["index.granted"]</label>
+        </div>
+        <button type="submit" class="mklu-btn mklu-btn-outlined">@L["citizens.list.apply_columns"]</button>
+    </form>
+</details>
+
 <div class="mklu-table-wrap">
 <table class="mklu-table">
     <thead>
         <tr>
-            <th>Citizen Number</th>
-            <th>Person ID</th>
-            <th>Status</th>
-            <th>Granted At</th>
-            <th>Actions</th>
+            @if (Model.Shows("name")) { <th>@L["common.name"]</th> }
+            @if (Model.Shows("email")) { <th>@L["common.email"]</th> }
+            @if (Model.Shows("username")) { <th>@L["common.username"]</th> }
+            @if (Model.Shows("citizenNumber")) { <th>@L["index.citizen_number"]</th> }
+            @if (Model.Shows("status")) { <th>@L["common.status"]</th> }
+            @if (Model.Shows("grantedAt")) { <th>@L["index.granted"]</th> }
+            <th>@L["citizens.list.actions"]</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var c in Model.Citizens)
+        @foreach (var item in Model.Citizens)
         {
             <tr>
-                <td>@c.CitizenNumber</td>
-                <td>@c.PersonId</td>
-                <td>@c.Status</td>
-                <td>@c.GrantedAt</td>
-                <td><a href="/Citizens/Detail?id=@c.Id">View</a></td>
+                @if (Model.Shows("name")) { <td><strong>@(item.Person?.DisplayName ?? L["citizens.list.name_unavailable"].Value)</strong></td> }
+                @if (Model.Shows("email")) { <td>@item.Person?.Email</td> }
+                @if (Model.Shows("username")) { <td>@item.Person?.PreferredUsername</td> }
+                @if (Model.Shows("citizenNumber")) { <td>@item.Citizen.CitizenNumber</td> }
+                @if (Model.Shows("status")) { <td>@item.Citizen.Status</td> }
+                @if (Model.Shows("grantedAt")) { <td>@item.Citizen.GrantedAt?.ToString("d")</td> }
+                <td><a asp-page="/Citizens/Detail" asp-route-id="@item.Citizen.PersonId">@L["citizens.list.view"]</a></td>
             </tr>
         }
     </tbody>

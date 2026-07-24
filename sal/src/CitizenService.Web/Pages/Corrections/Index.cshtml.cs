@@ -3,6 +3,7 @@ using CitizenService.Web.Models;
 using CitizenService.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace CitizenService.Web.Pages.Corrections;
 
@@ -11,16 +12,19 @@ public class CorrectionsIndexModel : PageModel
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly CurrentPersonService _currentPersonService;
+    private readonly IStringLocalizer _localizer;
 
     public List<FieldCorrectionRequestViewModel> Requests { get; private set; } = [];
     public string? ErrorMessage { get; private set; }
 
     public CorrectionsIndexModel(
         IHttpClientFactory httpClientFactory,
-        CurrentPersonService currentPersonService)
+        CurrentPersonService currentPersonService,
+        IStringLocalizer localizer)
     {
         _httpClientFactory = httpClientFactory;
         _currentPersonService = currentPersonService;
+        _localizer = localizer;
     }
 
     public async Task OnGetAsync(CancellationToken ct)
@@ -33,7 +37,7 @@ public class CorrectionsIndexModel : PageModel
         var response = await client.GetAsync($"/citizens/{person.Id}/correction-requests", ct);
         if (!response.IsSuccessStatusCode)
         {
-            ErrorMessage = "Correction requests could not be loaded.";
+            ErrorMessage = _localizer["corrections.load_failed"].Value;
             return;
         }
 

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "government-portal.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "government-portal.labels" . | nindent 4 }}
+data:
+  ASPNETCORE_ENVIRONMENT: {{ .Values.config.aspnetcoreEnvironment | quote }}
+  Oidc__Authority: {{ .Values.config.oidcAuthority | quote }}
+  Oidc__ClientId: {{ .Values.config.oidcClientId | quote }}
+  Oidc__RequireHttpsMetadata: {{ .Values.config.oidcRequireHttpsMetadata | quote }}
+  Catalog__Path: {{ .Values.config.catalogPath | quote }}
+  Translations__Path: {{ .Values.config.translationsPath | quote }}

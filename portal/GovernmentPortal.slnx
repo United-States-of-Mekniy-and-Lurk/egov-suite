@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GovernmentPortal.Web/GovernmentPortal.Web.csproj" />
+  </Folder>
+</Solution>

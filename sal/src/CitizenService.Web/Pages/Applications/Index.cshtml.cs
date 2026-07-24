@@ -5,6 +5,7 @@ using CitizenService.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace CitizenService.Web.Pages.Applications;
 
@@ -13,18 +14,22 @@ public class ApplicationsIndexModel : PageModel
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly CurrentPersonService _currentPersonService;
+    private readonly IStringLocalizer _localizer;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public PersonViewModel? Person { get; set; }
     public List<ApplicationViewModel> Applications { get; set; } = new();
+    public bool CanStartApplication { get; set; }
     public string? ErrorMessage { get; set; }
 
     public ApplicationsIndexModel(
         IHttpClientFactory httpClientFactory,
-        CurrentPersonService currentPersonService)
+        CurrentPersonService currentPersonService,
+        IStringLocalizer localizer)
     {
         _httpClientFactory = httpClientFactory;
         _currentPersonService = currentPersonService;
+        _localizer = localizer;
     }
 
     public async Task OnGetAsync(CancellationToken ct)
@@ -40,6 +45,8 @@ public class ApplicationsIndexModel : PageModel
         {
             var content = await response.Content.ReadAsStringAsync(ct);
             Applications = JsonSerializer.Deserialize<List<ApplicationViewModel>>(content, JsonOptions) ?? new();
+            CanStartApplication = !Applications.Any(application =>
+                application.Status is "Draft" or "Submitted" or "UnderReview" or "Approved");
         }
     }
 
@@ -53,7 +60,7 @@ public class ApplicationsIndexModel : PageModel
         if (response.IsSuccessStatusCode)
             return RedirectToPage();
 
-        ErrorMessage = "The application could not be abandoned.";
+        ErrorMessage = _localizer["applications.abandon_failed"].Value;
         await OnGetAsync(ct);
         return Page();
     }

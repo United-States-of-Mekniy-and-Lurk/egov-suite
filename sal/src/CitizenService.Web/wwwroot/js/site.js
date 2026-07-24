@@ -1,4 +1,10 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿lucide.createIcons();
 
-// Write your JavaScript code.
+const menuButton = document.querySelector('.mklu-menu-button');
+const navigation = document.querySelector('.mklu-header-nav');
+
+menuButton?.addEventListener('click', () => {
+	const isOpen = menuButton.getAttribute('aria-expanded') === 'true';
+	menuButton.setAttribute('aria-expanded', String(!isOpen));
+	navigation?.classList.toggle('is-open', !isOpen);
+});

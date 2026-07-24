@@ -1,0 +1,70 @@
+nameOverride: ""
+fullnameOverride: ""
+replicaCount: 1
+
+image:
+  repository: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-portal
+  pullPolicy: Always
+  # Automatically updated by the helm-release workflow after a successful push to main.
+  tag: "latest"
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations: {}
+  host: portal.example.com
+  tls:
+    enabled: true
+    secretName: government-portal-tls
+
+resources:
+  requests:
+    memory: "96Mi"
+    cpu: "50m"
+  limits:
+    memory: "256Mi"
+    cpu: "250m"
+
+probes:
+  readiness:
+    path: /health
+    initialDelaySeconds: 5
+    periodSeconds: 10
+  liveness:
+    path: /health
+    initialDelaySeconds: 20
+    periodSeconds: 20
+
+config:
+  aspnetcoreEnvironment: Production
+  oidcAuthority: "https://keycloak.example.com/realms/mekniy-and-lurk"
+  oidcClientId: "government-portal-web"
+  oidcRequireHttpsMetadata: "true"
+  catalogPath: "/app/catalog/services.json"
+  translationsPath: "/app/translations"
+
+secret:
+  # Prefer an externally managed Secret containing Oidc__ClientSecret.
+  existingSecret: ""
+  oidcClientSecret: ""

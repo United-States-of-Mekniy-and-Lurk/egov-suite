@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: government-portal
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/United-States-of-Mekniy-and-Lurk/egov-suite.git
+    targetRevision: HEAD
+    path: portal/helm/government-portal
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        ingress:
+          host: portal.gov.mklu.org
+          tls:
+            secretName: government-portal-tls
+        config:
+          oidcAuthority: "https://idna.mklu.org/realms/mklu"
+          oidcClientId: "government-portal-web"
+        secret:
+          existingSecret: "government-portal-secret"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

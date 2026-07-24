@@ -1,0 +1,9 @@
+@page
+@{
+    ViewData["Title"] = L["portal.error.title"].Value;
+}
+<section class="content-width text-page">
+    <p class="eyebrow">@L["portal.error.eyebrow"]</p>
+    <h1>@L["portal.error.heading"]</h1>
+    <p>@L["portal.error.try_again"] <a asp-page="/Index">@L["portal.error.directory"]</a>.</p>
+</section>

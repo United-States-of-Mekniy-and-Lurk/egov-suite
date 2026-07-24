@@ -11,13 +11,27 @@ public static class GovProgram
         if (args.Length != 2)
         {
             Console.Error.WriteLine("Usage: gov <validate|plan|apply> <manifest.yaml>");
+            Console.Error.WriteLine("       gov catalog <manifest-directory>");
             return 1;
         }
 
         var command = args[0].Trim().ToLowerInvariant();
-        var manifestPath = Path.GetFullPath(args[1]);
+        var inputPath = Path.GetFullPath(args[1]);
 
-        var (manifest, errors) = ManifestLoader.Load(manifestPath);
+        if (command == "catalog")
+        {
+            var (json, catalogErrors) = PortalCatalogBuilder.Build(inputPath);
+            if (catalogErrors.Count > 0 || json is null)
+            {
+                PrintErrors(catalogErrors);
+                return 1;
+            }
+
+            Console.WriteLine(json);
+            return 0;
+        }
+
+        var (manifest, errors) = ManifestLoader.Load(inputPath);
         if (errors.Count > 0 || manifest is null)
         {
             PrintErrors(errors);

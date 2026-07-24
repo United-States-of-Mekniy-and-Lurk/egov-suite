@@ -4,6 +4,7 @@ using CitizenService.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace CitizenService.Web.Pages;
 
@@ -13,6 +14,7 @@ public class IndexModel : PageModel
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly CurrentPersonService _currentPersonService;
     private readonly ILogger<IndexModel> _logger;
+    private readonly IStringLocalizer _localizer;
 
     public PersonViewModel? Person { get; set; }
     public CitizenViewModel? Citizen { get; set; }
@@ -26,11 +28,13 @@ public class IndexModel : PageModel
     public IndexModel(
         IHttpClientFactory httpClientFactory,
         CurrentPersonService currentPersonService,
-        ILogger<IndexModel> logger)
+        ILogger<IndexModel> logger,
+        IStringLocalizer localizer)
     {
         _httpClientFactory = httpClientFactory;
         _currentPersonService = currentPersonService;
         _logger = logger;
+        _localizer = localizer;
     }
 
     public async Task OnGetAsync(CancellationToken ct)
@@ -43,7 +47,7 @@ public class IndexModel : PageModel
             if (Person == null || Person.Id == Guid.Empty)
             {
                 UserState = "error";
-                ErrorMessage = "We could not finish setting up your account. Please try again.";
+                ErrorMessage = _localizer["error.identity_resolution"].Value;
                 return;
             }
         }
@@ -55,7 +59,7 @@ public class IndexModel : PageModel
         {
             _logger.LogError(ex, "Failed to call Ego Person Registry");
             UserState = "error";
-            ErrorMessage = "We could not finish setting up your account. Please try again.";
+            ErrorMessage = _localizer["error.identity_resolution"].Value;
             return;
         }
 
@@ -88,7 +92,7 @@ public class IndexModel : PageModel
         {
             _logger.LogError(ex, "Failed to check citizen status");
             UserState = "error";
-            ErrorMessage = "Could not verify your citizen status.";
+            ErrorMessage = _localizer["error.citizen_check"].Value;
             return;
         }
 

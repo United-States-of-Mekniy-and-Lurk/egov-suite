@@ -1,0 +1,6 @@
+apiVersion: v2
+name: government-portal
+description: Public and authenticated entrypoint to government services
+type: application
+version: 0.1.0
+appVersion: "latest"

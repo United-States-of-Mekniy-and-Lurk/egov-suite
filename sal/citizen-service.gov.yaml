@@ -1,0 +1,32 @@
+service: citizen-service
+portal:
+  name: Citizenship
+  description: Apply for citizenship, follow an application, and review your citizenship record.
+  url: https://citizen.mklu.org
+  category: Personal documents
+  keywords:
+    - citizenship
+    - application
+    - citizen record
+  localizations:
+    cs:
+      name: Občanství
+      description: Podejte žádost o občanství, sledujte její průběh a zkontrolujte svůj záznam o občanství.
+      category: Osobní doklady
+      keywords:
+        - občanství
+        - žádost
+        - evidence občanů
+  public: true
+auth:
+  clients:
+    web:
+      redirectUris:
+        - https://citizen.mklu.org/signin-oidc
+      scopes:
+        - openid
+        - profile
+        - email
+roles:
+  - clerk
+  - admin

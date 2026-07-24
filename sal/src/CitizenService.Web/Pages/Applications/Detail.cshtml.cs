@@ -5,6 +5,7 @@ using CitizenService.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace CitizenService.Web.Pages.Applications;
 
@@ -12,6 +13,7 @@ namespace CitizenService.Web.Pages.Applications;
 public class ApplicationDetailModel : PageModel
 {
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IStringLocalizer _localizer;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public ApplicationViewModel? Application { get; set; }
@@ -19,9 +21,10 @@ public class ApplicationDetailModel : PageModel
     public string FormSubmissionJson { get; set; } = "{}";
     public string? ErrorMessage { get; set; }
 
-    public ApplicationDetailModel(IHttpClientFactory httpClientFactory)
+    public ApplicationDetailModel(IHttpClientFactory httpClientFactory, IStringLocalizer localizer)
     {
         _httpClientFactory = httpClientFactory;
+        _localizer = localizer;
     }
 
     public async Task<IActionResult> OnGetAsync(Guid id, CancellationToken ct)
@@ -49,9 +52,7 @@ public class ApplicationDetailModel : PageModel
         var response = await client.PostAsJsonAsync($"/citizenship-applications/{id}/transition", body, ct);
         if (!response.IsSuccessStatusCode)
         {
-            ErrorMessage = await response.Content.ReadAsStringAsync(ct);
-            if (string.IsNullOrWhiteSpace(ErrorMessage))
-                ErrorMessage = "The application transition could not be completed.";
+            ErrorMessage = _localizer["applications.transition_failed"].Value;
             await OnGetAsync(id, ct);
             return Page();
         }

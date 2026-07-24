@@ -4,6 +4,7 @@ using CitizenService.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace CitizenService.Web.Pages.Corrections;
 
@@ -12,6 +13,7 @@ public class NewCorrectionModel : PageModel
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly CurrentPersonService _currentPersonService;
+    private readonly IStringLocalizer _localizer;
 
     [BindProperty(SupportsGet = true)]
     public string FieldKey { get; set; } = string.Empty;
@@ -27,10 +29,12 @@ public class NewCorrectionModel : PageModel
 
     public NewCorrectionModel(
         IHttpClientFactory httpClientFactory,
-        CurrentPersonService currentPersonService)
+        CurrentPersonService currentPersonService,
+        IStringLocalizer localizer)
     {
         _httpClientFactory = httpClientFactory;
         _currentPersonService = currentPersonService;
+        _localizer = localizer;
     }
 
     public async Task<IActionResult> OnGetAsync(CancellationToken ct)
@@ -51,8 +55,8 @@ public class NewCorrectionModel : PageModel
             return RedirectToPage("/Corrections/Index");
 
         ErrorMessage = response.StatusCode == System.Net.HttpStatusCode.Conflict
-            ? "A correction request for this field is already awaiting review."
-            : "The correction request could not be submitted. Check the proposed value and reason.";
+            ? _localizer["corrections.duplicate"].Value
+            : _localizer["corrections.submit_failed"].Value;
         await LoadAsync(ct);
         return Page();
     }

@@ -154,6 +154,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<AccessTokenService>();
 builder.Services.AddScoped<CurrentPersonService>();
+builder.Services.AddScoped<PersonDirectoryService>();
 
 builder.Services.AddTransient<BearerTokenHandler>();
 

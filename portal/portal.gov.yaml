@@ -1,0 +1,30 @@
+service: government-portal
+portal:
+  name: Government portal
+  description: Find government information and services, and see a broad overview after signing in.
+  url: https://portal.gov.test
+  category: General
+  keywords:
+    - government
+    - services
+    - information
+  localizations:
+    cs:
+      name: Portál veřejné správy
+      description: Vyhledejte informace a služby veřejné správy a po přihlášení zobrazte stručný přehled.
+      category: Obecné
+      keywords:
+        - veřejná správa
+        - služby
+        - informace
+  public: true
+auth:
+  clients:
+    web:
+      redirectUris:
+        - https://portal.gov.test/signin-oidc
+      scopes:
+        - openid
+        - profile
+        - email
+roles: []

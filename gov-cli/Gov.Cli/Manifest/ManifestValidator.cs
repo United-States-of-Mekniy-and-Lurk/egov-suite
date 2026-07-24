@@ -11,6 +11,11 @@ public static class ManifestValidator
             errors.Add("'service' is required.");
         }
 
+        if (manifest.Portal is not null)
+        {
+            ValidatePortal(manifest.Portal, errors);
+        }
+
         if (manifest.Auth is null)
         {
             errors.Add("'auth' is required.");
@@ -107,5 +112,61 @@ public static class ManifestValidator
         }
 
         return errors;
+    }
+
+    private static void ValidatePortal(PortalSection portal, List<string> errors)
+    {
+        if (string.IsNullOrWhiteSpace(portal.Name))
+        {
+            errors.Add("'portal.name' is required when 'portal' is present.");
+        }
+
+        if (string.IsNullOrWhiteSpace(portal.Description))
+        {
+            errors.Add("'portal.description' is required when 'portal' is present.");
+        }
+
+        if (!Uri.TryCreate(portal.Url, UriKind.Absolute, out var url) ||
+            (url.Scheme != Uri.UriSchemeHttp && url.Scheme != Uri.UriSchemeHttps))
+        {
+            errors.Add("'portal.url' must be an absolute HTTP or HTTPS URL.");
+        }
+
+        if (string.IsNullOrWhiteSpace(portal.Category))
+        {
+            errors.Add("'portal.category' is required when 'portal' is present.");
+        }
+
+        if (portal.Keywords is null || portal.Keywords.Any(string.IsNullOrWhiteSpace))
+        {
+            errors.Add("'portal.keywords' cannot contain empty values.");
+        }
+
+        if (portal.Localizations is null)
+        {
+            errors.Add("'portal.localizations' cannot be null.");
+            return;
+        }
+
+        foreach (var (culture, localization) in portal.Localizations)
+        {
+            if (string.IsNullOrWhiteSpace(culture) || localization is null)
+            {
+                errors.Add("'portal.localizations' must use non-empty culture keys and values.");
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(localization.Name) ||
+                string.IsNullOrWhiteSpace(localization.Description) ||
+                string.IsNullOrWhiteSpace(localization.Category))
+            {
+                errors.Add($"Portal localization '{culture}' requires name, description, and category.");
+            }
+
+            if (localization.Keywords is null || localization.Keywords.Any(string.IsNullOrWhiteSpace))
+            {
+                errors.Add($"Portal localization '{culture}' cannot contain empty keywords.");
+            }
+        }
     }
 }

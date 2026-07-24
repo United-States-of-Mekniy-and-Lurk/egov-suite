@@ -41,7 +41,7 @@ else
                                 <span class="mklu-field-policy">@request.ReviewReason</span>
                             }
                         </td>
-                        <td><span class="mklu-badge mklu-badge-@request.Status.ToLowerInvariant()">@request.Status</span></td>
+                        <td><span class="mklu-badge mklu-badge-@request.Status.ToLowerInvariant()">@StatusLabel(request.Status)</span></td>
                         <td>@request.SubmittedAt.ToLocalTime().ToString("g")</td>
                     </tr>
                 }

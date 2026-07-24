@@ -25,7 +25,7 @@ public class CorrectionsQueueModel : PageModel
         var response = await client.GetAsync("/correction-requests?status=Submitted&take=100", ct);
         if (!response.IsSuccessStatusCode)
         {
-            ErrorMessage = "Correction requests could not be loaded.";
+            ErrorMessage = "corrections.load_failed";
             return;
         }
         Requests = await response.Content.ReadFromJsonAsync<List<FieldCorrectionRequestViewModel>>(cancellationToken: ct) ?? [];
@@ -48,7 +48,7 @@ public class CorrectionsQueueModel : PageModel
         if (response.IsSuccessStatusCode)
             return RedirectToPage();
 
-        ErrorMessage = "The correction request could not be reviewed.";
+        ErrorMessage = "corrections.review_failed";
         await OnGetAsync(ct);
         return Page();
     }
