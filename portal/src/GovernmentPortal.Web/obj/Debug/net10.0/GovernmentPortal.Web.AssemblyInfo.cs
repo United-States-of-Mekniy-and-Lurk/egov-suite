@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GovernmentPortal.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+abe279eb85dee96c11840b75761440af88ac14ef")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+00b88c39f417c68fcb935cd1bccda1015d6ccc05")]
 [assembly: System.Reflection.AssemblyProductAttribute("GovernmentPortal.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GovernmentPortal.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

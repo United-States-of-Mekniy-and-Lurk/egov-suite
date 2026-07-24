@@ -88,6 +88,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 .brand small { color: #c9c9c9; font-size: 11px; }
 nav { display: flex; align-items: center; gap: 4px; }
 nav a, nav button {
+  min-height: 44px;
   border: 0;
   border-radius: 4px;
   padding: 9px 13px;
@@ -104,7 +105,7 @@ nav .sign-in { background: var(--blue); color: #10212e; }
 nav .sign-in:hover { background: #35aaff; }
 .language-picker {
   position: relative;
-  min-height: 38px;
+  min-height: 44px;
   margin-left: 4px;
   padding: 0 7px 0 10px;
   border: 1px solid #747474;
@@ -112,6 +113,7 @@ nav .sign-in:hover { background: #35aaff; }
   color: var(--white);
 }
 .language-picker select {
+  min-height: 42px;
   border: 0;
   padding: 4px 2px;
   background: var(--grey);
@@ -122,17 +124,36 @@ nav .sign-in:hover { background: #35aaff; }
 
 main { flex: 1; }
 .intro-band {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   background-color: #dceef7;
-  background-image: linear-gradient(115deg, rgba(255,255,255,.8), rgba(230,244,255,.25));
   border-bottom: 1px solid #b8d4e3;
 }
+.signal-grid {
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 0 46%;
+  pointer-events: none;
+  opacity: .42;
+  background-image:
+    linear-gradient(90deg, #dceef7 2px, transparent 2px),
+    linear-gradient(#dceef7 2px, transparent 2px),
+    radial-gradient(circle at 64% 45%, rgba(0,111,189,.55) 0 3%, transparent 35%),
+    radial-gradient(circle at 64% 45%, rgba(255,255,255,.95) 0 16%, rgba(230,244,255,.7) 42%, transparent 68%);
+  background-size: 20px 20px, 20px 20px, 100% 100%, 100% 100%;
+  background-color: rgba(255,255,255,.28);
+  transform: skewX(-8deg) scale(1.08);
+  transform-origin: bottom right;
+}
 .intro-grid {
-  min-height: 330px;
-  padding-block: 64px 48px;
+  position: relative;
+  min-height: 250px;
+  padding-block: 32px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
-  align-items: end;
-  gap: 72px;
+  align-items: center;
+  gap: 56px;
 }
 .eyebrow {
   margin: 0 0 8px;
@@ -162,7 +183,7 @@ h3 { font-size: 23px; }
 .overview-prompt small { color: var(--blue-dark); font-weight: 700; }
 .overview-prompt:hover strong { text-decoration: underline; }
 
-.directory { padding-block: 56px 80px; }
+.directory { padding-block: 44px 72px; }
 .directory-heading {
   display: grid;
   grid-template-columns: 1fr minmax(280px, 430px);
@@ -222,7 +243,7 @@ h3 { font-size: 23px; }
 .service-card h3 { margin: 5px 0 10px; }
 .service-card h3 a { color: var(--grey); }
 .service-card p { margin: 0 0 20px; color: var(--text-muted); }
-.service-link { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
+.service-link { min-height: 44px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
 .empty-results { border-left: 4px solid var(--blue); padding: 16px 20px; background: var(--blue-pale); }
 
 .overview-header, .text-page { padding-block: 64px 32px; }
@@ -245,16 +266,25 @@ h3 { font-size: 23px; }
 .module p { max-width: 520px; margin-bottom: 28px; color: var(--text-muted); }
 .module a { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
 
-footer { margin-top: auto; padding-block: 28px; background: var(--grey); color: #c9c9c9; font-size: 14px; }
-.footer-inner { display: flex; justify-content: space-between; gap: 24px; }
+footer { margin-top: auto; padding-block: 20px; background: var(--grey); color: #c9c9c9; font-size: 14px; }
+.footer-inner { min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.footer-government { display: inline-flex; align-items: center; gap: 14px; }
+.footer-government img { width: 46px; height: 46px; object-fit: contain; opacity: .66; }
 footer a { color: var(--white); }
 
 @media (max-width: 760px) {
-  .header-inner { align-items: flex-start; padding-block: 14px; }
-  nav { flex-wrap: wrap; justify-content: flex-end; }
+  .header-inner { min-height: 72px; gap: 8px; padding-block: 10px; }
+  .brand { gap: 8px; }
+  .brand img { width: 32px; height: 20px; }
+  .brand strong { font-size: 14px; }
+  nav { gap: 2px; flex-wrap: nowrap; justify-content: flex-end; }
+  nav a, nav button { padding-inline: 9px; }
+  nav .sign-in { white-space: nowrap; }
+  nav .sign-in .icon { display: none; }
   nav a:not(.sign-in), nav form:not(.language-picker) { display: none; }
   .language-picker { margin-left: 0; }
-  .intro-grid { min-height: auto; grid-template-columns: 1fr; gap: 32px; padding-block: 48px 36px; }
+  .signal-grid { left: 35%; opacity: .26; }
+  .intro-grid { min-height: auto; grid-template-columns: 1fr; gap: 28px; padding-block: 32px; }
   h1 { font-size: 38px; }
   .directory-heading, .service-grid, .module-grid { grid-template-columns: 1fr; }
   .directory-heading { align-items: start; gap: 24px; }
@@ -265,7 +295,7 @@ footer a { color: var(--white); }
 @media (max-width: 440px) {
   .header-inner, .footer-inner, .content-width { width: min(100% - 32px, 1160px); }
   .brand small { display: none; }
-  .brand strong { font-size: 15px; }
+  .language-picker { padding-inline: 7px 4px; }
   h1 { font-size: 34px; }
   .service-card { display: block; }
   .service-mark { margin-bottom: 16px; }

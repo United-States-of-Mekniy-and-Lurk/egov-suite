@@ -11,6 +11,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY portal/src/GovernmentPortal.Web/GovernmentPortal.Web.csproj portal/src/GovernmentPortal.Web/
 COPY design-system/MKLU-Flag-Small.svg design-system/
+COPY design-system/manticore.svg design-system/
 RUN dotnet restore portal/src/GovernmentPortal.Web/GovernmentPortal.Web.csproj
 COPY portal/src/GovernmentPortal.Web/ portal/src/GovernmentPortal.Web/
 RUN dotnet publish portal/src/GovernmentPortal.Web/GovernmentPortal.Web.csproj -c Release -o /app/publish --no-restore

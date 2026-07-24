@@ -12,5 +12,9 @@
              Link="wwwroot/img/MKLU-Flag-Small.svg"
              CopyToOutputDirectory="PreserveNewest"
              CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../../../design-system/manticore.svg"
+             Link="wwwroot/img/manticore.svg"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
