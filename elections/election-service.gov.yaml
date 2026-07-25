@@ -38,5 +38,7 @@ auth:
         - openid
         - profile
         - email
+      audiences:
+        - election-service
 roles:
   - admin

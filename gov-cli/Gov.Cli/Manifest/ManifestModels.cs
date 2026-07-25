@@ -36,4 +36,5 @@ public sealed class AuthClientManifest
 {
     public List<string> RedirectUris { get; init; } = [];
     public List<string> Scopes { get; init; } = [];
+    public List<string> Audiences { get; init; } = [];
 }

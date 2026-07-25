@@ -2,7 +2,7 @@ using Gov.Cli.Manifest;
 
 namespace Gov.Cli.Core;
 
-public sealed record DesiredClient(string LogicalName, IReadOnlyList<string> RedirectUris, IReadOnlyList<string> Scopes);
+public sealed record DesiredClient(string LogicalName, IReadOnlyList<string> RedirectUris, IReadOnlyList<string> Scopes, IReadOnlyList<string> Audiences);
 
 public sealed record DesiredState(string Service, IReadOnlyList<DesiredClient> Clients, IReadOnlyList<string> Roles)
 {
@@ -12,7 +12,8 @@ public sealed record DesiredState(string Service, IReadOnlyList<DesiredClient> C
             .Select(kvp => new DesiredClient(
                 kvp.Key,
                 kvp.Value.RedirectUris.Order(StringComparer.Ordinal).ToArray(),
-                kvp.Value.Scopes.Order(StringComparer.Ordinal).ToArray()))
+                kvp.Value.Scopes.Order(StringComparer.Ordinal).ToArray(),
+                kvp.Value.Audiences.Order(StringComparer.Ordinal).ToArray()))
             .OrderBy(c => c.LogicalName, StringComparer.Ordinal)
             .ToArray();
 
@@ -24,13 +25,13 @@ public sealed record DesiredState(string Service, IReadOnlyList<DesiredClient> C
     }
 }
 
-public sealed record CurrentClient(string LogicalName, string KeycloakId, IReadOnlyList<string> RedirectUris, IReadOnlyList<string> Scopes);
+public sealed record CurrentClient(string LogicalName, string KeycloakId, IReadOnlyList<string> RedirectUris, IReadOnlyList<string> Scopes, IReadOnlyList<string> Audiences);
 
 public sealed record CurrentState(IReadOnlyList<CurrentClient> Clients, IReadOnlyList<string> Roles);
 
-public sealed record ClientCreate(string LogicalName, IReadOnlyList<string> RedirectUris, IReadOnlyList<string> Scopes);
+public sealed record ClientCreate(string LogicalName, IReadOnlyList<string> RedirectUris, IReadOnlyList<string> Scopes, IReadOnlyList<string> Audiences);
 
-public sealed record ClientUpdate(string LogicalName, string KeycloakId, IReadOnlyList<string> RedirectUris, IReadOnlyList<string> Scopes);
+public sealed record ClientUpdate(string LogicalName, string KeycloakId, IReadOnlyList<string> RedirectUris, IReadOnlyList<string> Scopes, IReadOnlyList<string> Audiences);
 
 public sealed record ClientDelete(string LogicalName, string KeycloakId);
 

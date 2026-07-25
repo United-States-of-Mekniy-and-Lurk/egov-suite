@@ -29,6 +29,8 @@ auth:
         - openid
         - profile
         - email
+      audiences:
+        - organization-registry
 roles:
   - clerk
   - admin

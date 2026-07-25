@@ -152,7 +152,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
-builder.Services.AddScoped<AccessTokenService>();
+builder.Services.AddScoped<OidcAccessTokenService>();
 builder.Services.AddScoped<CurrentPersonService>();
 builder.Services.AddScoped<PersonDirectoryService>();
 
@@ -266,11 +266,11 @@ app.Run();
 
 public class BearerTokenHandler : DelegatingHandler
 {
-    private readonly AccessTokenService _accessTokenService;
+    private readonly OidcAccessTokenService _accessTokenService;
     private readonly ILogger<BearerTokenHandler> _logger;
 
     public BearerTokenHandler(
-        AccessTokenService accessTokenService,
+        OidcAccessTokenService accessTokenService,
         ILogger<BearerTokenHandler> logger)
     {
         _accessTokenService = accessTokenService;

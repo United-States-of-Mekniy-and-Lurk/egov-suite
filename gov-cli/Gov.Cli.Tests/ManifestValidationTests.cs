@@ -18,6 +18,7 @@ public class ManifestValidationTests
                     {
                         RedirectUris = [],
                         Scopes = ["", "citizen.read", "citizen.read"],
+                        Audiences = ["", "citizen-api", "citizen-api"],
                     },
                 },
             },
@@ -29,6 +30,8 @@ public class ManifestValidationTests
         Assert.Contains(errors, e => e.Contains("'service' is required", StringComparison.Ordinal));
         Assert.Contains(errors, e => e.Contains("requires at least one redirect URI", StringComparison.Ordinal));
         Assert.Contains(errors, e => e.Contains("empty scope values", StringComparison.Ordinal));
+        Assert.Contains(errors, e => e.Contains("empty audience values", StringComparison.Ordinal));
+        Assert.Contains(errors, e => e.Contains("duplicate audience 'citizen-api'", StringComparison.Ordinal));
         Assert.Contains(errors, e => e.Contains("Duplicate role 'admin'", StringComparison.Ordinal));
     }
 

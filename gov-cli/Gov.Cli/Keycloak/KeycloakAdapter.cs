@@ -10,18 +10,22 @@ namespace Gov.Cli.Keycloak;
 public sealed class KeycloakAdapter(HttpClient httpClient, KeycloakOptions options) : IPlatformAdapter
 {
     private const string ServiceAttribute = "gov.service";
+    private const string AudienceMapperPrefix = "gov.audience.";
 
     public async Task<CurrentState> GetCurrentStateAsync(string service, CancellationToken cancellationToken = default)
     {
         await AuthenticateAsync(cancellationToken);
 
         var clientModels = await GetAllClientsAsync(cancellationToken);
-        var clients = clientModels
-            .Where(c => c.ClientId is not null)
-            .Select(c => ToCurrentClient(service, c))
-            .Where(c => c is not null)
-            .Cast<CurrentClient>()
-            .ToArray();
+        var clients = new List<CurrentClient>();
+        foreach (var clientModel in clientModels.Where(client => client.ClientId is not null))
+        {
+            var currentClient = ToCurrentClient(service, clientModel);
+            if (currentClient is null) continue;
+
+            var mappers = await GetProtocolMappersAsync(currentClient.KeycloakId, cancellationToken);
+            clients.Add(currentClient with { Audiences = GetManagedAudiences(mappers) });
+        }
 
         var roleModels = await GetJsonAsync<List<KeycloakRole>>(RolesUrl(), cancellationToken) ?? [];
         var roles = roleModels
@@ -46,6 +50,7 @@ public sealed class KeycloakAdapter(HttpClient httpClient, KeycloakOptions optio
             Protocol = "openid-connect",
             RedirectUris = client.RedirectUris.ToList(),
             DefaultClientScopes = client.Scopes.ToList(),
+            ProtocolMappers = client.Audiences.Select(CreateAudienceMapper).ToList(),
             Attributes = new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 [ServiceAttribute] = service,
@@ -76,6 +81,7 @@ public sealed class KeycloakAdapter(HttpClient httpClient, KeycloakOptions optio
         };
 
         await PutJsonAsync($"{ClientsBaseUrl()}/{client.KeycloakId}", body, cancellationToken);
+        await SynchronizeAudienceMappersAsync(client.KeycloakId, client.Audiences, cancellationToken);
     }
 
     public async Task DeleteClientAsync(ClientDelete client, CancellationToken cancellationToken = default)
@@ -131,7 +137,8 @@ public sealed class KeycloakAdapter(HttpClient httpClient, KeycloakOptions optio
             logicalName,
             client.Id,
             (client.RedirectUris ?? []).Order(StringComparer.Ordinal).ToArray(),
-            (client.DefaultClientScopes ?? []).Order(StringComparer.Ordinal).ToArray());
+            (client.DefaultClientScopes ?? []).Order(StringComparer.Ordinal).ToArray(),
+            []);
     }
 
     private async Task AuthenticateAsync(CancellationToken cancellationToken)
@@ -169,6 +176,8 @@ public sealed class KeycloakAdapter(HttpClient httpClient, KeycloakOptions optio
     private string ListClientsUrl(int first, int max) => $"{ClientsBaseUrl()}?first={first}&max={max}";
 
     private string RolesUrl() => $"{options.BaseUrl}/admin/realms/{Uri.EscapeDataString(options.Realm)}/roles";
+
+    private string ProtocolMappersUrl(string clientId) => $"{ClientsBaseUrl()}/{Uri.EscapeDataString(clientId)}/protocol-mappers/models";
 
     private async Task<T?> GetJsonAsync<T>(string url, CancellationToken cancellationToken)
     {
@@ -236,6 +245,65 @@ public sealed class KeycloakAdapter(HttpClient httpClient, KeycloakOptions optio
             throw await CreateApiException(response, "update resource");
         }
     }
+
+    private async Task<List<KeycloakProtocolMapper>> GetProtocolMappersAsync(
+        string clientId,
+        CancellationToken cancellationToken) =>
+        await GetJsonAsync<List<KeycloakProtocolMapper>>(ProtocolMappersUrl(clientId), cancellationToken) ?? [];
+
+    private async Task SynchronizeAudienceMappersAsync(
+        string clientId,
+        IReadOnlyList<string> desiredAudiences,
+        CancellationToken cancellationToken)
+    {
+        var desired = desiredAudiences.ToHashSet(StringComparer.Ordinal);
+        var existing = await GetProtocolMappersAsync(clientId, cancellationToken);
+        var managed = existing
+            .Where(mapper => mapper.Name.StartsWith(AudienceMapperPrefix, StringComparison.Ordinal))
+            .ToList();
+        var current = GetManagedAudiences(managed).ToHashSet(StringComparer.Ordinal);
+
+        foreach (var audience in desired.Except(current, StringComparer.Ordinal))
+        {
+            await PostJsonAsync(ProtocolMappersUrl(clientId), CreateAudienceMapper(audience), cancellationToken);
+        }
+
+        foreach (var mapper in managed.Where(mapper =>
+                     mapper.Config.TryGetValue("included.custom.audience", out var audience) &&
+                     !desired.Contains(audience)))
+        {
+            if (string.IsNullOrWhiteSpace(mapper.Id)) continue;
+            var response = await httpClient.DeleteAsync(
+                $"{ProtocolMappersUrl(clientId)}/{Uri.EscapeDataString(mapper.Id)}",
+                cancellationToken);
+            if (!response.IsSuccessStatusCode)
+                throw await CreateApiException(response, "delete audience mapper");
+        }
+    }
+
+    private static IReadOnlyList<string> GetManagedAudiences(IEnumerable<KeycloakProtocolMapper> mappers) =>
+        mappers
+            .Where(mapper => mapper.Name.StartsWith(AudienceMapperPrefix, StringComparison.Ordinal))
+            .Select(mapper => mapper.Config.GetValueOrDefault("included.custom.audience"))
+            .Where(audience => !string.IsNullOrWhiteSpace(audience))
+            .Cast<string>()
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+    private static KeycloakProtocolMapper CreateAudienceMapper(string audience) => new()
+    {
+        Name = $"{AudienceMapperPrefix}{audience}",
+        Protocol = "openid-connect",
+        ProtocolMapper = "oidc-audience-mapper",
+        Config = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["included.custom.audience"] = audience,
+            ["access.token.claim"] = "true",
+            ["id.token.claim"] = "false",
+            ["introspection.token.claim"] = "true",
+        },
+    };
 
     private static async Task<Exception> CreateApiException(HttpResponseMessage response, string operation)
     {
@@ -308,6 +376,27 @@ public sealed class KeycloakAdapter(HttpClient httpClient, KeycloakOptions optio
 
         [JsonPropertyName("attributes")]
         public Dictionary<string, string>? Attributes { get; init; }
+
+        [JsonPropertyName("protocolMappers")]
+        public List<KeycloakProtocolMapper>? ProtocolMappers { get; init; }
+    }
+
+    private sealed class KeycloakProtocolMapper
+    {
+        [JsonPropertyName("id")]
+        public string? Id { get; init; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; init; } = string.Empty;
+
+        [JsonPropertyName("protocol")]
+        public string Protocol { get; init; } = "openid-connect";
+
+        [JsonPropertyName("protocolMapper")]
+        public string ProtocolMapper { get; init; } = "oidc-audience-mapper";
+
+        [JsonPropertyName("config")]
+        public Dictionary<string, string> Config { get; init; } = new(StringComparer.Ordinal);
     }
 
     private sealed class KeycloakRole

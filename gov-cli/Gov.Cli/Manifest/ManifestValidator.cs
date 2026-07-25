@@ -88,6 +88,26 @@ public static class ManifestValidator
                         errors.Add($"Client '{name}' has duplicate scope '{duplicate}'.");
                     }
                 }
+
+                if (client.Audiences is not null)
+                {
+                    if (client.Audiences.Any(string.IsNullOrWhiteSpace))
+                    {
+                        errors.Add($"Client '{name}' has empty audience values.");
+                    }
+
+                    var audienceDuplicates = client.Audiences
+                        .Where(static x => !string.IsNullOrWhiteSpace(x))
+                        .GroupBy(x => x, StringComparer.Ordinal)
+                        .Where(g => g.Count() > 1)
+                        .Select(g => g.Key)
+                        .ToList();
+
+                    foreach (var duplicate in audienceDuplicates)
+                    {
+                        errors.Add($"Client '{name}' has duplicate audience '{duplicate}'.");
+                    }
+                }
             }
         }
 

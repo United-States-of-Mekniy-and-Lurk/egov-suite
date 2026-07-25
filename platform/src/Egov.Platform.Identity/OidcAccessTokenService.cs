@@ -4,39 +4,38 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace CitizenService.Web.Services;
+namespace Egov.Platform.Identity;
 
-public sealed class AccessTokenService(
+public sealed class OidcAccessTokenService(
     IHttpContextAccessor httpContextAccessor,
     IOptionsMonitor<OpenIdConnectOptions> oidcOptions,
-    IConfiguration appConfiguration,
-    ILogger<AccessTokenService> logger)
+    IConfiguration configuration,
+    ILogger<OidcAccessTokenService> logger)
 {
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
 
     public async Task<string?> GetAccessTokenAsync(CancellationToken ct)
     {
         var context = httpContextAccessor.HttpContext;
-        if (context == null)
-            return null;
+        if (context is null) return null;
 
         var authentication = await context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        if (!authentication.Succeeded || authentication.Properties == null)
-            return null;
+        if (!authentication.Succeeded || authentication.Properties is null) return null;
 
         var accessToken = authentication.Properties.GetTokenValue("access_token");
-        if (!NeedsRefresh(accessToken))
-            return accessToken;
+        if (!NeedsRefresh(accessToken)) return accessToken;
 
         await _refreshLock.WaitAsync(ct);
         try
         {
             authentication = await context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             accessToken = authentication.Properties?.GetTokenValue("access_token");
-            if (!NeedsRefresh(accessToken))
-                return accessToken;
+            if (!NeedsRefresh(accessToken)) return accessToken;
 
             return await RefreshAsync(context, authentication, ct);
         }
@@ -53,19 +52,13 @@ public sealed class AccessTokenService(
     {
         var properties = authentication.Properties;
         var refreshToken = properties?.GetTokenValue("refresh_token");
-        if (properties == null || string.IsNullOrWhiteSpace(refreshToken))
+        if (properties is null || string.IsNullOrWhiteSpace(refreshToken))
         {
             logger.LogInformation("The access token is expiring and no refresh token is available");
-            return properties?.GetTokenValue("access_token");
+            return null;
         }
 
         var options = oidcOptions.Get(OpenIdConnectDefaults.AuthenticationScheme);
-        if (string.IsNullOrWhiteSpace(options.ClientId))
-        {
-            logger.LogError("OIDC token refresh cannot run because the client ID is not configured");
-            return properties.GetTokenValue("access_token");
-        }
-
         var oidcConfiguration = await options.ConfigurationManager!.GetConfigurationAsync(ct);
         using var request = new HttpRequestMessage(HttpMethod.Post, oidcConfiguration.TokenEndpoint)
         {
@@ -73,7 +66,7 @@ public sealed class AccessTokenService(
             {
                 ["grant_type"] = "refresh_token",
                 ["refresh_token"] = refreshToken,
-                ["client_id"] = options.ClientId,
+                ["client_id"] = options.ClientId ?? string.Empty,
                 ["client_secret"] = options.ClientSecret ?? string.Empty
             })
         };
@@ -82,22 +75,20 @@ public sealed class AccessTokenService(
         if (!response.IsSuccessStatusCode)
         {
             logger.LogWarning("OIDC token refresh failed with status {StatusCode}", response.StatusCode);
-            return properties.GetTokenValue("access_token");
+            return null;
         }
 
         using var payload = JsonDocument.Parse(await response.Content.ReadAsStreamAsync(ct));
-        if (!payload.RootElement.TryGetProperty("access_token", out var accessTokenProperty))
-            return properties.GetTokenValue("access_token");
+        if (!payload.RootElement.TryGetProperty("access_token", out var accessTokenProperty)) return null;
 
         var accessToken = accessTokenProperty.GetString();
-        if (string.IsNullOrWhiteSpace(accessToken))
-            return properties.GetTokenValue("access_token");
+        if (string.IsNullOrWhiteSpace(accessToken)) return null;
 
-        var requiredAudience = appConfiguration["Jwt:Audience"];
+        var requiredAudience = configuration["Jwt:Audience"];
         if (!HasRequiredAudience(accessToken, requiredAudience))
         {
             logger.LogWarning("The refreshed access token is missing required audience {Audience}", requiredAudience);
-            return properties.GetTokenValue("access_token");
+            return null;
         }
 
         var tokens = properties.GetTokens().ToList();
@@ -122,8 +113,7 @@ public sealed class AccessTokenService(
 
     private static bool NeedsRefresh(string? accessToken)
     {
-        if (string.IsNullOrWhiteSpace(accessToken))
-            return false;
+        if (string.IsNullOrWhiteSpace(accessToken)) return false;
 
         var handler = new JwtSecurityTokenHandler();
         return handler.CanReadToken(accessToken) &&
@@ -132,8 +122,7 @@ public sealed class AccessTokenService(
 
     private static bool HasRequiredAudience(string accessToken, string? requiredAudience)
     {
-        if (string.IsNullOrWhiteSpace(requiredAudience))
-            return true;
+        if (string.IsNullOrWhiteSpace(requiredAudience)) return true;
 
         var handler = new JwtSecurityTokenHandler();
         return handler.CanReadToken(accessToken) &&
@@ -142,11 +131,10 @@ public sealed class AccessTokenService(
 
     private static void SetToken(List<AuthenticationToken> tokens, string name, string? value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-            return;
+        if (string.IsNullOrWhiteSpace(value)) return;
 
         var existing = tokens.Find(token => token.Name == name);
-        if (existing == null)
+        if (existing is null)
             tokens.Add(new AuthenticationToken { Name = name, Value = value });
         else
             existing.Value = value;

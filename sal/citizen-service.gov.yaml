@@ -27,6 +27,8 @@ auth:
         - openid
         - profile
         - email
+      audiences:
+        - citizen-service
 roles:
   - clerk
   - admin

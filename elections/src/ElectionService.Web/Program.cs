@@ -117,6 +117,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("RequireAdmin", policy => policy.RequireRole("election-service:admin")));
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<OidcAccessTokenService>();
 builder.Services.AddTransient<BearerTokenHandler>();
 builder.Services.AddHttpClient<PublicElectionClient>(ConfigureElectionApi);
 builder.Services.AddHttpClient<ManagedElectionClient>(ConfigureElectionApi)

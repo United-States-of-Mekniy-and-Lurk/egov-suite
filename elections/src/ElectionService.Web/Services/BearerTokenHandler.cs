@@ -1,16 +1,15 @@
 using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Authentication;
+using Egov.Platform.Identity;
 
 namespace ElectionService.Web.Services;
 
-public sealed class BearerTokenHandler(IHttpContextAccessor contextAccessor) : DelegatingHandler
+public sealed class BearerTokenHandler(OidcAccessTokenService accessTokenService) : DelegatingHandler
 {
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        var context = contextAccessor.HttpContext;
-        var accessToken = context is null ? null : await context.GetTokenAsync("access_token");
+        var accessToken = await accessTokenService.GetAccessTokenAsync(cancellationToken);
         if (!string.IsNullOrWhiteSpace(accessToken))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 

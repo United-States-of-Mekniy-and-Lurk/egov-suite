@@ -81,6 +81,7 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole("organization-registry:clerk", "organization-registry:admin")));
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<OidcAccessTokenService>();
 builder.Services.AddTransient<BearerTokenHandler>();
 builder.Services.AddHttpClient<PublicRegistryClient>(client =>
 {

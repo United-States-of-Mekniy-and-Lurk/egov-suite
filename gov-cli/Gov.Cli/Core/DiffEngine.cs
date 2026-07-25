@@ -15,13 +15,15 @@ public static class DiffEngine
         {
             if (!currentClients.TryGetValue(desiredClient.LogicalName, out var currentClient))
             {
-                clientsToCreate.Add(new ClientCreate(desiredClient.LogicalName, desiredClient.RedirectUris, desiredClient.Scopes));
+                clientsToCreate.Add(new ClientCreate(desiredClient.LogicalName, desiredClient.RedirectUris, desiredClient.Scopes, desiredClient.Audiences));
                 continue;
             }
 
-            if (!SetEquals(desiredClient.RedirectUris, currentClient.RedirectUris) || !SetEquals(desiredClient.Scopes, currentClient.Scopes))
+            if (!SetEquals(desiredClient.RedirectUris, currentClient.RedirectUris) ||
+                !SetEquals(desiredClient.Scopes, currentClient.Scopes) ||
+                !SetEquals(desiredClient.Audiences, currentClient.Audiences))
             {
-                clientsToUpdate.Add(new ClientUpdate(desiredClient.LogicalName, currentClient.KeycloakId, desiredClient.RedirectUris, desiredClient.Scopes));
+                clientsToUpdate.Add(new ClientUpdate(desiredClient.LogicalName, currentClient.KeycloakId, desiredClient.RedirectUris, desiredClient.Scopes, desiredClient.Audiences));
             }
         }
 
