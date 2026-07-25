@@ -1,6 +1,7 @@
 @{
     var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
     var returnUrl = $"{Context.Request.PathBase}{Context.Request.Path}{Context.Request.QueryString}";
+    var isHomePage = string.Equals(ViewContext.RouteData.Values["page"]?.ToString(), "/Index", StringComparison.OrdinalIgnoreCase);
 }
 <!DOCTYPE html>
 <html lang="@culture">
@@ -19,9 +20,10 @@
         <div class="header-inner">
             <a class="brand" asp-page="/Index" aria-label="@L["portal.home_aria"]">
                 <img src="~/img/MKLU-Flag-Small.svg" alt="" aria-hidden="true" />
-                <span><strong>@L["portal.app.name"]</strong><small>@L["portal.app.country"]</small></span>
+                <span class="brand-copy"><strong>@L["portal.app.name"]</strong><small>@L["portal.app.country"]</small></span>
             </a>
-            <nav aria-label="@L["portal.nav.aria"]">
+            <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-navigation">@L["portal.nav.menu"]</button>
+            <nav id="site-navigation" class="site-nav" aria-label="@L["portal.nav.aria"]">
                 <a asp-page="/Index"><svg class="icon" aria-hidden="true"><use href="/img/icons.svg#services" /></svg>@L["portal.nav.services"]</a>
                 @if (User.Identity?.IsAuthenticated == true)
                 {
@@ -34,30 +36,39 @@
                 {
                     <a class="sign-in" asp-page="/Login" asp-route-returnUrl="/Overview"><svg class="icon" aria-hidden="true"><use href="/img/icons.svg#log-in" /></svg>@L["portal.nav.sign_in"]</a>
                 }
-                <form method="post" asp-page="/Culture" class="language-picker">
+                <form method="post" asp-page="/Culture" class="language-picker" aria-label="@L["portal.language.label"]">
                     <input type="hidden" name="returnUrl" value="@returnUrl" />
-                    <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#languages" /></svg>
-                    <label class="visually-hidden" for="portal-language">@L["portal.language.label"]</label>
-                    <select id="portal-language" name="culture" onchange="this.form.submit()">
-                        <option value="en" selected="@(culture == "en")">EN</option>
-                        <option value="cs" selected="@(culture == "cs")">CS</option>
-                    </select>
+                    <button class="@(culture == "en" ? "active" : null)" type="submit" name="culture" value="en" lang="en">EN</button>
+                    <button class="@(culture == "cs" ? "active" : null)" type="submit" name="culture" value="cs" lang="cs">CS</button>
                 </form>
             </nav>
         </div>
     </header>
 
-    <main id="main-content">@RenderBody()</main>
+    <main id="main-content">
+        @if (!isHomePage)
+        {
+            <nav class="breadcrumb content-width" aria-label="@L["portal.nav.breadcrumb"]">
+                <a asp-page="/Index">@L["portal.nav.services"]</a><span aria-hidden="true">/</span><span aria-current="page">@ViewData["Title"]</span>
+            </nav>
+        }
+        @RenderBody()
+    </main>
 
     <footer>
         <div class="footer-inner">
             <span class="footer-government">
                 <img src="~/img/manticore.svg" alt="" aria-hidden="true" />
-                @L["portal.footer.government"]
+                <span><strong>@L["portal.app.name"]</strong><small>© @DateTime.UtcNow.Year @L["portal.footer.government"]</small></span>
             </span>
-            <a asp-page="/Privacy">@L["portal.nav.privacy"]</a>
+            <nav class="footer-links" aria-label="@L["portal.footer.navigation"]">
+                <a href="https://gov.mklu.org">@L["portal.footer.government_portal"]</a>
+                <a href="https://mklu.org">@L["portal.footer.public_website"]</a>
+                <a asp-page="/Privacy">@L["portal.nav.privacy"]</a>
+            </nav>
         </div>
     </footer>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

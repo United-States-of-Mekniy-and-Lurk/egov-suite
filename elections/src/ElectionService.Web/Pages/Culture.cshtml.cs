@@ -1,18 +1,14 @@
-using Microsoft.AspNetCore.Localization;
+using Egov.Platform.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace ElectionService.Web.Pages;
 
-public sealed class CultureModel : PageModel
+public sealed class CultureModel(MkluCultureCookie cultureCookie) : PageModel
 {
     public IActionResult OnGet(string culture, string? returnUrl)
     {
-        if (culture is not ("en" or "cs")) culture = "en";
-        Response.Cookies.Append(
-            CookieRequestCultureProvider.DefaultCookieName,
-            CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
-            new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), IsEssential = true, SameSite = SameSiteMode.Lax });
+        cultureCookie.SetCulture(HttpContext, culture);
 
         return LocalRedirect(Url.IsLocalUrl(returnUrl) ? returnUrl : Url.Page("/Index")!);
     }

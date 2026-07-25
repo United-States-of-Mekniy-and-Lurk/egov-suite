@@ -10,13 +10,17 @@
   <data name="SkipToContent" xml:space="preserve"><value>Skip to main content</value></data>
   <data name="Menu" xml:space="preserve"><value>Menu</value></data>
   <data name="MainNavigation" xml:space="preserve"><value>Main navigation</value></data>
+  <data name="Breadcrumb" xml:space="preserve"><value>Breadcrumb</value></data>
   <data name="PublicRegister" xml:space="preserve"><value>Public register</value></data>
   <data name="ManageOrganization" xml:space="preserve"><value>Manage an organisation</value></data>
+  <data name="StaffTools" xml:space="preserve"><value>Staff tools</value></data>
   <data name="Language" xml:space="preserve"><value>Language</value></data>
   <data name="FooterDescription" xml:space="preserve"><value>Official public organisation records</value></data>
   <data name="FooterNavigation" xml:space="preserve"><value>Footer navigation</value></data>
   <data name="Privacy" xml:space="preserve"><value>Privacy</value></data>
   <data name="ServiceStatus" xml:space="preserve"><value>Service status</value></data>
+  <data name="GovernmentPortal" xml:space="preserve"><value>Government portal</value></data>
+  <data name="PublicWebsite" xml:space="preserve"><value>Public website</value></data>
   <data name="OfficialRegister" xml:space="preserve"><value>Official register</value></data>
   <data name="FindOrganization" xml:space="preserve"><value>Find an organisation</value></data>
   <data name="FindOrganizationDescription" xml:space="preserve"><value>Search verified public records by legal name, trading name, registration number, or activity.</value></data>

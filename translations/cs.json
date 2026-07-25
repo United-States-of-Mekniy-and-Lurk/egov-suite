@@ -18,6 +18,7 @@
   "nav.language": "Jazyk",
   "nav.staff_tools": "Nástroje úřadu",
   "nav.forms": "Formuláře",
+  "nav.breadcrumb": "Drobečková navigace",
 
   "common.name": "Jméno",
   "common.email": "E-mail",
@@ -241,8 +242,13 @@
   "portal.nav.sign_in": "Přihlásit se",
   "portal.nav.sign_out": "Odhlásit se",
   "portal.nav.privacy": "Ochrana soukromí",
+  "portal.nav.menu": "Nabídka",
+  "portal.nav.breadcrumb": "Drobečková navigace",
   "portal.language.label": "Jazyk",
   "portal.footer.government": "Vláda Meknijska a Lurku",
+  "portal.footer.navigation": "Navigace v zápatí",
+  "portal.footer.government_portal": "Portál veřejné správy",
+  "portal.footer.public_website": "Veřejný web",
   "portal.index.eyebrow": "Jedno místo, kde začít",
   "portal.index.heading": "Co potřebujete vyřídit?",
   "portal.index.lead": "Vyhledejte služby a informace veřejné správy. Pro prohlížení nepotřebujete účet.",
@@ -276,5 +282,8 @@
   "portal.error.try_again": "Zkuste to za chvíli znovu nebo se vraťte do",
   "portal.error.directory": "seznamu služeb",
 
-  "footer.copyright": "© {0} Spojené státy Meknijska a Lurku"
+  "footer.copyright": "© {0} Spojené státy Meknijska a Lurku",
+  "footer.navigation": "Navigace v zápatí",
+  "footer.government_portal": "Portál veřejné správy",
+  "footer.public_website": "Veřejný web"
 }

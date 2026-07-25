@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    var returnUrl = Context.Request.PathBase + Context.Request.Path + Context.Request.QueryString;
+    var isHomePage = string.Equals(ViewContext.RouteData.Values["page"]?.ToString(), "/Index", StringComparison.OrdinalIgnoreCase);
+}
+<!DOCTYPE html>
 <html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
     <meta charset="utf-8" />
@@ -11,7 +16,6 @@
     <link rel="stylesheet" href="/css/site.css" />
 </head>
 <body>
-    @{ var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName; }
     <a class="skip-link" href="#main-content">@L["SkipToContent"]</a>
     <header class="site-header" role="banner">
         <div class="header-inner">
@@ -28,12 +32,17 @@
                 <a asp-page="/Manage/Index">@L["ManageOrganization"]</a>
                 @if (User.IsInRole("organization-registry:clerk") || User.IsInRole("organization-registry:admin"))
                 {
-                    <a asp-page="/Staff/Registrations">@L["ReviewRegistrations"]</a>
-                    <a asp-page="/Staff/HistoricalRegistration">@L["AddExistingOrganization"]</a>
+                    <details class="nav-menu">
+                        <summary>@L["StaffTools"]<span aria-hidden="true">⌄</span></summary>
+                        <div class="nav-menu-panel">
+                            <a asp-page="/Staff/Registrations">@L["ReviewRegistrations"]</a>
+                            <a asp-page="/Staff/HistoricalRegistration">@L["AddExistingOrganization"]</a>
+                        </div>
+                    </details>
                 }
                 <div class="language-switch" aria-label="@L["Language"]">
-                    <a class="@(culture == "en" ? "active" : null)" href="?culture=en">EN</a>
-                    <a class="@(culture == "cs" ? "active" : null)" href="?culture=cs">CS</a>
+                    <a class="@(culture == "en" ? "active" : null)" asp-page="/Culture" asp-route-culture="en" asp-route-returnUrl="@returnUrl" lang="en">EN</a>
+                    <a class="@(culture == "cs" ? "active" : null)" asp-page="/Culture" asp-route-culture="cs" asp-route-returnUrl="@returnUrl" lang="cs">CS</a>
                 </div>
                 @if (User.Identity?.IsAuthenticated == true)
                 {
@@ -46,6 +55,12 @@
     </header>
 
     <main id="main-content" role="main">
+        @if (!isHomePage)
+        {
+            <nav class="breadcrumb content-width" aria-label="@L["Breadcrumb"]">
+                <a asp-page="/Index">@L["PublicRegister"]</a><span aria-hidden="true">/</span><span aria-current="page">@ViewData["Title"]</span>
+            </nav>
+        }
         @RenderBody()
     </main>
 
@@ -56,9 +71,12 @@
                 <div>
                     <strong>@L["AppName"]</strong>
                     <span>@L["FooterDescription"]</span>
+                    <span>© @DateTime.UtcNow.Year @L["CountryName"]</span>
                 </div>
             </div>
             <nav aria-label="@L["FooterNavigation"]">
+                <a href="https://gov.mklu.org">@L["GovernmentPortal"]</a>
+                <a href="https://mklu.org">@L["PublicWebsite"]</a>
                 <a asp-page="/Privacy">@L["Privacy"]</a>
                 <a href="/health">@L["ServiceStatus"]</a>
             </nav>

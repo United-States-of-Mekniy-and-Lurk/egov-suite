@@ -18,6 +18,10 @@
   <data name="Sign in" xml:space="preserve"><value>Přihlásit se</value></data>
   <data name="Official election service of Mekniy-Lurk" xml:space="preserve"><value>Oficiální volební služba Mekniy-Lurku</value></data>
   <data name="Service status" xml:space="preserve"><value>Stav služby</value></data>
+  <data name="Breadcrumb" xml:space="preserve"><value>Drobečková navigace</value></data>
+  <data name="Footer navigation" xml:space="preserve"><value>Navigace v zápatí</value></data>
+  <data name="Government portal" xml:space="preserve"><value>Portál veřejné správy</value></data>
+  <data name="Public website" xml:space="preserve"><value>Veřejný web</value></data>
   <data name="Official election service" xml:space="preserve"><value>Oficiální volební služba</value></data>
   <data name="{0} public records" xml:space="preserve"><value>Veřejné záznamy: {0}</value></data>
   <data name="Current election records" xml:space="preserve"><value>Aktuální volební záznamy</value></data>

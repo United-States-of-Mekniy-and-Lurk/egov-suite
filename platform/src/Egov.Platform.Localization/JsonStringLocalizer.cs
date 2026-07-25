@@ -3,9 +3,11 @@ using System.Globalization;
 using System.Text.Json;
 using Microsoft.Extensions.Localization;
 
-namespace GovernmentPortal.Web.Services;
+namespace Egov.Platform.Localization;
 
-public sealed class JsonStringLocalizer(string translationsPath) : IStringLocalizer
+public sealed class JsonStringLocalizer(
+    string translationsPath,
+    string fallbackCulture) : IStringLocalizer
 {
     private readonly ConcurrentDictionary<string, Dictionary<string, string>> _cache = new();
 
@@ -15,7 +17,10 @@ public sealed class JsonStringLocalizer(string translationsPath) : IStringLocali
 
     public LocalizedString this[string name, params object[] arguments] => Resolve(name) is { } value
         ? new LocalizedString(name, string.Format(CultureInfo.CurrentCulture, value, arguments))
-        : new LocalizedString(name, string.Format(CultureInfo.CurrentCulture, name, arguments), resourceNotFound: true);
+        : new LocalizedString(
+            name,
+            string.Format(CultureInfo.CurrentCulture, name, arguments),
+            resourceNotFound: true);
 
     public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>
         Load(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName)
@@ -25,7 +30,10 @@ public sealed class JsonStringLocalizer(string translationsPath) : IStringLocali
     {
         var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
         if (Load(culture).TryGetValue(name, out var value)) return value;
-        return culture != "en" && Load("en").TryGetValue(name, out value) ? value : null;
+        return !string.Equals(culture, fallbackCulture, StringComparison.OrdinalIgnoreCase) &&
+               Load(fallbackCulture).TryGetValue(name, out value)
+            ? value
+            : null;
     }
 
     private Dictionary<string, string> Load(string culture) => _cache.GetOrAdd(culture, language =>
@@ -35,4 +43,10 @@ public sealed class JsonStringLocalizer(string translationsPath) : IStringLocali
             ? JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(path)) ?? []
             : [];
     });
+}
+
+public sealed class JsonStringLocalizerFactory(JsonStringLocalizer localizer) : IStringLocalizerFactory
+{
+    public IStringLocalizer Create(Type resourceSource) => localizer;
+    public IStringLocalizer Create(string baseName, string location) => localizer;
 }

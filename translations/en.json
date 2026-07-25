@@ -18,6 +18,7 @@
   "nav.language": "Language",
   "nav.staff_tools": "Staff tools",
   "nav.forms": "Forms",
+  "nav.breadcrumb": "Breadcrumb",
 
   "common.name": "Name",
   "common.email": "Email",
@@ -241,8 +242,13 @@
   "portal.nav.sign_in": "Sign in",
   "portal.nav.sign_out": "Sign out",
   "portal.nav.privacy": "Privacy",
+  "portal.nav.menu": "Menu",
+  "portal.nav.breadcrumb": "Breadcrumb",
   "portal.language.label": "Language",
   "portal.footer.government": "Government of Mekniy and Lurk",
+  "portal.footer.navigation": "Footer navigation",
+  "portal.footer.government_portal": "Government portal",
+  "portal.footer.public_website": "Public website",
   "portal.index.eyebrow": "One place to begin",
   "portal.index.heading": "What do you need to do?",
   "portal.index.lead": "Find government services and information. You can browse without an account.",
@@ -276,5 +282,8 @@
   "portal.error.try_again": "Try again in a moment or return to the",
   "portal.error.directory": "service directory",
 
-  "footer.copyright": "© {0} United States of Mekniy and Lurk"
+  "footer.copyright": "© {0} United States of Mekniy and Lurk",
+  "footer.navigation": "Footer navigation",
+  "footer.government_portal": "Government portal",
+  "footer.public_website": "Public website"
 }

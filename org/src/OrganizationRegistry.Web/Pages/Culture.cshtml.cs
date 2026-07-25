@@ -2,14 +2,13 @@ using Egov.Platform.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace CitizenService.Web.Pages;
+namespace OrganizationRegistry.Web.Pages;
 
-public class LanguageModel(MkluCultureCookie cultureCookie) : PageModel
+public sealed class CultureModel(MkluCultureCookie cultureCookie) : PageModel
 {
-    public IActionResult OnPost(string culture, string? returnUrl)
+    public IActionResult OnGet(string culture, string? returnUrl)
     {
         cultureCookie.SetCulture(HttpContext, culture);
-
         return LocalRedirect(Url.IsLocalUrl(returnUrl) ? returnUrl : Url.Page("/Index")!);
     }
 }

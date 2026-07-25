@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.Localization;
 using CitizenService.Web.Services;
+using Egov.Platform.Localization;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
@@ -14,9 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Localization
 var translationsPath = builder.Configuration["Translations:Path"]
     ?? Path.Combine(builder.Environment.ContentRootPath, "..", "..", "..", "translations");
-builder.Services.AddSingleton<IStringLocalizerFactory>(new JsonStringLocalizerFactory(translationsPath));
-builder.Services.AddSingleton(sp => sp.GetRequiredService<IStringLocalizerFactory>().Create(typeof(Program)));
-builder.Services.AddLocalization();
+builder.Services.AddMkluRequestLocalization(builder.Configuration);
+builder.Services.AddMkluJsonLocalization(translationsPath);
 
 builder.Services.AddRazorPages();
 
@@ -227,14 +226,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseRouting();
-app.UseRequestLocalization(options =>
-{
-    var supportedCultures = new[] { "en", "cs" };
-    options.SetDefaultCulture("en");
-    options.AddSupportedCultures(supportedCultures);
-    options.AddSupportedUICultures(supportedCultures);
-    // Culture can be set via ?culture=cs query, cookie, or Accept-Language header
-});
+app.UseRequestLocalization();
 app.UseAuthentication();
 app.Use(async (context, next) =>
 {

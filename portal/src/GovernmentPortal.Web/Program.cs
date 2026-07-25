@@ -1,8 +1,8 @@
 using GovernmentPortal.Web.Services;
+using Egov.Platform.Localization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,8 +12,8 @@ builder.Services.AddSingleton<IPortalModule, CitizenshipPortalModule>();
 
 var translationsPath = builder.Configuration["Translations:Path"]
     ?? Path.Combine(builder.Environment.ContentRootPath, "..", "..", "..", "translations");
-builder.Services.AddSingleton<IStringLocalizer>(new JsonStringLocalizer(translationsPath));
-builder.Services.AddLocalization();
+builder.Services.AddMkluRequestLocalization(builder.Configuration);
+builder.Services.AddMkluJsonLocalization(translationsPath);
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -57,13 +57,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseRouting();
-app.UseRequestLocalization(options =>
-{
-    var supportedCultures = new[] { "en", "cs" };
-    options.SetDefaultCulture("en");
-    options.AddSupportedCultures(supportedCultures);
-    options.AddSupportedUICultures(supportedCultures);
-});
+app.UseRequestLocalization();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapRazorPages();

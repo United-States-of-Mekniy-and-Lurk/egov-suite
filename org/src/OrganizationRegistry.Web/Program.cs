@@ -1,4 +1,5 @@
 using Egov.Platform.Identity;
+using Egov.Platform.Localization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -10,6 +11,7 @@ using OrganizationRegistry.Web.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.AddMkluRequestLocalization(builder.Configuration);
 builder.Services.AddRazorPages();
 builder.Services.AddHealthChecks();
 
@@ -113,13 +115,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-app.UseRequestLocalization(options =>
-{
-    var supportedCultures = new[] { "en", "cs" };
-    options.SetDefaultCulture("en");
-    options.AddSupportedCultures(supportedCultures);
-    options.AddSupportedUICultures(supportedCultures);
-});
+app.UseRequestLocalization();
 
 app.UseAuthentication();
 app.UseAuthorization();

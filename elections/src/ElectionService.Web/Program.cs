@@ -1,13 +1,12 @@
 using ElectionService.Web.Services;
 using ElectionService.Web;
 using Egov.Platform.Identity;
+using Egov.Platform.Localization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Localization;
-using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,19 +17,7 @@ builder.Services.AddRazorPages()
     .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = (_, factory) =>
         factory.Create(typeof(SharedResource)));
 builder.Services.AddHealthChecks();
-
-var supportedCultures = new[] { new CultureInfo("en"), new CultureInfo("cs") };
-builder.Services.Configure<RequestLocalizationOptions>(options =>
-{
-    options.DefaultRequestCulture = new RequestCulture("en");
-    options.SupportedCultures = supportedCultures;
-    options.SupportedUICultures = supportedCultures;
-    options.RequestCultureProviders =
-    [
-        new QueryStringRequestCultureProvider(),
-        new CookieRequestCultureProvider()
-    ];
-});
+builder.Services.AddMkluRequestLocalization(builder.Configuration);
 
 var keysPath = builder.Configuration["DataProtection:KeysPath"];
 if (!string.IsNullOrWhiteSpace(keysPath))

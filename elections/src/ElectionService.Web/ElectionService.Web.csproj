@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\platform\src\Egov.Platform.Identity\Egov.Platform.Identity.csproj" />
+    <ProjectReference Include="..\..\..\platform\src\Egov.Platform.Localization\Egov.Platform.Localization.csproj" />
   </ItemGroup>
 
 </Project>

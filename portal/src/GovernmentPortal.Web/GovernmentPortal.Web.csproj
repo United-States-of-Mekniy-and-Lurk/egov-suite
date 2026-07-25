@@ -8,13 +8,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.9" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="../../../design-system/MKLU-Flag-Small.svg"
-             Link="wwwroot/img/MKLU-Flag-Small.svg"
-             CopyToOutputDirectory="PreserveNewest"
-             CopyToPublishDirectory="PreserveNewest" />
-    <Content Include="../../../design-system/manticore.svg"
-             Link="wwwroot/img/manticore.svg"
-             CopyToOutputDirectory="PreserveNewest"
-             CopyToPublishDirectory="PreserveNewest" />
+    <ProjectReference Include="..\..\..\platform\src\Egov.Platform.Localization\Egov.Platform.Localization.csproj" />
   </ItemGroup>
 </Project>

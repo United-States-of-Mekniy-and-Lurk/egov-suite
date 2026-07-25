@@ -3,6 +3,7 @@ WORKDIR /src
 
 COPY elections/src/ElectionService.Web/ElectionService.Web.csproj elections/src/ElectionService.Web/
 COPY platform/src/Egov.Platform.Identity/Egov.Platform.Identity.csproj platform/src/Egov.Platform.Identity/
+COPY platform/src/Egov.Platform.Localization/Egov.Platform.Localization.csproj platform/src/Egov.Platform.Localization/
 
 RUN dotnet restore elections/src/ElectionService.Web/ElectionService.Web.csproj
 

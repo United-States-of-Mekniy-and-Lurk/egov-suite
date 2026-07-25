@@ -17,5 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Egov.Platform.Forms\Egov.Platform.Forms.csproj" />
     <ProjectReference Include="..\..\src\Egov.Platform.Identity\Egov.Platform.Identity.csproj" />
+    <ProjectReference Include="..\..\src\Egov.Platform.Localization\Egov.Platform.Localization.csproj" />
   </ItemGroup>
 </Project>
