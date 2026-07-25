@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
+using System.IdentityModel.Tokens.Jwt;
 using OrganizationRegistry.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,9 +51,20 @@ builder.Services.AddAuthentication(options =>
     options.Scope.Add("email");
     options.Events.OnTokenValidated = context =>
     {
+        var accessToken = context.TokenEndpointResponse?.AccessToken;
+        var requiredAudience = builder.Configuration["Jwt:Audience"];
+        if (!string.IsNullOrWhiteSpace(requiredAudience) && !string.IsNullOrWhiteSpace(accessToken))
+        {
+            var token = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
+            if (!token.Audiences.Contains(requiredAudience, StringComparer.Ordinal))
+            {
+                throw new AuthenticationFailureException(
+                    $"The access token does not contain the required audience '{requiredAudience}'.");
+            }
+        }
         KeycloakClaimsTransformation.AddRolesFromAccessToken(
             context.Principal,
-            context.TokenEndpointResponse?.AccessToken);
+            accessToken);
         return Task.CompletedTask;
     };
     options.Events.OnRedirectToIdentityProvider = context =>
