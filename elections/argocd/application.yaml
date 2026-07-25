@@ -45,13 +45,12 @@ spec:
           oidcPublicBaseUrl: "https://elections.mklu.org"
           oidcRequireHttpsMetadata: true
         secret:
-          # Pre-create this Secret with ConnectionStrings__DefaultConnection,
-          # Voting__CredentialHashKeys__v1, and Oidc__ClientSecret, preferably
-          # through External Secrets.
+          # Pre-create this Secret with POSTGRES_PASSWORD,
+          # Voting__CredentialHashKeys__v1, and Oidc__ClientSecret.
           existingSecret: "election-service-production"
         postgresql:
-          # Production uses the database configured by the external Secret.
-          enabled: false
+          enabled: true
+          existingSecret: "election-service-production"
   destination:
     server: https://kubernetes.default.svc
     namespace: default

@@ -63,6 +63,14 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- printf "%s-postgres" (include "election-service.fullname" .) }}
 {{- end }}
 
+{{- define "election-service.postgresSecretName" -}}
+{{- if .Values.postgresql.existingSecret }}
+{{- .Values.postgresql.existingSecret }}
+{{- else }}
+{{- printf "%s-postgres-secret" (include "election-service.fullname" .) }}
+{{- end }}
+{{- end }}
+
 {{- define "election-service.connectionString" -}}
 {{- if .Values.secret.connectionString }}
 {{- .Values.secret.connectionString }}

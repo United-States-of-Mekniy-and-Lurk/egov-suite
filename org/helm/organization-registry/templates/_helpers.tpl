@@ -63,6 +63,14 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- printf "%s-postgres" (include "organization-registry.fullname" .) }}
 {{- end }}
 
+{{- define "organization-registry.postgresSecretName" -}}
+{{- if .Values.postgresql.existingSecret }}
+{{- .Values.postgresql.existingSecret }}
+{{- else }}
+{{- printf "%s-postgres-secret" (include "organization-registry.fullname" .) }}
+{{- end }}
+{{- end }}
+
 {{- define "organization-registry.connectionString" -}}
 {{- if .Values.secret.connectionString }}
 {{- .Values.secret.connectionString }}

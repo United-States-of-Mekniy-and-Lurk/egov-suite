@@ -3,6 +3,8 @@ WORKDIR /src
 COPY gov-cli/Gov.Cli/Gov.Cli.csproj gov-cli/Gov.Cli/
 RUN dotnet restore gov-cli/Gov.Cli/Gov.Cli.csproj
 COPY gov-cli/Gov.Cli/ gov-cli/Gov.Cli/
+COPY elections/election-service.gov.yaml elections/
+COPY org/organization-registry.gov.yaml org/
 COPY sal/citizen-service.gov.yaml sal/
 COPY portal/portal.gov.yaml portal/
 RUN dotnet run --project gov-cli/Gov.Cli/Gov.Cli.csproj --no-restore -- catalog . > /services.json

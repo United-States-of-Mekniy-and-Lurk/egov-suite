@@ -34,12 +34,11 @@ spec:
           oidcClientId: "organization-registry-web"
           oidcRequireHttpsMetadata: true
         secret:
-          # Pre-create this Secret with ConnectionStrings__DefaultConnection
-          # and Oidc__ClientSecret, preferably through External Secrets.
+          # Pre-create this Secret with POSTGRES_PASSWORD and Oidc__ClientSecret.
           existingSecret: "organization-registry-production"
         postgresql:
-          # Production uses the database configured by the external Secret.
-          enabled: false
+          enabled: true
+          existingSecret: "organization-registry-production"
   destination:
     server: https://kubernetes.default.svc
     namespace: default

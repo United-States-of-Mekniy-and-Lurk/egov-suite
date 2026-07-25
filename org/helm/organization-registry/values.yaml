@@ -86,6 +86,8 @@ secret:
   oidcClientSecret: "CHANGE_ME"
 postgresql:
   enabled: true
+  # Optional Secret containing POSTGRES_PASSWORD. The database remains managed by this chart.
+  existingSecret: ""
   image: postgres:16-alpine
   database: organization_registry
   username: postgres

@@ -39,6 +39,16 @@ spec:
                 name: {{ include "organization-registry.fullname" . }}-config
             - secretRef:
                 name: {{ include "organization-registry.secretName" . }}
+          {{- if .Values.postgresql.enabled }}
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "organization-registry.postgresSecretName" . }}
+                  key: POSTGRES_PASSWORD
+            - name: ConnectionStrings__DefaultConnection
+              value: {{ printf "Host=%s;Database=%s;Username=%s;Password=$(POSTGRES_PASSWORD)" (include "organization-registry.postgresServiceName" .) .Values.postgresql.database .Values.postgresql.username | quote }}
+          {{- end }}
           {{- if .Values.api.readinessProbe.enabled }}
           readinessProbe:
             httpGet:

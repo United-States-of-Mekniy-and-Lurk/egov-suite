@@ -85,6 +85,30 @@ builder.Services.AddAuthentication(options =>
         var publicBaseUrl = builder.Configuration["Oidc:PublicBaseUrl"]?.TrimEnd('/');
         if (!string.IsNullOrWhiteSpace(publicBaseUrl))
             context.ProtocolMessage.RedirectUri = $"{publicBaseUrl}{options.CallbackPath}";
+
+        context.HttpContext.RequestServices
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger("OpenIdConnect")
+            .LogInformation(
+                "OIDC challenge client={ClientId} redirectUri={RedirectUri} requestScheme={Scheme} requestHost={Host}",
+                options.ClientId,
+                context.ProtocolMessage.RedirectUri,
+                context.Request.Scheme,
+                context.Request.Host);
+        return Task.CompletedTask;
+    };
+    options.Events.OnRemoteFailure = context =>
+    {
+        context.HttpContext.RequestServices
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger("OpenIdConnect")
+            .LogWarning(
+                context.Failure,
+                "OIDC remote failure path={Path} client={ClientId}; restart sign-in from the portal instead of reusing the callback URL",
+                context.Request.Path,
+                options.ClientId);
+        context.HandleResponse();
+        context.Response.Redirect("/Error");
         return Task.CompletedTask;
     };
 });

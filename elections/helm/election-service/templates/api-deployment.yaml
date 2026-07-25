@@ -44,6 +44,16 @@ spec:
                 name: {{ include "election-service.fullname" . }}-config
             - secretRef:
                 name: {{ include "election-service.secretName" . }}
+          {{- if .Values.postgresql.enabled }}
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "election-service.postgresSecretName" . }}
+                  key: POSTGRES_PASSWORD
+            - name: ConnectionStrings__DefaultConnection
+              value: {{ printf "Host=%s;Database=%s;Username=%s;Password=$(POSTGRES_PASSWORD)" (include "election-service.postgresServiceName" .) .Values.postgresql.database .Values.postgresql.username | quote }}
+          {{- end }}
           readinessProbe:
             httpGet:
               path: {{ .Values.api.probes.readiness.path }}

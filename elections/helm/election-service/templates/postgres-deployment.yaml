@@ -20,25 +20,10 @@ spec:
         app.kubernetes.io/name: {{ include "election-service.name" . }}-postgres
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: postgresql
-      annotations:
-        checksum/secret: {{ include (print $.Template.BasePath "/postgres-secret.yaml") . | sha256sum }}
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 70
-        runAsGroup: 70
-        fsGroup: 70
-        fsGroupChangePolicy: OnRootMismatch
-        seccompProfile:
-          type: RuntimeDefault
       containers:
         - name: postgres
           image: {{ .Values.postgresql.image }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
           ports:
             - name: postgresql
               containerPort: 5432
@@ -50,7 +35,7 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "election-service.fullname" . }}-postgres-secret
+                  name: {{ include "election-service.postgresSecretName" . }}
                   key: POSTGRES_PASSWORD
           volumeMounts:
             - name: postgres-data

@@ -35,7 +35,7 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "organization-registry.fullname" . }}-postgres-secret
+                  name: {{ include "organization-registry.postgresSecretName" . }}
                   key: POSTGRES_PASSWORD
           volumeMounts:
             - name: postgres-data
