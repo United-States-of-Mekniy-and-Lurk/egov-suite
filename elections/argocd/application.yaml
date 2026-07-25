@@ -1,0 +1,64 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: election-service
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/United-States-of-Mekniy-and-Lurk/egov-suite.git
+    targetRevision: HEAD
+    path: elections/helm/election-service
+    helm:
+      releaseName: election-service
+      valueFiles:
+        - values.yaml
+      values: |
+        api:
+          ingress:
+            enabled: true
+            className: nginx
+            host: elections-api.mklu.org
+            tls:
+              - hosts:
+                  - elections-api.mklu.org
+                secretName: election-service-api-tls
+        web:
+          ingress:
+            className: nginx
+            host: elections.mklu.org
+            tls:
+              - hosts:
+                  - elections.mklu.org
+                secretName: election-service-web-tls
+        config:
+          jwtAuthority: "https://idna.mklu.org/realms/mklu"
+          jwtAudience: "election-service"
+          personRegistryBaseUrl: "http://ego"
+          citizenRegistryBaseUrl: "http://citizen-service-api"
+          organizationRegistryBaseUrl: "http://organization-registry-api"
+          electionApiBaseUrl: "http://election-service-api"
+          oidcAuthority: "https://idna.mklu.org/realms/mklu"
+          oidcClientId: "election-service-web"
+          oidcPublicBaseUrl: "https://elections.mklu.org"
+          oidcRequireHttpsMetadata: true
+        secret:
+          # Pre-create this Secret with ConnectionStrings__DefaultConnection,
+          # Voting__CredentialHashKeys__v1, and Oidc__ClientSecret, preferably
+          # through External Secrets.
+          existingSecret: "election-service-production"
+        postgresql:
+          # Production uses the database configured by the external Secret.
+          enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

@@ -1,0 +1,65 @@
+@using System.Globalization
+@{
+    var returnUrl = Context.Request.PathBase + Context.Request.Path + Context.Request.QueryString;
+    var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+}
+<!DOCTYPE html>
+<html lang="@culture">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="no-referrer" />
+    <title>@ViewData["Title"] - @L["Election Portal"]</title>
+    <meta name="description" content="@L["Official public election records and voting portal."]" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&amp;family=Source+Serif+4:wght@400;600;700&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <a class="skip-link" href="#main-content">@L["Skip to content"]</a>
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="brand" asp-page="/Index" aria-label="@L["Election Portal home"]">
+                <img src="~/img/MKLU-Flag-Small.svg" alt="" aria-hidden="true" />
+                <span class="brand-copy"><strong>@L["Election Portal"]</strong><span>@L["Government of Mekniy-Lurk"]</span></span>
+            </a>
+            <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-navigation">@L["Menu"]</button>
+            <nav id="site-navigation" class="site-nav" aria-label="@L["Main navigation"]">
+                <a asp-page="/Index">@L["Election records"]</a>
+                @if (User.IsInRole("election-service:admin"))
+                {
+                    <a asp-page="/Admin/Index">@L["Administration"]</a>
+                }
+                <span class="language-switch" aria-label="@L["Language"]">
+                    <a class="@(culture == "en" ? "active" : null)" asp-page="/Culture" asp-route-culture="en" asp-route-returnUrl="@returnUrl" lang="en">EN</a>
+                    <a class="@(culture == "cs" ? "active" : null)" asp-page="/Culture" asp-route-culture="cs" asp-route-returnUrl="@returnUrl" lang="cs">CS</a>
+                </span>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <form method="post" asp-page="/Logout" class="nav-form"><button type="submit">@L["Sign out"]</button></form>
+                }
+                else
+                {
+                    <a asp-page="/Login">@L["Sign in"]</a>
+                }
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-content">@RenderBody()</main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-identity">
+                <img src="~/img/manticore.svg" alt="" aria-hidden="true" />
+                <div><strong>@L["Election Portal"]</strong><span>@L["Official election service of Mekniy-Lurk"]</span></div>
+            </div>
+            <a href="/health">@L["Service status"]</a>
+        </div>
+    </footer>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

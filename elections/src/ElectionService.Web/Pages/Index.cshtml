@@ -1,0 +1,66 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = L["Election records"];
+}
+
+<section class="portal-heading">
+    <div class="content-width">
+        <p class="eyebrow">@L["Official election service"]</p>
+        <div class="heading-line">
+            <h1>@L["Election Portal"]</h1>
+            @if (!Model.IsUnavailable)
+            {
+                <span class="record-count">@L["{0} public records", Model.Elections.Count]</span>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="content-width election-records" aria-labelledby="elections-heading" aria-live="polite">
+    <header class="section-heading">
+        <h2 id="elections-heading">@L["Current election records"]</h2>
+    </header>
+
+    @if (Model.IsUnavailable)
+    {
+        <div class="notice notice-error" role="alert">
+            <strong>@L["Election records are temporarily unavailable."]</strong>
+            <span>@L["Please try again later."]</span>
+        </div>
+    }
+    else if (Model.Elections.Count == 0)
+    {
+        <div class="empty-state">
+            <h3>@L["No public elections"]</h3>
+            <p>@L["There are no published or completed election records to display."]</p>
+        </div>
+    }
+    else
+    {
+        <div class="election-list">
+            @foreach (var election in Model.Elections.OrderByDescending(item => item.VotingStartsAt))
+            {
+                <article class="election-row">
+                    <div class="date-block" aria-label="@L["Voting starts {0}", election.VotingStartsAt.ToString("d MMMM yyyy")]">
+                        <strong>@election.VotingStartsAt.ToString("dd")</strong>
+                        <span>@election.VotingStartsAt.ToString("MMM yyyy")</span>
+                    </div>
+                    <div class="election-summary">
+                        <div class="record-labels">
+                            <span class="status status-@election.Status.ToLowerInvariant()">@ElectionDisplay.Status(election.Status, L)</span>
+                            <span>@ElectionDisplay.Type(election.Type, L)</span>
+                            @if (election.IsHistorical) { <span>@L["Historical record"]</span> }
+                        </div>
+                        <h3><a asp-page="/Elections/Detail" asp-route-identifier="@election.Slug">@election.Title</a></h3>
+                        <dl class="summary-grid">
+                            <div><dt>@L["Eligibility"]</dt><dd>@ElectionDisplay.Eligibility(election.EligibilityMode, L)</dd></div>
+                            <div><dt>@L["Voting period"]</dt><dd>@election.VotingStartsAt.ToString("d MMM yyyy, HH:mm") - @election.VotingEndsAt.ToString("d MMM yyyy, HH:mm") UTC</dd></div>
+                        </dl>
+                    </div>
+                    <a class="row-action" asp-page="/Elections/Detail" asp-route-identifier="@election.Slug">@L["View record"]</a>
+                </article>
+            }
+        </div>
+    }
+</section>

@@ -14,6 +14,19 @@ portal/src/GovernmentPortal.Web/catalog/services.json
 *.coverage
 *.coveragexml
 coverage*.xml
+*.trx
+coverage/
+coverage-report/
+
+# Local configuration and signing material
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+appsettings.*.Local.json
+*.pfx
+*.p12
+*.key
 
 # Local Helm validation output
 /rendered.yaml

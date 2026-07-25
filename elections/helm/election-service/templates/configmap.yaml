@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "election-service.fullname" . }}-config
+  labels:
+    {{- include "election-service.labels" . | nindent 4 }}
+data:
+  ASPNETCORE_ENVIRONMENT: {{ .Values.config.aspnetcoreEnvironment | quote }}
+  Jwt__Authority: {{ .Values.config.jwtAuthority | quote }}
+  Jwt__Audience: {{ .Values.config.jwtAudience | quote }}
+  PersonRegistry__BaseUrl: {{ .Values.config.personRegistryBaseUrl | quote }}
+  CitizenRegistry__BaseUrl: {{ .Values.config.citizenRegistryBaseUrl | quote }}
+  OrganizationRegistry__BaseUrl: {{ .Values.config.organizationRegistryBaseUrl | quote }}
+  Voting__ActiveKeyVersion: {{ .Values.config.votingActiveKeyVersion | quote }}
+  ElectionApi__BaseUrl: {{ .Values.config.electionApiBaseUrl | quote }}
+  Oidc__Authority: {{ .Values.config.oidcAuthority | quote }}
+  Oidc__ClientId: {{ .Values.config.oidcClientId | quote }}
+  Oidc__PublicBaseUrl: {{ .Values.config.oidcPublicBaseUrl | quote }}
+  Oidc__RequireHttpsMetadata: {{ .Values.config.oidcRequireHttpsMetadata | quote }}
+  {{- if .Values.web.dataProtection.enabled }}
+  DataProtection__KeysPath: /var/lib/election-service/keys
+  {{- end }}

@@ -1,0 +1,4 @@
+@page
+@model ErrorModel
+@{ ViewData["Title"] = L["Service error"]; }
+<div class="content-width error-page"><p class="eyebrow">@L["Election Portal"]</p><h1>@L["Something went wrong"]</h1><p>@L["The request could not be completed. Please try again."]</p><a asp-page="/Index">@L["Return to election records"]</a></div>

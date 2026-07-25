@@ -1,0 +1,141 @@
+api:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-election-service-api
+    pullPolicy: Always
+    # Automatically updated by the helm-release workflow after a successful push to main.
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    host: elections-api.local
+    tls: []
+  probes:
+    readiness:
+      path: /health
+      initialDelaySeconds: 10
+      periodSeconds: 5
+    liveness:
+      path: /health
+      initialDelaySeconds: 30
+      periodSeconds: 10
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  podAnnotations: {}
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    runAsGroup: 1001
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+web:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-election-service-web
+    pullPolicy: Always
+    # Automatically updated by the helm-release workflow after a successful push to main.
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+  ingress:
+    enabled: true
+    className: ""
+    annotations: {}
+    host: elections.local
+    tls: []
+  probes:
+    readiness:
+      path: /health
+      initialDelaySeconds: 5
+      periodSeconds: 5
+    liveness:
+      path: /health
+      initialDelaySeconds: 30
+      periodSeconds: 10
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 384Mi
+  podAnnotations: {}
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    runAsGroup: 1001
+    fsGroup: 1001
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+  dataProtection:
+    enabled: true
+    storageSize: 100Mi
+    accessMode: ReadWriteOnce
+    storageClassName: ""
+
+config:
+  aspnetcoreEnvironment: Production
+  jwtAuthority: http://keycloak:8080/realms/mekniy-and-lurk
+  jwtAudience: election-service
+  personRegistryBaseUrl: http://ego
+  citizenRegistryBaseUrl: http://citizen-service-api
+  organizationRegistryBaseUrl: http://organization-registry-api
+  electionApiBaseUrl: http://election-service-api
+  votingActiveKeyVersion: v1
+  oidcAuthority: http://keycloak:8080/realms/mekniy-and-lurk
+  oidcClientId: election-service-web
+  oidcPublicBaseUrl: https://elections.local
+  oidcRequireHttpsMetadata: true
+
+secret:
+  existingSecret: ""
+  connectionString: ""
+  # Development placeholders only. Use existingSecret outside disposable environments.
+  credentialHashKeys:
+    v1: CHANGE_ME_TO_A_RANDOM_VALUE_AT_LEAST_32_CHARACTERS
+  oidcClientSecret: CHANGE_ME
+
+postgresql:
+  enabled: true
+  image: postgres:16-alpine
+  database: election_service
+  username: postgres
+  storageSize: 5Gi
+  storageClassName: ""
+  password: CHANGE_ME
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+nameOverride: ""
+fullnameOverride: ""

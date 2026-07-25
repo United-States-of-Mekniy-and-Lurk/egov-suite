@@ -1,0 +1,35 @@
+@page
+@model ElectionService.Web.Pages.Admin.HistoricalImportModel
+@{ ViewData["Title"] = L["Import historical record"]; }
+
+<div class="content-width form-page historical-import-page">
+    <a class="back-link" asp-page="/Admin/Index">@L["Back to dashboard"]</a>
+    <header><p class="eyebrow">@L["Election administration"]</p><h1>@L["Import historical record"]</h1><p>@L["Historical records are imported directly as immutable archived public records."]</p></header>
+    <form method="post" class="admin-form">
+        <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+        @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage)) { <div class="notice notice-error" role="alert">@Model.ErrorMessage</div> }
+        <fieldset>
+            <legend>@L["Public record"]</legend>
+            <div class="field"><label asp-for="Input.Slug">@L["Record slug"]</label><input asp-for="Input.Slug" /><span asp-validation-for="Input.Slug"></span></div>
+            <div class="field"><label asp-for="Input.Title">@L["Title"]</label><input asp-for="Input.Title" /><span asp-validation-for="Input.Title"></span></div>
+            <div class="field"><label asp-for="Input.Description">@L["Description"]</label><textarea asp-for="Input.Description" rows="4"></textarea><span asp-validation-for="Input.Description"></span></div>
+            <div class="form-grid"><div class="field"><label asp-for="Input.Type">@L["Type"]</label><select asp-for="Input.Type"><option value="PartyList">@L["Type_PartyList"]</option><option value="Referendum">@L["Type_Referendum"]</option></select></div><div class="field"><label asp-for="Input.TerritoryCode">@L["Territory code"]</label><input asp-for="Input.TerritoryCode" /></div></div>
+            <div class="form-grid"><div class="field"><label asp-for="Input.VotingStartsAt">@L["Voting starts"]</label><input asp-for="Input.VotingStartsAt" type="datetime-local" /><span asp-validation-for="Input.VotingStartsAt"></span></div><div class="field"><label asp-for="Input.VotingEndsAt">@L["Voting ends"]</label><input asp-for="Input.VotingEndsAt" type="datetime-local" /><span asp-validation-for="Input.VotingEndsAt"></span></div></div>
+            <div class="field"><label asp-for="Input.SourceReference">@L["Record source"]</label><input asp-for="Input.SourceReference" /><span asp-validation-for="Input.SourceReference"></span></div>
+        </fieldset>
+        <fieldset>
+            <legend>@L["Turnout"]</legend>
+            <div class="form-grid"><div class="field"><label asp-for="Input.EligibleVoterCount">@L["Eligible voters (optional)"]</label><input asp-for="Input.EligibleVoterCount" type="number" min="0" /></div><div class="field"><label asp-for="Input.ParticipatingVoterCount">@L["Participating voters"]</label><input asp-for="Input.ParticipatingVoterCount" type="number" min="0" /><span asp-validation-for="Input.ParticipatingVoterCount"></span></div></div>
+            <div class="field"><label asp-for="Input.InvalidBallotCount">@L["Invalid ballots"]</label><input asp-for="Input.InvalidBallotCount" type="number" min="0" /></div>
+        </fieldset>
+        <fieldset class="import-lines">
+            <legend>@L["Ballot and results"]</legend>
+            <div class="field"><label asp-for="Input.PartyListLines">@L["Party-list lines"]</label><p class="field-help">@L["One per line: sort|registration number|party name|list name|votes|optional organization GUID"]</p><textarea asp-for="Input.PartyListLines" rows="7" spellcheck="false"></textarea><span asp-validation-for="Input.PartyListLines"></span></div>
+            <div class="field"><label asp-for="Input.CandidateLines">@L["Candidate lines (optional)"]</label><p class="field-help">@L["One per line: party sort|position|display name|optional person GUID|optional description"]</p><textarea asp-for="Input.CandidateLines" rows="7" spellcheck="false"></textarea><span asp-validation-for="Input.CandidateLines"></span></div>
+            <div class="field"><label asp-for="Input.ReferendumLines">@L["Referendum lines"]</label><p class="field-help">@L["One per line: sort|code|label|votes|optional description"]</p><textarea asp-for="Input.ReferendumLines" rows="7" spellcheck="false"></textarea><span asp-validation-for="Input.ReferendumLines"></span></div>
+        </fieldset>
+        <div class="form-actions"><a class="secondary-link" asp-page="/Admin/Index">@L["Cancel"]</a><button class="primary-button" type="submit">@L["Import archived record"]</button></div>
+    </form>
+</div>
+
+@section Scripts { <partial name="Shared/_ValidationScriptsPartial" /> }

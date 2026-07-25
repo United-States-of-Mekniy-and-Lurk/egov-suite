@@ -1,0 +1,25 @@
+@model ElectionView
+
+<fieldset class="ballot-options">
+    <legend>@L["Select one option"]</legend>
+    @if (Model.Type == "PartyList")
+    {
+        @foreach (var list in Model.PartyLists.OrderBy(item => item.SortOrder))
+        {
+            <label>
+                <input type="radio" name="Vote.SelectionId" value="@list.Id" required />
+                <span><strong>@list.ListName</strong><small>@list.PartyName</small></span>
+            </label>
+        }
+    }
+    else
+    {
+        @foreach (var option in Model.ReferendumOptions.OrderBy(item => item.SortOrder))
+        {
+            <label>
+                <input type="radio" name="Vote.SelectionId" value="@option.Id" required />
+                <span><strong>@option.Label</strong>@if (!string.IsNullOrWhiteSpace(option.Description)) { <small>@option.Description</small> }</span>
+            </label>
+        }
+    }
+</fieldset>

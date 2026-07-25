@@ -51,6 +51,7 @@ jobs:
           yq e '.api.image.tag = "${{ steps.tag.outputs.tag }}" | .web.image.tag = "${{ steps.tag.outputs.tag }}"' -i sal/helm/citizen-service/values.yaml
           yq e '.image.tag = "${{ steps.tag.outputs.tag }}"' -i portal/helm/government-portal/values.yaml
           yq e '.api.image.tag = "${{ steps.tag.outputs.tag }}" | .web.image.tag = "${{ steps.tag.outputs.tag }}"' -i org/helm/organization-registry/values.yaml
+          yq e '.api.image.tag = "${{ steps.tag.outputs.tag }}" | .web.image.tag = "${{ steps.tag.outputs.tag }}"' -i elections/helm/election-service/values.yaml
 
       - name: Commit and push
         run: |
@@ -60,6 +61,7 @@ jobs:
           git add sal/helm/citizen-service/values.yaml
           git add portal/helm/government-portal/values.yaml
           git add org/helm/organization-registry/values.yaml
+          git add elections/helm/election-service/values.yaml
           if ! git diff --staged --quiet; then
             git commit -m "chore: bump Helm image tags to ${{ steps.tag.outputs.tag }}"
             git push

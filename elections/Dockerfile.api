@@ -1,0 +1,25 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY elections/src/ElectionService.Domain/ElectionService.Domain.csproj elections/src/ElectionService.Domain/
+COPY elections/src/ElectionService.Application/ElectionService.Application.csproj elections/src/ElectionService.Application/
+COPY elections/src/ElectionService.Infrastructure/ElectionService.Infrastructure.csproj elections/src/ElectionService.Infrastructure/
+COPY elections/src/ElectionService.Api/ElectionService.Api.csproj elections/src/ElectionService.Api/
+COPY platform/src/Egov.Platform.Identity/Egov.Platform.Identity.csproj platform/src/Egov.Platform.Identity/
+
+RUN dotnet restore elections/src/ElectionService.Api/ElectionService.Api.csproj
+
+COPY elections/ elections/
+COPY platform/ platform/
+RUN dotnet publish elections/src/ElectionService.Api/ElectionService.Api.csproj -c Release -o /app/publish --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+USER 1001:1001
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "ElectionService.Api.dll"]

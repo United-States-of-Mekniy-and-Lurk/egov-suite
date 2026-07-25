@@ -1,0 +1,253 @@
+@page
+@model ElectionService.Web.Pages.Admin.ManageModel
+@{ ViewData["Title"] = Model.Title ?? L["Manage election"]; }
+
+<div class="content-width workspace-page manage-page">
+    <a class="back-link" asp-page="/Admin/Index">@L["Back to dashboard"]</a>
+    <header class="workspace-header">
+        <div><p class="eyebrow">@L["Election administration"]</p><h1>@(Model.Title ?? L["Manage election"])</h1><p class="identifier">@L["Election ID"]: @Model.Id</p></div>
+        @if (Model.PublicElection is not null) { <a class="secondary-link" asp-page="/Elections/Detail" asp-route-identifier="@Model.PublicElection.Slug">@L["View public record"]</a> }
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(Model.SuccessMessage)) { <div class="notice notice-success" role="status">@Model.SuccessMessage</div> }
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage)) { <div class="notice notice-error" role="alert">@Model.ErrorMessage</div> }
+    @if (Model.CreatedInvitation is not null)
+    {
+        <section class="one-time-secret" aria-labelledby="invitation-token-heading">
+            <h2 id="invitation-token-heading">@L["Invitation token"]</h2>
+            <code>@Model.CreatedInvitation.Token</code>
+        </section>
+    }
+    @if (Model.CreatedInvitations.Count > 0)
+    {
+        <section class="one-time-secret" aria-labelledby="bulk-invitation-token-heading">
+            <h2 id="bulk-invitation-token-heading">@L["Invitation tokens"]</h2>
+            @foreach (var invitation in Model.CreatedInvitations)
+            {
+                <div><code>@invitation.Token</code>@if (!string.IsNullOrWhiteSpace(invitation.Label)) { <span> @invitation.Label</span> }</div>
+            }
+        </section>
+    }
+
+    @if (Model.PublicElection?.IsHistorical == true)
+    {
+        <section class="immutable-record" aria-labelledby="immutable-heading">
+            <p class="eyebrow">@L["Historical record"]</p>
+            <h2 id="immutable-heading">@L["Immutable archived record"]</h2>
+            <p>@L["Historical records cannot be edited or moved to another state."]</p>
+            <dl class="record-list">
+                <div><dt>@L["Status"]</dt><dd>@ElectionDisplay.Status(Model.PublicElection.Status, L)</dd></div>
+                <div><dt>@L["Record source"]</dt><dd>@Model.PublicElection.HistoricalSourceReference</dd></div>
+                <div><dt>@L["Voting period"]</dt><dd>@Model.PublicElection.VotingStartsAt.ToString("d MMMM yyyy, HH:mm") - @Model.PublicElection.VotingEndsAt.ToString("d MMMM yyyy, HH:mm") UTC</dd></div>
+            </dl>
+        </section>
+    }
+    else
+    {
+    <div class="admin-sections">
+        <details>
+            <summary>@L["Election details"]</summary>
+            <form method="post" asp-page-handler="Update" class="admin-form compact-form">
+                <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
+                <div class="field"><label asp-for="Election.Slug">@L["Record slug"]</label><input asp-for="Election.Slug" /></div>
+                <div class="field"><label asp-for="Election.Title">@L["Title"]</label><input asp-for="Election.Title" /></div>
+                <div class="field"><label asp-for="Election.Description">@L["Description"]</label><textarea asp-for="Election.Description" rows="4"></textarea></div>
+                <div class="form-grid"><div class="field"><label asp-for="Election.Type">@L["Type"]</label><select asp-for="Election.Type"><option value="PartyList">@L["Type_PartyList"]</option><option value="Referendum">@L["Type_Referendum"]</option></select></div><div class="field"><label asp-for="Election.EligibilityMode">@L["Eligibility"]</label><select asp-for="Election.EligibilityMode"><option value="AllActiveCitizens">@L["Eligibility_AllActiveCitizens"]</option><option value="SpecificVoterRoll">@L["Eligibility_SpecificVoterRoll"]</option></select></div></div>
+                <div class="form-grid"><div class="field"><label asp-for="Election.VotingStartsAt">@L["Voting starts"]</label><input asp-for="Election.VotingStartsAt" type="datetime-local" /></div><div class="field"><label asp-for="Election.VotingEndsAt">@L["Voting ends"]</label><input asp-for="Election.VotingEndsAt" type="datetime-local" /></div></div>
+                <div class="field"><label asp-for="Election.TerritoryCode">@L["Territory code"]</label><input asp-for="Election.TerritoryCode" /></div>
+                <div class="field"><label asp-for="Election.EligibleVoterCount">@L["Eligible voters (optional)"]</label><input asp-for="Election.EligibleVoterCount" type="number" min="0" /></div>
+                <button class="primary-button" type="submit">@L["Update details"]</button>
+            </form>
+        </details>
+
+        <details open>
+            <summary>@L["Party lists and candidates"]</summary>
+            @if (Model.PublicElection is not null && Model.PublicElection.PartyLists.Count > 0)
+            {
+                <div class="resource-list">
+                    @foreach (var party in Model.PublicElection.PartyLists.OrderBy(item => item.SortOrder))
+                    {
+                        <div class="resource-row">
+                            <form method="post" asp-page-handler="UpdatePartyList" class="admin-form compact-form">
+                                <input type="hidden" name="Id" value="@Model.Id" />
+                                <input type="hidden" name="EditPartyListId" value="@party.Id" />
+                                <div class="form-grid">
+                                    <div class="field"><label>@L["Party organization ID"]</label><input name="EditPartyList.PartyOrganizationId" value="@party.PartyOrganizationId" /></div>
+                                    <div class="field"><label>@L["List name"]</label><input name="EditPartyList.ListName" value="@party.ListName" /></div>
+                                    <div class="field"><label>@L["Sort order"]</label><input name="EditPartyList.SortOrder" value="@party.SortOrder" type="number" /></div>
+                                </div>
+                                <p class="identifier">@party.PartyName · @party.PartyRegistrationNumber</p>
+                                <button class="secondary-button" type="submit">@L["Update list"]</button>
+                            </form>
+                            <form method="post" asp-page-handler="DeletePartyList" class="inline-action-form">
+                                <input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="EditPartyListId" value="@party.Id" />
+                                <button class="secondary-button" type="submit">@L["Delete list"]</button>
+                            </form>
+                        </div>
+                        @foreach (var candidate in party.Candidates.OrderBy(item => item.Position))
+                        {
+                            <div class="resource-row candidate-row">
+                                <form method="post" asp-page-handler="UpdateCandidate" class="admin-form compact-form">
+                                    <input type="hidden" name="Id" value="@Model.Id" />
+                                    <input type="hidden" name="EditCandidatePartyListId" value="@party.Id" />
+                                    <input type="hidden" name="EditCandidateId" value="@candidate.Id" />
+                                    <div class="form-grid">
+                                        <div class="field"><label>@L["Person ID"]</label><input name="EditCandidate.PersonId" value="@candidate.PersonId" /></div>
+                                        <div class="field"><label>@L["Display name"]</label><input name="EditCandidate.DisplayName" value="@candidate.DisplayName" /></div>
+                                        <div class="field"><label>@L["Position"]</label><input name="EditCandidate.Position" value="@candidate.Position" type="number" /></div>
+                                    </div>
+                                    <div class="field"><label>@L["Description"]</label><input name="EditCandidate.Description" value="@candidate.Description" /></div>
+                                    <button class="secondary-button" type="submit">@L["Update candidate"]</button>
+                                </form>
+                                <form method="post" asp-page-handler="DeleteCandidate" class="inline-action-form">
+                                    <input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="EditCandidatePartyListId" value="@party.Id" /><input type="hidden" name="EditCandidateId" value="@candidate.Id" />
+                                    <button class="secondary-button" type="submit">@L["Delete candidate"]</button>
+                                </form>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+            <div class="paired-forms">
+                <form method="post" asp-page-handler="PartyList" class="admin-form compact-form">
+                    <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
+                    <h3>@L["Add party list"]</h3>
+                    <div class="field"><label asp-for="PartyList.PartyOrganizationId">@L["Party organization ID"]</label><input asp-for="PartyList.PartyOrganizationId" /></div>
+                    <div class="field"><label asp-for="PartyList.ListName">@L["List name"]</label><input asp-for="PartyList.ListName" /></div>
+                    <div class="field"><label asp-for="PartyList.SortOrder">@L["Sort order"]</label><input asp-for="PartyList.SortOrder" type="number" /></div>
+                    <button class="secondary-button" type="submit">@L["Add party list"]</button>
+                </form>
+                <form method="post" asp-page-handler="Candidate" class="admin-form compact-form">
+                    <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
+                    <h3>@L["Add candidate"]</h3>
+                    <div class="field"><label asp-for="PartyListId">@L["Party list"]</label><select asp-for="PartyListId"><option value="">@L["Select a party list"]</option>@if (Model.PublicElection is not null) { @foreach (var party in Model.PublicElection.PartyLists.OrderBy(item => item.SortOrder)) { <option value="@party.Id">@party.ListName</option> } }</select></div>
+                    <div class="field"><label asp-for="Candidate.PersonId">@L["Person ID"]</label><input asp-for="Candidate.PersonId" /></div>
+                    <div class="field"><label asp-for="Candidate.DisplayName">@L["Display name for text candidate"]</label><input asp-for="Candidate.DisplayName" /></div>
+                    <div class="field"><label asp-for="Candidate.Description">@L["Description"]</label><textarea asp-for="Candidate.Description" rows="2"></textarea></div>
+                    <div class="field"><label asp-for="Candidate.Position">@L["Position"]</label><input asp-for="Candidate.Position" type="number" /></div>
+                    <button class="secondary-button" type="submit">@L["Add candidate"]</button>
+                </form>
+            </div>
+        </details>
+
+        <details>
+            <summary>@L["Referendum options"]</summary>
+            @if (Model.PublicElection is not null && Model.PublicElection.ReferendumOptions.Count > 0)
+            {
+                <div class="resource-list">
+                    @foreach (var option in Model.PublicElection.ReferendumOptions.OrderBy(item => item.SortOrder))
+                    {
+                        <div class="resource-row">
+                            <form method="post" asp-page-handler="UpdateOption" class="admin-form compact-form">
+                                <input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="EditOptionId" value="@option.Id" />
+                                <div class="form-grid">
+                                    <div class="field"><label>@L["Code"]</label><input name="EditOption.Code" value="@option.Code" /></div>
+                                    <div class="field"><label>@L["Label"]</label><input name="EditOption.Label" value="@option.Label" /></div>
+                                    <div class="field"><label>@L["Sort order"]</label><input name="EditOption.SortOrder" value="@option.SortOrder" type="number" /></div>
+                                </div>
+                                <div class="field"><label>@L["Description"]</label><input name="EditOption.Description" value="@option.Description" /></div>
+                                <button class="secondary-button" type="submit">@L["Update option"]</button>
+                            </form>
+                            <form method="post" asp-page-handler="DeleteOption" class="inline-action-form">
+                                <input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="EditOptionId" value="@option.Id" />
+                                <button class="secondary-button" type="submit">@L["Delete option"]</button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            }
+            <form method="post" asp-page-handler="Option" class="admin-form compact-form narrow-form">
+                <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
+                <div class="form-grid"><div class="field"><label asp-for="ReferendumOption.Code">@L["Code"]</label><input asp-for="ReferendumOption.Code" /></div><div class="field"><label asp-for="ReferendumOption.SortOrder">@L["Sort order"]</label><input asp-for="ReferendumOption.SortOrder" type="number" /></div></div>
+                <div class="field"><label asp-for="ReferendumOption.Label">@L["Label"]</label><input asp-for="ReferendumOption.Label" /></div>
+                <div class="field"><label asp-for="ReferendumOption.Description">@L["Description"]</label><textarea asp-for="ReferendumOption.Description" rows="3"></textarea></div>
+                <button class="secondary-button" type="submit">@L["Add option"]</button>
+            </form>
+        </details>
+
+        <details>
+            <summary>@L["Voter roll"]</summary>
+            @if (Model.VoterRoll.Count > 0)
+            {
+                <div class="resource-list">
+                    @foreach (var voter in Model.VoterRoll)
+                    {
+                        <div class="resource-row compact-resource-row">
+                            <div><strong>@voter.PersonId</strong><p class="identifier">@L["Added {0}", voter.AddedAt.ToString("g")]</p></div>
+                            <form method="post" asp-page-handler="RemoveVoter" class="inline-action-form">
+                                <input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="personId" value="@voter.PersonId" />
+                                <button class="secondary-button" type="submit">@L["Remove"]</button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            }
+            <div class="paired-forms">
+                <form method="post" asp-page-handler="Voter" class="admin-form compact-form">
+                    <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
+                    <h3>@L["Add voter-roll entry"]</h3>
+                    <div class="field"><label asp-for="Voter.PersonId">@L["Citizen person ID"]</label><input asp-for="Voter.PersonId" /></div>
+                    <button class="secondary-button" type="submit">@L["Add voter"]</button>
+                </form>
+                <form method="post" asp-page-handler="BulkVoters" class="admin-form compact-form">
+                    <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
+                    <h3>@L["Bulk add voters"]</h3>
+                    <div class="field"><label asp-for="BulkVoterPersonIds">@L["One person GUID per line"]</label><textarea asp-for="BulkVoterPersonIds" rows="6"></textarea></div>
+                    <button class="secondary-button" type="submit">@L["Add voter list"]</button>
+                </form>
+            </div>
+        </details>
+
+        <details>
+            <summary>@L["Invitations"]</summary>
+            @if (Model.Invitations.Count > 0)
+            {
+                <div class="resource-list">
+                    @foreach (var invitation in Model.Invitations)
+                    {
+                        var status = invitation.UsedOn is not null ? L["Used {0}", invitation.UsedOn.Value.ToString("d")] : invitation.RevokedAt is not null ? L["Revoked {0}", invitation.RevokedAt.Value.ToString("g")] : L["Available"];
+                        <div class="resource-row compact-resource-row">
+                            <div><strong>@(invitation.Label ?? invitation.PersonId?.ToString() ?? L["Unlabelled invitation"])</strong><p class="identifier">@status · @L["Created {0}", invitation.CreatedAt.ToString("g")]</p></div>
+                            @if (invitation.UsedOn is null && invitation.RevokedAt is null)
+                            {
+                                <form method="post" asp-page-handler="RevokeInvitation" class="inline-action-form">
+                                    <input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="invitationId" value="@invitation.Id" />
+                                    <button class="secondary-button" type="submit">@L["Revoke"]</button>
+                                </form>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+            <div class="paired-forms">
+                <form method="post" asp-page-handler="Invitation" class="admin-form compact-form">
+                    <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
+                    <h3>@L["Create invitation"]</h3>
+                    <div class="field"><label asp-for="Invitation.PersonId">@L["Person ID"]</label><input asp-for="Invitation.PersonId" /></div>
+                    <div class="field"><label asp-for="Invitation.Label">@L["Label"]</label><input asp-for="Invitation.Label" /></div>
+                    <button class="secondary-button" type="submit">@L["Create invitation"]</button>
+                </form>
+                <form method="post" asp-page-handler="BulkInvitations" class="admin-form compact-form">
+                    <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
+                    <h3>@L["Bulk create invitations"]</h3>
+                    <div class="field"><label asp-for="BulkInvitationLines">@L["One per line: person-guid|label or |label"]</label><textarea asp-for="BulkInvitationLines" rows="6"></textarea></div>
+                    <button class="secondary-button" type="submit">@L["Create invitations"]</button>
+                </form>
+            </div>
+        </details>
+
+        <details>
+            <summary>@L["Election state"]</summary>
+            <form method="post" asp-page-handler="Transition" class="admin-form compact-form narrow-form">
+                <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
+                <div class="field"><label asp-for="Transition.Status">@L["Move to"]</label><select asp-for="Transition.Status"><option value="Published">@L["Status_Published"]</option><option value="Closed">@L["Status_Closed"]</option><option value="Finalized">@L["Status_Finalized"]</option><option value="Archived">@L["Status_Archived"]</option></select></div>
+                <div class="field"><label asp-for="Transition.Reason">@L["Reason"]</label><textarea asp-for="Transition.Reason" rows="3"></textarea></div>
+                <div class="field checkbox-field"><label><input asp-for="ConfirmPublish" /> @L["I confirm this election is ready to publish"]</label></div>
+                <button class="primary-button" type="submit">@L["Change state"]</button>
+            </form>
+        </details>
+    </div>
+    }
+</div>
+
+@section Scripts { <partial name="Shared/_ValidationScriptsPartial" /> }

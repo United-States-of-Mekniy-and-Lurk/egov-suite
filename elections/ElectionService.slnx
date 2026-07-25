@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ElectionService.Api/ElectionService.Api.csproj" />
+    <Project Path="src/ElectionService.Application/ElectionService.Application.csproj" />
+    <Project Path="src/ElectionService.Domain/ElectionService.Domain.csproj" />
+    <Project Path="src/ElectionService.Infrastructure/ElectionService.Infrastructure.csproj" />
+    <Project Path="src/ElectionService.Web/ElectionService.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ElectionService.Tests/ElectionService.Tests.csproj" />
+  </Folder>
+</Solution>

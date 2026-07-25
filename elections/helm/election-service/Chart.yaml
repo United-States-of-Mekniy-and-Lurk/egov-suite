@@ -1,0 +1,12 @@
+apiVersion: v2
+name: election-service
+description: Public election portal and election administration service
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - elections
+  - voting
+  - microservice
+maintainers:
+  - name: egov-suite

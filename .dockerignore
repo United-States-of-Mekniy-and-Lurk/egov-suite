@@ -1,0 +1,17 @@
+.git
+.gitignore
+.dockerignore
+**/bin
+**/obj
+**/TestResults
+**/.vs
+**/.DS_Store
+**/*.user
+**/*.suo
+**/*.trx
+coverage
+coverage-report
+rendered.yaml
+production-rendered.yaml
+template_default.yaml
+template_prod.yaml

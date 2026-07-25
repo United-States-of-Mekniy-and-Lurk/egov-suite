@@ -1,0 +1,42 @@
+@page "/Invite/{electionId:guid}/{token}"
+@model ElectionService.Web.Pages.Invite.VoteModel
+@{
+    ViewData["Title"] = Model.Election?.Title ?? L["Invitation ballot"];
+}
+
+<div class="content-width invite-page">
+    <header class="record-header compact-header">
+        <div><p class="eyebrow">@L["Invitation ballot"]</p><h1>@(Model.Election?.Title ?? L["Election invitation"])</h1></div>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage) && Model.Election is null)
+    {
+        <div class="notice notice-error" role="alert">@Model.ErrorMessage</div>
+    }
+    else if (Model.Receipt is not null)
+    {
+        <section class="receipt" role="status">
+            <h2>@L["Vote recorded"]</h2>
+            <dl><div><dt>@L["Election ID"]</dt><dd>@Model.Receipt.ElectionId</dd></div><div><dt>@L["Recorded on"]</dt><dd>@Model.Receipt.RecordedOn.ToString("d MMMM yyyy")</dd></div></dl>
+        </section>
+    }
+    else if (Model.Election is not null && Model.Invitation is not null)
+    {
+        <dl class="invite-schedule">
+            <div><dt>@L["Voting starts"]</dt><dd>@Model.Invitation.VotingStartsAt.ToString("d MMMM yyyy, HH:mm") UTC</dd></div>
+            <div><dt>@L["Voting ends"]</dt><dd>@Model.Invitation.VotingEndsAt.ToString("d MMMM yyyy, HH:mm") UTC</dd></div>
+        </dl>
+        @if (Model.Invitation.IsAvailable)
+        {
+            <form method="post" class="ballot-form">
+                <partial name="Shared/_Ballot" model="Model.Election" />
+                @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage)) { <div class="validation-summary" role="alert">@Model.ErrorMessage</div> }
+                <button class="primary-button" type="submit">@L["Submit vote"]</button>
+            </form>
+        }
+        else
+        {
+            <div class="notice">@L["This invitation is not currently available for voting."]</div>
+        }
+    }
+</div>

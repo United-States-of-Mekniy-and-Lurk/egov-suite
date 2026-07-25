@@ -1,0 +1,135 @@
+@page "/Elections/{identifier}"
+@model ElectionService.Web.Pages.Elections.DetailModel
+@{
+    ViewData["Title"] = Model.Election?.Title ?? L["Election record"];
+}
+
+<div class="content-width detail-page">
+    <a class="back-link" asp-page="/Index">@L["Back to election records"]</a>
+
+    @if (Model.IsUnavailable)
+    {
+        <div class="notice notice-error" role="alert"><strong>@L["Election record unavailable."]</strong><span>@L["Please try again later."]</span></div>
+    }
+    else if (Model.Election is null)
+    {
+        <div class="empty-state"><h1>@L["Election not found"]</h1><p>@L["The requested public election record does not exist."]</p></div>
+    }
+    else
+    {
+        var election = Model.Election;
+        <header class="record-header">
+            <div>
+                <p class="eyebrow">@L["Public election record"]</p>
+                <h1>@election.Title</h1>
+                <p class="record-description">@election.Description</p>
+            </div>
+            <div class="record-badges"><span class="status status-@election.Status.ToLowerInvariant()">@ElectionDisplay.Status(election.Status, L)</span>@if (election.IsHistorical) { <span class="status historical-badge">@L["Historical record"]</span> }</div>
+        </header>
+
+        @if (election.IsHistorical)
+        {
+            <aside class="historical-notice"><strong>@L["Archived imported record"]</strong><span>@L["Record source"]: @election.HistoricalSourceReference</span></aside>
+        }
+
+        <div class="record-grid">
+            <section class="record-section" aria-labelledby="schedule-heading">
+                <h2 id="schedule-heading">@L["Election details"]</h2>
+                <dl class="record-list">
+                    <div><dt>@L["Type"]</dt><dd>@ElectionDisplay.Type(election.Type, L)</dd></div>
+                    <div><dt>@L["Eligibility"]</dt><dd>@ElectionDisplay.Eligibility(election.EligibilityMode, L)</dd></div>
+                    <div><dt>@L["Voting starts"]</dt><dd>@election.VotingStartsAt.ToString("d MMMM yyyy, HH:mm") UTC</dd></div>
+                    <div><dt>@L["Voting ends"]</dt><dd>@election.VotingEndsAt.ToString("d MMMM yyyy, HH:mm") UTC</dd></div>
+                    @if (!string.IsNullOrWhiteSpace(election.TerritoryCode))
+                    {
+                        <div><dt>@L["Territory"]</dt><dd>@election.TerritoryCode</dd></div>
+                    }
+                </dl>
+            </section>
+
+            <section class="record-section" aria-labelledby="ballot-heading">
+                <h2 id="ballot-heading">@(election.HasPublicResults ? L["Official ballot definition"] : L["Ballot"])</h2>
+                @if (election.HasPublicResults) { <p class="section-intro">@L["This is the official ballot definition. Individual cast ballots are never published."]</p> }
+                @if (election.Type == "PartyList")
+                {
+                    <div class="party-lists">
+                        @foreach (var list in election.PartyLists.OrderBy(item => item.SortOrder))
+                        {
+                            <section class="party-list">
+                                <h3>@list.ListName</h3>
+                                <p>@list.PartyName <span>@list.PartyRegistrationNumber</span></p>
+                                <ol>
+                                    @foreach (var candidate in list.Candidates.OrderBy(item => item.Position))
+                                    {
+                                        <li><strong>@candidate.DisplayName</strong>@if (!string.IsNullOrWhiteSpace(candidate.Description)) { <span>@candidate.Description</span> }</li>
+                                    }
+                                </ol>
+                            </section>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="option-list">
+                        @foreach (var option in election.ReferendumOptions.OrderBy(item => item.SortOrder))
+                        {
+                            <article><strong>@option.Label</strong>@if (!string.IsNullOrWhiteSpace(option.Description)) { <p>@option.Description</p> }</article>
+                        }
+                    </div>
+                }
+            </section>
+        </div>
+
+        @if (Model.Receipt is not null)
+        {
+            <section class="receipt" role="status" aria-labelledby="receipt-heading">
+                <h2 id="receipt-heading">@L["Vote recorded"]</h2>
+                <dl><div><dt>@L["Election ID"]</dt><dd>@Model.Receipt.ElectionId</dd></div><div><dt>@L["Recorded on"]</dt><dd>@Model.Receipt.RecordedOn.ToString("d MMMM yyyy")</dd></div></dl>
+            </section>
+        }
+        else if (election.IsOpen)
+        {
+            <section class="voting-section" aria-labelledby="vote-heading">
+                <h2 id="vote-heading">@L["Cast your vote"]</h2>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <form method="post" class="ballot-form">
+                        <partial name="Shared/_Ballot" model="election" />
+                        @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage)) { <div class="validation-summary" role="alert">@Model.ErrorMessage</div> }
+                        <button class="primary-button" type="submit">@L["Submit vote"]</button>
+                    </form>
+                }
+                else
+                {
+                    <a class="primary-link" asp-page="/Login" asp-route-returnUrl="@($"/Elections/{election.Slug}")">@L["Sign in to vote"]</a>
+                }
+            </section>
+        }
+
+        @if (Model.OfficialRecord is not null)
+        {
+            var record = Model.OfficialRecord;
+            var validBallots = record.Turnout.ValidBallotCount;
+            <section class="turnout-block" aria-labelledby="turnout-heading">
+                <h2 id="turnout-heading">@L["Voter turnout"]</h2>
+                <dl class="turnout-grid">
+                    <div><dt>@L["Eligible voters"]</dt><dd>@(record.Turnout.EligibleVoterCount?.ToString("N0") ?? L["Not recorded"])</dd></div>
+                    <div><dt>@L["Participating voters"]</dt><dd>@record.Turnout.ParticipatingVoterCount.ToString("N0")</dd></div>
+                    <div><dt>@L["Valid ballots"]</dt><dd>@validBallots.ToString("N0")</dd></div>
+                    <div><dt>@L["Invalid ballots"]</dt><dd>@record.Turnout.InvalidBallotCount.ToString("N0")</dd></div>
+                    <div><dt>@L["Turnout percentage"]</dt><dd>@(record.Turnout.TurnoutPercentage.HasValue ? $"{record.Turnout.TurnoutPercentage.Value:N2} %" : L["Not recorded"])</dd></div>
+                </dl>
+            </section>
+            <section class="results-block" aria-labelledby="results-heading">
+                <h2 id="results-heading">@L["Results"]</h2>
+                <div class="result-list">
+                    @foreach (var result in record.Results.OrderByDescending(item => item.VoteCount))
+                    {
+                        var percentage = validBallots > 0 ? result.VoteCount * 100m / validBallots : 0m;
+                        <div class="result-row"><span>@result.SelectionLabel</span><span class="result-value"><strong>@result.VoteCount.ToString("N0")</strong><small>@percentage.ToString("N2") %</small></span><span class="result-bar" aria-hidden="true"><span style="width: @percentage.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%"></span></span></div>
+                    }
+                </div>
+            </section>
+        }
+    }
+</div>

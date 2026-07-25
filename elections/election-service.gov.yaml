@@ -1,0 +1,42 @@
+service: election-service
+portal:
+  name: Election Portal
+  description: View public elections, participate using an invitation, and administer elections when authorized.
+  url: https://elections.mklu.org
+  category: Government and democracy
+  keywords:
+    - elections
+    - voting
+    - democracy
+    - public participation
+  localizations:
+    en:
+      name: Election Portal
+      description: View public elections, participate using an invitation, and administer elections when authorized.
+      category: Government and democracy
+      keywords:
+        - elections
+        - voting
+        - democracy
+        - public participation
+    cs:
+      name: Volební portál
+      description: Prohlížejte veřejné volby, hlasujte pomocí pozvánky a po přihlášení spravujte volby.
+      category: Stát a demokracie
+      keywords:
+        - volby
+        - hlasování
+        - demokracie
+        - veřejná účast
+  public: true
+auth:
+  clients:
+    web:
+      redirectUris:
+        - https://elections.mklu.org/signin-oidc
+      scopes:
+        - openid
+        - profile
+        - email
+roles:
+  - admin
