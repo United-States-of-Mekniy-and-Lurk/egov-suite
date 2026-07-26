@@ -25,4 +25,8 @@ public sealed class PublicOrganizationsController(OrganizationQueryService queri
     [HttpGet("classifications")]
     public Task<IReadOnlyList<ClassificationView>> Classifications(CancellationToken ct) =>
         queries.ListClassificationsAsync(ct);
+
+    [HttpGet("legal-forms")]
+    public Task<IReadOnlyList<LegalFormView>> LegalForms(CancellationToken ct) =>
+        queries.ListLegalFormsAsync(ct);
 }

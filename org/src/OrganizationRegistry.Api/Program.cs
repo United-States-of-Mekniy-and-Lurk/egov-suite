@@ -23,6 +23,7 @@ builder.Services.AddScoped<OrganizationQueryService>();
 builder.Services.AddScoped<RegistrationApplicationService>();
 builder.Services.AddScoped<CorrectionService>();
 builder.Services.AddScoped<HistoricalOrganizationService>();
+builder.Services.AddScoped<LegalFormService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 	.AddJwtBearer(options =>
@@ -68,8 +69,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 		};
 	});
 builder.Services.AddAuthorization(options =>
+{
 	options.AddPolicy("RequireClerk", policy =>
-		policy.RequireRole("organization-registry:clerk", "organization-registry:admin")));
+		policy.RequireRole("organization-registry:clerk", "organization-registry:admin"));
+	options.AddPolicy("RequireAdmin", policy =>
+		policy.RequireRole("organization-registry:admin"));
+});
 builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
 
 builder.Services.AddRefitClient<IPersonRegistryApi>()

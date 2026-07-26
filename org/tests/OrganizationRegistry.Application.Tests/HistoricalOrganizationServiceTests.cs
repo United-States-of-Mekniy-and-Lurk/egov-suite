@@ -27,6 +27,8 @@ public sealed class HistoricalOrganizationServiceTests
         Organization? savedOrganization = null;
         OrganizationAccessGrant? savedGrant = null;
         var store = new Mock<IOrganizationRegistryStore>();
+        store.Setup(value => value.GetLegalFormAsync("COOP", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new LegalFormDefinition { Code = "COOP", LabelEn = "Cooperative", LabelCs = "Družstvo" });
         store.Setup(value => value.RegistrationNumberExistsAsync("LEGACY-0042", It.IsAny<CancellationToken>())).ReturnsAsync(false);
         store.Setup(value => value.SlugExistsAsync("legacy-works", It.IsAny<CancellationToken>())).ReturnsAsync(false);
         store.Setup(value => value.GetClassificationsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
@@ -80,6 +82,24 @@ public sealed class HistoricalOrganizationServiceTests
         var input = CreateInput() with { EstablishedOn = new DateOnly(1999, 1, 1) };
 
         await Assert.ThrowsAsync<RegistryValidationException>(() => service.CreateAsync(input, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task CreateAsync_RejectsInactiveLegalForm()
+    {
+        var store = new Mock<IOrganizationRegistryStore>();
+        store.Setup(value => value.GetLegalFormAsync("COOP", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new LegalFormDefinition
+            {
+                Code = "COOP",
+                LabelEn = "Cooperative",
+                LabelCs = "Družstvo",
+                IsActive = false
+            });
+        var service = new HistoricalOrganizationService(store.Object, CreateActor(true));
+
+        await Assert.ThrowsAsync<RegistryValidationException>(() =>
+            service.CreateAsync(CreateInput(), CancellationToken.None));
     }
 
     private static CreateHistoricalOrganizationInput CreateInput() => new(

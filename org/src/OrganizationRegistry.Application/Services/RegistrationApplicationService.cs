@@ -17,7 +17,7 @@ public sealed partial class RegistrationApplicationService(
     public async Task<RegistrationApplicationView> CreateDraftAsync(CreateRegistrationInput input, CancellationToken ct)
     {
         EnsurePerson();
-        Validate(input.LegalName, input.LegalFormCode, input.Purpose, input.RegisteredAddress);
+        await ValidateAsync(input.LegalName, input.LegalFormCode, input.Purpose, input.RegisteredAddress, ct);
         var now = DateTime.UtcNow;
         var application = new RegistrationApplication
         {
@@ -25,7 +25,7 @@ public sealed partial class RegistrationApplicationService(
             ApplicantPersonId = actor.PersonId,
             LegalName = input.LegalName.Trim(),
             TradingName = NullIfWhiteSpace(input.TradingName),
-            LegalFormCode = input.LegalFormCode.Trim(),
+            LegalFormCode = input.LegalFormCode.Trim().ToUpperInvariant(),
             Purpose = input.Purpose.Trim(),
             RegisteredAddress = input.RegisteredAddress.Trim(),
             RequestedClassificationCodes = NormalizeCodes(input.ClassificationCodes),
@@ -69,10 +69,10 @@ public sealed partial class RegistrationApplicationService(
             throw new RegistryForbiddenException("Only the applicant can update this application.");
         if (application.Status is not (RegistrationApplicationStatus.Draft or RegistrationApplicationStatus.MoreInformationRequired))
             throw new RegistryConflictException("Only a draft or returned application can be updated.");
-        Validate(input.LegalName, input.LegalFormCode, input.Purpose, input.RegisteredAddress);
+        await ValidateAsync(input.LegalName, input.LegalFormCode, input.Purpose, input.RegisteredAddress, ct);
         application.LegalName = input.LegalName.Trim();
         application.TradingName = NullIfWhiteSpace(input.TradingName);
-        application.LegalFormCode = input.LegalFormCode.Trim();
+        application.LegalFormCode = input.LegalFormCode.Trim().ToUpperInvariant();
         application.Purpose = input.Purpose.Trim();
         application.RegisteredAddress = input.RegisteredAddress.Trim();
         application.RequestedClassificationCodes = NormalizeCodes(input.ClassificationCodes);
@@ -197,10 +197,18 @@ public sealed partial class RegistrationApplicationService(
 
     private bool IsStaff() => actor.IsInRole("organization-registry:clerk") || actor.IsInRole("organization-registry:admin");
 
-    private static void Validate(string legalName, string legalFormCode, string purpose, string registeredAddress)
+    private async Task ValidateAsync(
+        string legalName,
+        string legalFormCode,
+        string purpose,
+        string registeredAddress,
+        CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(legalName)) throw new RegistryValidationException("Legal name is required.");
         if (string.IsNullOrWhiteSpace(legalFormCode)) throw new RegistryValidationException("Legal form is required.");
+        var legalForm = await store.GetLegalFormAsync(legalFormCode.Trim().ToUpperInvariant(), ct);
+        if (legalForm is null || !legalForm.IsActive)
+            throw new RegistryValidationException("Select an active legal form.");
         if (string.IsNullOrWhiteSpace(purpose)) throw new RegistryValidationException("Purpose is required.");
         if (string.IsNullOrWhiteSpace(registeredAddress)) throw new RegistryValidationException("Registered address is required.");
     }

@@ -96,7 +96,18 @@
   <data name="OrganizationIdentity" xml:space="preserve"><value>Identita organizace</value></data>
   <data name="LegalName" xml:space="preserve"><value>Právní název</value></data>
   <data name="TradingNameOptional" xml:space="preserve"><value>Obchodní název (nepovinné)</value></data>
-  <data name="LegalFormHelp" xml:space="preserve"><value>Použijte kód právní formy rejstříku, například COOP nebo LTD.</value></data>
+  <data name="ChooseLegalForm" xml:space="preserve"><value>Vyberte právní formu</value></data>
+  <data name="ManageLegalForms" xml:space="preserve"><value>Správa právních forem</value></data>
+  <data name="ManageLegalFormsDescription" xml:space="preserve"><value>Spravujte právní formy dostupné pro nové registrace organizací.</value></data>
+  <data name="RegistryAdministration" xml:space="preserve"><value>Správa rejstříku</value></data>
+  <data name="AddLegalForm" xml:space="preserve"><value>Přidat právní formu</value></data>
+  <data name="ExistingLegalForms" xml:space="preserve"><value>Existující právní formy</value></data>
+  <data name="Code" xml:space="preserve"><value>Kód</value></data>
+  <data name="EnglishLabel" xml:space="preserve"><value>Anglický název</value></data>
+  <data name="CzechLabel" xml:space="preserve"><value>Český název</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Pořadí</value></data>
+  <data name="Inactive" xml:space="preserve"><value>Neaktivní</value></data>
+  <data name="SaveChanges" xml:space="preserve"><value>Uložit změny</value></data>
   <data name="PurposeAndActivity" xml:space="preserve"><value>Účel a činnost</value></data>
   <data name="Purpose" xml:space="preserve"><value>Účel</value></data>
   <data name="SaveDraft" xml:space="preserve"><value>Uložit koncept</value></data>

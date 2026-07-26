@@ -37,6 +37,10 @@
                         <div class="nav-menu-panel">
                             <a asp-page="/Staff/Registrations">@L["ReviewRegistrations"]</a>
                             <a asp-page="/Staff/HistoricalRegistration">@L["AddExistingOrganization"]</a>
+                            @if (User.IsInRole("organization-registry:admin"))
+                            {
+                                <a asp-page="/Staff/LegalForms">@L["ManageLegalForms"]</a>
+                            }
                         </div>
                     </details>
                 }

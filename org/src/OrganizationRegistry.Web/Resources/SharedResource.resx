@@ -96,7 +96,18 @@
   <data name="OrganizationIdentity" xml:space="preserve"><value>Organisation identity</value></data>
   <data name="LegalName" xml:space="preserve"><value>Legal name</value></data>
   <data name="TradingNameOptional" xml:space="preserve"><value>Trading name (optional)</value></data>
-  <data name="LegalFormHelp" xml:space="preserve"><value>Use the registry code for the legal form, such as COOP or LTD.</value></data>
+  <data name="ChooseLegalForm" xml:space="preserve"><value>Choose a legal form</value></data>
+  <data name="ManageLegalForms" xml:space="preserve"><value>Manage legal forms</value></data>
+  <data name="ManageLegalFormsDescription" xml:space="preserve"><value>Control the legal forms available for new organisation registrations.</value></data>
+  <data name="RegistryAdministration" xml:space="preserve"><value>Registry administration</value></data>
+  <data name="AddLegalForm" xml:space="preserve"><value>Add legal form</value></data>
+  <data name="ExistingLegalForms" xml:space="preserve"><value>Existing legal forms</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="EnglishLabel" xml:space="preserve"><value>English label</value></data>
+  <data name="CzechLabel" xml:space="preserve"><value>Czech label</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Sort order</value></data>
+  <data name="Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="SaveChanges" xml:space="preserve"><value>Save changes</value></data>
   <data name="PurposeAndActivity" xml:space="preserve"><value>Purpose and activity</value></data>
   <data name="Purpose" xml:space="preserve"><value>Purpose</value></data>
   <data name="SaveDraft" xml:space="preserve"><value>Save draft</value></data>

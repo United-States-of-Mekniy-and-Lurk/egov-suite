@@ -3,7 +3,9 @@ using ElectionService.Web.Models;
 
 namespace ElectionService.Web.Services;
 
-public sealed class ManagedElectionClient(HttpClient httpClient)
+public sealed class ManagedElectionClient(
+    HttpClient httpClient,
+    ILogger<ManagedElectionClient> logger)
 {
     public Task<IReadOnlyList<ElectionView>> ListAsync(CancellationToken ct) =>
         GetAsync<IReadOnlyList<ElectionView>>("/admin/elections", ct);
@@ -80,7 +82,15 @@ public sealed class ManagedElectionClient(HttpClient httpClient)
     private async Task<T> GetAsync<T>(string path, CancellationToken ct)
     {
         using var response = await httpClient.GetAsync(path, ct);
-        if (!response.IsSuccessStatusCode) throw await ElectionApiException.FromResponseAsync(response, ct);
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning(
+                "Election API request failed method={Method} path={Path} status={StatusCode}",
+                HttpMethod.Get,
+                path,
+                (int)response.StatusCode);
+            throw await ElectionApiException.FromResponseAsync(response, ct);
+        }
         return (await response.Content.ReadFromJsonAsync<T>(cancellationToken: ct))!;
     }
 
@@ -88,7 +98,15 @@ public sealed class ManagedElectionClient(HttpClient httpClient)
     {
         using var request = new HttpRequestMessage(method, path) { Content = JsonContent.Create(input) };
         using var response = await httpClient.SendAsync(request, ct);
-        if (!response.IsSuccessStatusCode) throw await ElectionApiException.FromResponseAsync(response, ct);
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning(
+                "Election API request failed method={Method} path={Path} status={StatusCode}",
+                method,
+                path,
+                (int)response.StatusCode);
+            throw await ElectionApiException.FromResponseAsync(response, ct);
+        }
         return (await response.Content.ReadFromJsonAsync<T>(cancellationToken: ct))!;
     }
 
@@ -97,6 +115,14 @@ public sealed class ManagedElectionClient(HttpClient httpClient)
         using var request = new HttpRequestMessage(method, path);
         if (input is not null) request.Content = JsonContent.Create(input);
         using var response = await httpClient.SendAsync(request, ct);
-        if (!response.IsSuccessStatusCode) throw await ElectionApiException.FromResponseAsync(response, ct);
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning(
+                "Election API request failed method={Method} path={Path} status={StatusCode}",
+                method,
+                path,
+                (int)response.StatusCode);
+            throw await ElectionApiException.FromResponseAsync(response, ct);
+        }
     }
 }

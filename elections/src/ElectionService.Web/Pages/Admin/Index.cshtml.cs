@@ -17,7 +17,7 @@ public sealed class IndexModel(ManagedElectionClient elections) : PageModel
         {
             Elections = await elections.ListAsync(ct);
         }
-        catch (HttpRequestException)
+        catch (Exception exception) when (exception is HttpRequestException or ElectionApiException)
         {
             IsUnavailable = true;
         }

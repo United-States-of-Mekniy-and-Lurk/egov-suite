@@ -16,7 +16,7 @@
             <legend>@L["OrganizationIdentity"]</legend>
             <div class="field"><label asp-for="LegalName">@L["LegalName"]</label><input asp-for="LegalName" /><span asp-validation-for="LegalName"></span></div>
             <div class="field"><label asp-for="TradingName">@L["TradingNameOptional"]</label><input asp-for="TradingName" /></div>
-            <div class="field"><label asp-for="LegalFormCode">@L["LegalForm"]</label><input asp-for="LegalFormCode" /><small>@L["LegalFormHelp"]</small><span asp-validation-for="LegalFormCode"></span></div>
+            <div class="field"><label asp-for="LegalFormCode">@L["LegalForm"]</label><select asp-for="LegalFormCode"><option value="">@L["ChooseLegalForm"]</option>@foreach (var legalForm in Model.LegalForms) { <option value="@legalForm.Code">@legalForm.Label(culture) (@legalForm.Code)</option> }</select><span asp-validation-for="LegalFormCode"></span></div>
             <div class="field"><label asp-for="RegisteredAddress">@L["RegisteredAddress"]</label><textarea asp-for="RegisteredAddress" rows="3"></textarea><span asp-validation-for="RegisteredAddress"></span></div>
         </fieldset>
         <fieldset>

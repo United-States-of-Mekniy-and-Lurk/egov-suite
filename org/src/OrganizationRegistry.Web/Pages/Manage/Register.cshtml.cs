@@ -18,11 +18,12 @@ public sealed class RegisterModel(ManagedRegistryClient managedRegistry, PublicR
     [BindProperty, Required, StringLength(500)] public string RegisteredAddress { get; set; } = string.Empty;
     [BindProperty] public string[] ClassificationCodes { get; set; } = [];
     public IReadOnlyList<Classification> Classifications { get; private set; } = [];
+    public IReadOnlyList<LegalForm> LegalForms { get; private set; } = [];
     public string? ErrorMessage { get; private set; }
 
     public async Task<IActionResult> OnGetAsync(CancellationToken ct)
     {
-        await LoadClassificationsAsync(ct);
+        await LoadReferenceDataAsync(ct);
         if (!Id.HasValue) return Page();
 
         try
@@ -45,7 +46,7 @@ public sealed class RegisterModel(ManagedRegistryClient managedRegistry, PublicR
 
     public async Task<IActionResult> OnPostAsync(string action, CancellationToken ct)
     {
-        await LoadClassificationsAsync(ct);
+        await LoadReferenceDataAsync(ct);
         if (!ModelState.IsValid) return Page();
         try
         {
@@ -65,9 +66,17 @@ public sealed class RegisterModel(ManagedRegistryClient managedRegistry, PublicR
         }
     }
 
-    private async Task LoadClassificationsAsync(CancellationToken ct)
+    private async Task LoadReferenceDataAsync(CancellationToken ct)
     {
-        try { Classifications = await publicRegistry.ListClassificationsAsync(ct); }
-        catch (HttpRequestException) { Classifications = []; }
+        try
+        {
+            Classifications = await publicRegistry.ListClassificationsAsync(ct);
+            LegalForms = await publicRegistry.ListLegalFormsAsync(ct);
+        }
+        catch (HttpRequestException)
+        {
+            Classifications = [];
+            LegalForms = [];
+        }
     }
 }

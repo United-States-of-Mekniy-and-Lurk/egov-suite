@@ -15,11 +15,14 @@ public interface IOrganizationRegistryStore
     Task<IReadOnlyList<RegistrationApplication>> ListApplicationsByStatusAsync(RegistrationApplicationStatus? status, int skip, int take, CancellationToken ct);
     Task<IReadOnlyList<ClassificationDefinition>> GetClassificationsAsync(IEnumerable<string> codes, CancellationToken ct);
     Task<IReadOnlyList<ClassificationDefinition>> ListClassificationDefinitionsAsync(CancellationToken ct);
+    Task<IReadOnlyList<LegalFormDefinition>> ListLegalFormsAsync(bool activeOnly, CancellationToken ct);
+    Task<LegalFormDefinition?> GetLegalFormAsync(string code, CancellationToken ct);
     Task<IReadOnlyList<OrganizationCorrectionRequest>> ListCorrectionsAsync(Guid organizationId, CancellationToken ct);
     Task AddOrganizationAsync(Organization organization, CancellationToken ct);
     Task AddApplicationAsync(RegistrationApplication application, CancellationToken ct);
     Task AddAccessGrantAsync(OrganizationAccessGrant grant, CancellationToken ct);
     Task AddCorrectionAsync(OrganizationCorrectionRequest correction, CancellationToken ct);
+    Task AddLegalFormAsync(LegalFormDefinition legalForm, CancellationToken ct);
     Task<bool> RegistrationNumberExistsAsync(string registrationNumber, CancellationToken ct);
     Task<bool> SlugExistsAsync(string slug, CancellationToken ct);
     Task SaveChangesAsync(CancellationToken ct);

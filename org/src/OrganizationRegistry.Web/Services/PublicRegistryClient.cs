@@ -24,6 +24,9 @@ public sealed class PublicRegistryClient(HttpClient httpClient)
     public async Task<IReadOnlyList<Classification>> ListClassificationsAsync(CancellationToken ct) =>
         await httpClient.GetFromJsonAsync<List<Classification>>("/public/classifications", ct) ?? [];
 
+    public async Task<IReadOnlyList<LegalForm>> ListLegalFormsAsync(CancellationToken ct) =>
+        await httpClient.GetFromJsonAsync<List<LegalForm>>("/public/legal-forms", ct) ?? [];
+
     public async Task<PublicOrganization?> GetOrganizationAsync(string identifier, CancellationToken ct)
     {
         using var response = await httpClient.GetAsync(

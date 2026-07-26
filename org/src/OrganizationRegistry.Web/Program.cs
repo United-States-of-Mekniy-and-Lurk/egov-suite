@@ -79,8 +79,12 @@ builder.Services.AddAuthentication(options =>
 });
 builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
 builder.Services.AddAuthorization(options =>
+{
     options.AddPolicy("RequireClerk", policy =>
-        policy.RequireRole("organization-registry:clerk", "organization-registry:admin")));
+        policy.RequireRole("organization-registry:clerk", "organization-registry:admin"));
+    options.AddPolicy("RequireAdmin", policy =>
+        policy.RequireRole("organization-registry:admin"));
+});
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<OidcAccessTokenService>();

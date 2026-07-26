@@ -59,6 +59,24 @@ public sealed class ManagedRegistryClient(HttpClient httpClient)
         return (await response.Content.ReadFromJsonAsync<PublicOrganization>(cancellationToken: ct))!;
     }
 
+    public async Task<IReadOnlyList<LegalForm>> ListLegalFormsAsync(CancellationToken ct) =>
+        await GetAsync<List<LegalForm>>("/staff/legal-forms", ct) ?? [];
+
+    public async Task CreateLegalFormAsync(CreateLegalFormInput input, CancellationToken ct)
+    {
+        using var response = await httpClient.PostAsJsonAsync("/staff/legal-forms", input, ct);
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task UpdateLegalFormAsync(string code, UpdateLegalFormInput input, CancellationToken ct)
+    {
+        using var response = await httpClient.PutAsJsonAsync(
+            $"/staff/legal-forms/{Uri.EscapeDataString(code)}",
+            input,
+            ct);
+        response.EnsureSuccessStatusCode();
+    }
+
     public async Task<IReadOnlyList<CorrectionRequest>> ListCorrectionsAsync(Guid organizationId, CancellationToken ct) =>
         await GetAsync<List<CorrectionRequest>>($"/organizations/{organizationId}/correction-requests", ct) ?? [];
 

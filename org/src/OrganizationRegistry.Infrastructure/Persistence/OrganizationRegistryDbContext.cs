@@ -7,6 +7,7 @@ public sealed class OrganizationRegistryDbContext(DbContextOptions<OrganizationR
 {
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<ClassificationDefinition> ClassificationDefinitions => Set<ClassificationDefinition>();
+    public DbSet<LegalFormDefinition> LegalFormDefinitions => Set<LegalFormDefinition>();
     public DbSet<OrganizationClassification> OrganizationClassifications => Set<OrganizationClassification>();
     public DbSet<RegistrationApplication> RegistrationApplications => Set<RegistrationApplication>();
     public DbSet<RegistrationTransition> RegistrationTransitions => Set<RegistrationTransition>();
@@ -41,6 +42,15 @@ public sealed class OrganizationRegistryDbContext(DbContextOptions<OrganizationR
             entity.Property(item => item.LabelEn).HasMaxLength(160);
             entity.Property(item => item.LabelCs).HasMaxLength(160);
             entity.HasData(SeedClassifications());
+        });
+
+        modelBuilder.Entity<LegalFormDefinition>(entity =>
+        {
+            entity.HasKey(item => item.Code);
+            entity.Property(item => item.Code).HasMaxLength(80);
+            entity.Property(item => item.LabelEn).HasMaxLength(160);
+            entity.Property(item => item.LabelCs).HasMaxLength(160);
+            entity.HasData(SeedLegalForms());
         });
 
         modelBuilder.Entity<OrganizationClassification>(entity =>
@@ -110,5 +120,14 @@ public sealed class OrganizationRegistryDbContext(DbContextOptions<OrganizationR
         new() { Id = Guid.Parse("10000000-0000-0000-0000-000000000002"), Scheme = "organization-category", Code = "non-profit", LabelEn = "Non-profit organization", LabelCs = "Nezisková organizace", SortOrder = 20 },
         new() { Id = Guid.Parse("10000000-0000-0000-0000-000000000003"), Scheme = "organization-category", Code = "political-party", LabelEn = "Political party", LabelCs = "Politická strana", SortOrder = 30 },
         new() { Id = Guid.Parse("10000000-0000-0000-0000-000000000004"), Scheme = "organization-category", Code = "public-body", LabelEn = "Public body", LabelCs = "Veřejný orgán", SortOrder = 40 }
+    ];
+
+    private static LegalFormDefinition[] SeedLegalForms() =>
+    [
+        new() { Code = "LTD", LabelEn = "Limited company", LabelCs = "Společnost s ručením omezeným", SortOrder = 10 },
+        new() { Code = "COOP", LabelEn = "Cooperative", LabelCs = "Družstvo", SortOrder = 20 },
+        new() { Code = "ASSOCIATION", LabelEn = "Association", LabelCs = "Spolek", SortOrder = 30 },
+        new() { Code = "FOUNDATION", LabelEn = "Foundation", LabelCs = "Nadace", SortOrder = 40 },
+        new() { Code = "PUBLIC", LabelEn = "Public institution", LabelCs = "Veřejná instituce", SortOrder = 50 }
     ];
 }

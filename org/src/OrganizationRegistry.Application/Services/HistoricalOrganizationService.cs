@@ -16,6 +16,11 @@ public sealed partial class HistoricalOrganizationService(
         EnsureStaff();
         Validate(input);
 
+        var legalFormCode = input.LegalFormCode.Trim().ToUpperInvariant();
+        var legalForm = await store.GetLegalFormAsync(legalFormCode, ct);
+        if (legalForm is null || !legalForm.IsActive)
+            throw new RegistryValidationException("Select an active legal form.");
+
         var registrationNumber = input.RegistrationNumber.Trim();
         if (await store.RegistrationNumberExistsAsync(registrationNumber, ct))
             throw new RegistryConflictException("An organization with this registration number already exists.");
@@ -33,7 +38,7 @@ public sealed partial class HistoricalOrganizationService(
             Slug = await CreateSlugAsync(input.LegalName, ct),
             LegalName = input.LegalName.Trim(),
             TradingName = NullIfWhiteSpace(input.TradingName),
-            LegalFormCode = input.LegalFormCode.Trim(),
+            LegalFormCode = legalFormCode,
             Purpose = input.Purpose.Trim(),
             RegisteredAddress = input.RegisteredAddress.Trim(),
             RegisteredAt = input.RegisteredOn.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),

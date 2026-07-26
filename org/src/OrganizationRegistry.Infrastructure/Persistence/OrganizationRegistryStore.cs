@@ -82,6 +82,16 @@ public sealed class OrganizationRegistryStore(OrganizationRegistryDbContext db) 
     public async Task<IReadOnlyList<ClassificationDefinition>> ListClassificationDefinitionsAsync(CancellationToken ct) =>
         await db.ClassificationDefinitions.Where(item => item.IsActive).OrderBy(item => item.SortOrder).ToListAsync(ct);
 
+    public async Task<IReadOnlyList<LegalFormDefinition>> ListLegalFormsAsync(bool activeOnly, CancellationToken ct)
+    {
+        var query = db.LegalFormDefinitions.AsQueryable();
+        if (activeOnly) query = query.Where(item => item.IsActive);
+        return await query.OrderBy(item => item.SortOrder).ThenBy(item => item.Code).ToListAsync(ct);
+    }
+
+    public Task<LegalFormDefinition?> GetLegalFormAsync(string code, CancellationToken ct) =>
+        db.LegalFormDefinitions.FirstOrDefaultAsync(item => item.Code == code, ct);
+
     public async Task<IReadOnlyList<OrganizationCorrectionRequest>> ListCorrectionsAsync(Guid organizationId, CancellationToken ct) =>
         await db.OrganizationCorrectionRequests.Where(item => item.OrganizationId == organizationId).OrderByDescending(item => item.SubmittedAt).ToListAsync(ct);
 
@@ -89,6 +99,7 @@ public sealed class OrganizationRegistryStore(OrganizationRegistryDbContext db) 
     public Task AddApplicationAsync(RegistrationApplication application, CancellationToken ct) => db.RegistrationApplications.AddAsync(application, ct).AsTask();
     public Task AddAccessGrantAsync(OrganizationAccessGrant grant, CancellationToken ct) => db.OrganizationAccessGrants.AddAsync(grant, ct).AsTask();
     public Task AddCorrectionAsync(OrganizationCorrectionRequest correction, CancellationToken ct) => db.OrganizationCorrectionRequests.AddAsync(correction, ct).AsTask();
+    public Task AddLegalFormAsync(LegalFormDefinition legalForm, CancellationToken ct) => db.LegalFormDefinitions.AddAsync(legalForm, ct).AsTask();
     public Task<bool> RegistrationNumberExistsAsync(string registrationNumber, CancellationToken ct) => db.Organizations.AnyAsync(item => item.RegistrationNumber == registrationNumber, ct);
     public Task<bool> SlugExistsAsync(string slug, CancellationToken ct) => db.Organizations.AnyAsync(item => item.Slug == slug, ct);
     public Task SaveChangesAsync(CancellationToken ct) => db.SaveChangesAsync(ct);
