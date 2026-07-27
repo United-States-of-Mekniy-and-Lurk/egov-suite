@@ -58,6 +58,17 @@ public sealed class AdminElectionsController(AdminElectionService service) : Con
         return NoContent();
     }
 
+    [HttpPost("{electionId:guid}/party-lists/{partyListId:guid}/candidates/{candidateId:guid}/withdraw")]
+    public async Task<IActionResult> WithdrawCandidate(Guid electionId, Guid partyListId, Guid candidateId, CancellationToken ct)
+    {
+        await service.WithdrawCandidateAsync(electionId, partyListId, candidateId, ct);
+        return NoContent();
+    }
+
+    [HttpPut("{electionId:guid}/schedule")]
+    public Task<AdminElectionView> UpdateSchedule(Guid electionId, [FromBody] ScheduleInput input, CancellationToken ct) =>
+        service.UpdateScheduleAsync(electionId, input, ct);
+
     [HttpPost("{electionId:guid}/referendum-options")]
     public Task<ReferendumOptionView> AddReferendumOption(Guid electionId, [FromBody] ReferendumOptionInput input, CancellationToken ct) =>
         service.AddReferendumOptionAsync(electionId, input, ct);

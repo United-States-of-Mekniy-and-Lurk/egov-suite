@@ -24,7 +24,7 @@ internal static class ElectionMapping
             item.ListName,
             item.SortOrder,
             item.Candidates.OrderBy(candidate => candidate.Position).Select(candidate => new CandidateView(
-                candidate.Id, candidate.DisplayName, candidate.Description, candidate.Position)).ToList())).ToList(),
+                candidate.Id, candidate.DisplayName, candidate.Description, candidate.Position, candidate.WithdrawnAt.HasValue)).ToList())).ToList(),
         election.ReferendumOptions.OrderBy(item => item.SortOrder).Select(item => new ReferendumOptionView(
             item.Id, item.Code, item.Label, item.Description, item.SortOrder)).ToList(),
         election.IsHistorical,

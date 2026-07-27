@@ -43,6 +43,12 @@ public sealed class ManagedElectionClient(
     public Task DeleteCandidateAsync(Guid electionId, Guid partyListId, Guid candidateId, CancellationToken ct) =>
         SendWithoutResponseAsync(HttpMethod.Delete, $"/admin/elections/{electionId}/party-lists/{partyListId}/candidates/{candidateId}", null, ct);
 
+    public Task WithdrawCandidateAsync(Guid electionId, Guid partyListId, Guid candidateId, CancellationToken ct) =>
+        SendWithoutResponseAsync(HttpMethod.Post, $"/admin/elections/{electionId}/party-lists/{partyListId}/candidates/{candidateId}/withdraw", new { }, ct);
+
+    public Task<ElectionView> UpdateScheduleAsync(Guid electionId, DateTime votingStartsAt, DateTime votingEndsAt, CancellationToken ct) =>
+        SendAsync<ElectionView>(HttpMethod.Put, $"/admin/elections/{electionId}/schedule", new { votingStartsAt, votingEndsAt }, ct);
+
     public Task<ReferendumOptionView> AddOptionAsync(Guid electionId, ReferendumOptionInput input, CancellationToken ct) =>
         SendAsync<ReferendumOptionView>(HttpMethod.Post, $"/admin/elections/{electionId}/referendum-options", input, ct);
 

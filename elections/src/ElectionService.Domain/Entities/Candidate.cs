@@ -9,4 +9,5 @@ public sealed class Candidate
     public string DisplayName { get; set; } = string.Empty;
     public string? Description { get; set; }
     public int Position { get; set; }
+    public DateTime? WithdrawnAt { get; set; }
 }

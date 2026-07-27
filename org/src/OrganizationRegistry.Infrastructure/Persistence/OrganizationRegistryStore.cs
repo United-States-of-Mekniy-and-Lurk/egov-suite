@@ -98,6 +98,7 @@ public sealed class OrganizationRegistryStore(OrganizationRegistryDbContext db) 
     public Task AddOrganizationAsync(Organization organization, CancellationToken ct) => db.Organizations.AddAsync(organization, ct).AsTask();
     public Task AddApplicationAsync(RegistrationApplication application, CancellationToken ct) => db.RegistrationApplications.AddAsync(application, ct).AsTask();
     public Task AddAccessGrantAsync(OrganizationAccessGrant grant, CancellationToken ct) => db.OrganizationAccessGrants.AddAsync(grant, ct).AsTask();
+    public Task AddTransitionAsync(RegistrationTransition transition, CancellationToken ct) => db.RegistrationTransitions.AddAsync(transition, ct).AsTask();
     public Task AddCorrectionAsync(OrganizationCorrectionRequest correction, CancellationToken ct) => db.OrganizationCorrectionRequests.AddAsync(correction, ct).AsTask();
     public Task AddLegalFormAsync(LegalFormDefinition legalForm, CancellationToken ct) => db.LegalFormDefinitions.AddAsync(legalForm, ct).AsTask();
     public Task<bool> RegistrationNumberExistsAsync(string registrationNumber, CancellationToken ct) => db.Organizations.AnyAsync(item => item.RegistrationNumber == registrationNumber, ct);

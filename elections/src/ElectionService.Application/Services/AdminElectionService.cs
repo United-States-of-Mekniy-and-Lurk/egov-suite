@@ -301,6 +301,40 @@ public sealed class AdminElectionService(
         await store.RemoveCandidateAsync(candidate, ct);
     }
 
+    public async Task WithdrawCandidateAsync(Guid electionId, Guid partyListId, Guid candidateId, CancellationToken ct)
+    {
+        EnsureAdmin();
+        var election = await RequireElectionAsync(electionId, ct);
+        if (election.Status is not (ElectionStatus.Draft or ElectionStatus.Published))
+            throw new ElectionValidationException("Candidates can only be withdrawn from draft or published elections.");
+        var partyList = election.PartyLists.SingleOrDefault(item => item.Id == partyListId)
+            ?? throw new ElectionNotFoundException("Party list was not found.");
+        var candidate = partyList.Candidates.SingleOrDefault(item => item.Id == candidateId)
+            ?? throw new ElectionNotFoundException("Candidate was not found.");
+        if (candidate.WithdrawnAt.HasValue)
+            throw new ElectionConflictException("Candidate is already withdrawn.");
+        candidate.WithdrawnAt = DateTime.UtcNow;
+        election.UpdatedAt = DateTime.UtcNow;
+        await store.SaveChangesAsync(ct);
+    }
+
+    public async Task<AdminElectionView> UpdateScheduleAsync(Guid electionId, ScheduleInput input, CancellationToken ct)
+    {
+        EnsureAdmin();
+        var election = await RequireElectionAsync(electionId, ct);
+        if (election.Status is not (ElectionStatus.Draft or ElectionStatus.Published))
+            throw new ElectionValidationException("Schedule can only be changed for draft or published elections.");
+        if (input.VotingStartsAt.Kind == DateTimeKind.Unspecified || input.VotingEndsAt.Kind == DateTimeKind.Unspecified)
+            throw new ElectionValidationException("Voting dates must include a time zone.");
+        if (input.VotingStartsAt >= input.VotingEndsAt)
+            throw new ElectionValidationException("Voting start must be before voting end.");
+        election.VotingStartsAt = input.VotingStartsAt.ToUniversalTime();
+        election.VotingEndsAt = input.VotingEndsAt.ToUniversalTime();
+        election.UpdatedAt = DateTime.UtcNow;
+        await store.SaveChangesAsync(ct);
+        return ToAdminView(election);
+    }
+
     public async Task<ReferendumOptionView> AddReferendumOptionAsync(Guid electionId, ReferendumOptionInput input, CancellationToken ct)
     {
         EnsureAdmin();
@@ -549,7 +583,7 @@ public sealed class AdminElectionService(
     }
 
     private static CandidateView ToView(Candidate candidate) =>
-        new(candidate.Id, candidate.DisplayName, candidate.Description, candidate.Position);
+        new(candidate.Id, candidate.DisplayName, candidate.Description, candidate.Position, candidate.WithdrawnAt.HasValue);
 
     private static AdminElectionView ToAdminView(Election election) => new(
         election.Id,
@@ -570,7 +604,7 @@ public sealed class AdminElectionService(
             item.ListName,
             item.SortOrder,
             item.Candidates.OrderBy(candidate => candidate.Position).Select(candidate => new CandidateAdminView(
-                candidate.Id, candidate.PersonId, candidate.DisplayName, candidate.Description, candidate.Position)).ToList())).ToList(),
+                candidate.Id, candidate.PersonId, candidate.DisplayName, candidate.Description, candidate.Position, candidate.WithdrawnAt)).ToList())).ToList(),
         election.ReferendumOptions.OrderBy(item => item.SortOrder).Select(item => new ReferendumOptionView(
             item.Id, item.Code, item.Label, item.Description, item.SortOrder)).ToList(),
         election.EligibleVoterCount,

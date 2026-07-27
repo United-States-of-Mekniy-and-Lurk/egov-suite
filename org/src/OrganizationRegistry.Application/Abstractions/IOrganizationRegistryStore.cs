@@ -21,6 +21,7 @@ public interface IOrganizationRegistryStore
     Task AddOrganizationAsync(Organization organization, CancellationToken ct);
     Task AddApplicationAsync(RegistrationApplication application, CancellationToken ct);
     Task AddAccessGrantAsync(OrganizationAccessGrant grant, CancellationToken ct);
+    Task AddTransitionAsync(RegistrationTransition transition, CancellationToken ct);
     Task AddCorrectionAsync(OrganizationCorrectionRequest correction, CancellationToken ct);
     Task AddLegalFormAsync(LegalFormDefinition legalForm, CancellationToken ct);
     Task<bool> RegistrationNumberExistsAsync(string registrationNumber, CancellationToken ct);

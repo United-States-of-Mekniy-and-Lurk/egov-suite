@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ElectionService.Web.Models;
 
-public sealed record CandidateView(Guid Id, Guid? PersonId, string DisplayName, string? Description, int Position);
+public sealed record CandidateView(Guid Id, Guid? PersonId, string DisplayName, string? Description, int Position, DateTime? WithdrawnAt);
 
 public sealed record PartyListView(
     Guid Id,

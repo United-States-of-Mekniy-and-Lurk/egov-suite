@@ -41,6 +41,9 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer<
     public string? SuccessMessage { get; private set; }
     public string? ErrorMessage { get; private set; }
 
+    public string InviteUrl(string token) =>
+        $"{Request.Scheme}://{Request.Host}/Invite/{Id}/{Uri.EscapeDataString(token)}";
+
     public async Task OnGetAsync(CancellationToken ct)
     {
         Step = NormalizeStep(Step);
@@ -98,6 +101,21 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer<
             await managed.DeleteCandidateAsync(Id, EditCandidatePartyListId, EditCandidateId, ct);
             SuccessMessage = localizer["Candidate deleted."];
         }, ct, "ballot");
+
+    public async Task<IActionResult> OnPostWithdrawCandidateAsync(CancellationToken ct) =>
+        await ExecuteActionAsync(async () =>
+        {
+            await managed.WithdrawCandidateAsync(Id, EditCandidatePartyListId, EditCandidateId, ct);
+            SuccessMessage = localizer["Candidate withdrawn."];
+        }, ct, "ballot");
+
+    public async Task<IActionResult> OnPostEndNowAsync(CancellationToken ct) =>
+        await ExecuteActionAsync(async () =>
+        {
+            var election = await managed.GetAsync(Id, ct);
+            await managed.UpdateScheduleAsync(Id, election.VotingStartsAt, DateTime.UtcNow, ct);
+            SuccessMessage = localizer["Voting period ended."];
+        }, ct, "details");
 
     public async Task<IActionResult> OnPostOptionAsync(CancellationToken ct) =>
         await ExecuteAsync(ReferendumOption, nameof(ReferendumOption), async () =>

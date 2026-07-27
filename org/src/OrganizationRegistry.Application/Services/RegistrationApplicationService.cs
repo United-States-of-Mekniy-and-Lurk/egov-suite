@@ -117,7 +117,7 @@ public sealed partial class RegistrationApplicationService(
             application.ReviewerPersonId = actor.PersonId;
             application.ReviewedAt = now;
         }
-        application.Transitions.Add(new RegistrationTransition
+        var transition = new RegistrationTransition
         {
             Id = Guid.NewGuid(),
             ApplicationId = application.Id,
@@ -126,7 +126,8 @@ public sealed partial class RegistrationApplicationService(
             ChangedByPersonId = actor.PersonId,
             ChangedAt = now,
             Reason = NullIfWhiteSpace(input.Reason)
-        });
+        };
+        await store.AddTransitionAsync(transition, ct);
 
         if (input.TargetStatus == RegistrationApplicationStatus.Approved)
             await RegisterOrganizationAsync(application, now, ct);

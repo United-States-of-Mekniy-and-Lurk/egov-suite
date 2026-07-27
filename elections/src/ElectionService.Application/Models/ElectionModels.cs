@@ -28,9 +28,10 @@ public sealed record InvitationInput(Guid? PersonId, string? Label);
 public sealed record BulkInvitationInput(IReadOnlyList<InvitationInput> Items);
 public sealed record VoteInput(Guid SelectionId);
 public sealed record TransitionInput(ElectionStatus Status, string? Reason);
+public sealed record ScheduleInput(DateTime VotingStartsAt, DateTime VotingEndsAt);
 
-public sealed record CandidateView(Guid Id, string DisplayName, string? Description, int Position);
-public sealed record CandidateAdminView(Guid Id, Guid? PersonId, string DisplayName, string? Description, int Position);
+public sealed record CandidateView(Guid Id, string DisplayName, string? Description, int Position, bool IsWithdrawn);
+public sealed record CandidateAdminView(Guid Id, Guid? PersonId, string DisplayName, string? Description, int Position, DateTime? WithdrawnAt);
 public sealed record PartyListView(
     Guid Id,
     Guid? PartyOrganizationId,
