@@ -10,5 +10,7 @@ data:
   Oidc__Authority: {{ .Values.config.oidcAuthority | quote }}
   Oidc__ClientId: {{ .Values.config.oidcClientId | quote }}
   Oidc__RequireHttpsMetadata: {{ .Values.config.oidcRequireHttpsMetadata | quote }}
+  CitizenApi__BaseUrl: {{ .Values.config.citizenApiBaseUrl | quote }}
+  OrganizationApi__BaseUrl: {{ .Values.config.organizationApiBaseUrl | quote }}
   Catalog__Path: {{ .Values.config.catalogPath | quote }}
   Translations__Path: {{ .Values.config.translationsPath | quote }}

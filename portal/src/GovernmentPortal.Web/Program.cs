@@ -1,4 +1,5 @@
 using GovernmentPortal.Web.Services;
+using Egov.Platform.Identity;
 using Egov.Platform.Localization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -8,7 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 builder.Services.AddSingleton<ServiceCatalog>();
-builder.Services.AddSingleton<IPortalModule, CitizenshipPortalModule>();
+builder.Services.AddTransient<IPortalModule, CitizenshipPortalModule>();
+builder.Services.AddTransient<IPortalModule, OrganizationPortalModule>();
 
 var translationsPath = builder.Configuration["Translations:Path"]
     ?? Path.Combine(builder.Environment.ContentRootPath, "..", "..", "..", "translations");
@@ -45,6 +47,18 @@ builder.Services.AddAuthentication(options =>
     options.Scope.Add("email");
 });
 builder.Services.AddAuthorization();
+builder.Services.AddMkluOidcSessionManagement();
+builder.Services.AddTransient<PortalBearerTokenHandler>();
+builder.Services.AddHttpClient("CitizenApi", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["CitizenApi:BaseUrl"] ?? "http://citizen-service-api");
+    client.Timeout = TimeSpan.FromSeconds(10);
+}).AddHttpMessageHandler<PortalBearerTokenHandler>();
+builder.Services.AddHttpClient("OrganizationApi", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["OrganizationApi:BaseUrl"] ?? "http://organization-registry-api");
+    client.Timeout = TimeSpan.FromSeconds(10);
+}).AddHttpMessageHandler<PortalBearerTokenHandler>();
 
 var app = builder.Build();
 
@@ -61,6 +75,7 @@ app.UseRequestLocalization();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapRazorPages();
+app.MapMkluOidcSessionKeepalive();
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
 app.Run();

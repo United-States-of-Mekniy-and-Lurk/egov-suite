@@ -103,8 +103,7 @@ builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformatio
 builder.Services.AddAuthorization(options =>
     options.AddPolicy("RequireAdmin", policy => policy.RequireRole("election-service:admin")));
 
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<OidcAccessTokenService>();
+builder.Services.AddMkluOidcSessionManagement();
 builder.Services.AddTransient<BearerTokenHandler>();
 builder.Services.AddHttpClient<PublicElectionClient>(ConfigureElectionApi);
 builder.Services.AddHttpClient<ManagedElectionClient>(ConfigureElectionApi)
@@ -129,7 +128,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+app.UseWhen(
+    context => !context.Request.Path.StartsWithSegments("/health"),
+    branch => branch.UseHttpsRedirection());
 app.UseStaticFiles();
 app.UseRouting();
 app.UseRequestLocalization();
@@ -137,6 +138,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapStaticAssets();
 app.MapRazorPages().WithStaticAssets();
+app.MapMkluOidcSessionKeepalive();
 app.MapHealthChecks("/health");
 
 app.Run();

@@ -86,8 +86,7 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole("organization-registry:admin"));
 });
 
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<OidcAccessTokenService>();
+builder.Services.AddMkluOidcSessionManagement();
 builder.Services.AddTransient<BearerTokenHandler>();
 builder.Services.AddHttpClient<PublicRegistryClient>(client =>
 {
@@ -127,6 +126,7 @@ app.UseAuthorization();
 app.MapStaticAssets();
 app.MapRazorPages()
    .WithStaticAssets();
+app.MapMkluOidcSessionKeepalive();
 app.MapHealthChecks("/health");
 
 app.Run();

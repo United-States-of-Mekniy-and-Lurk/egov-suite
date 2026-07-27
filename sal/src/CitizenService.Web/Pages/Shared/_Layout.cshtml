@@ -15,7 +15,7 @@
     @await RenderSectionAsync("Styles", required: false)
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body>
+<body data-session-keepalive-url="@((User.Identity?.IsAuthenticated == true) ? "/session/keepalive" : null)">
     <a class="mklu-skip-link" href="#main-content">@L["app.skip_to_content"]</a>
     <header class="mklu-header" role="banner">
         <div class="mklu-header-inner">
@@ -95,6 +95,7 @@
     </footer>
 
     <script src="~/lib/lucide/lucide.min.js"></script>
+    <script src="~/js/mklu-session.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)

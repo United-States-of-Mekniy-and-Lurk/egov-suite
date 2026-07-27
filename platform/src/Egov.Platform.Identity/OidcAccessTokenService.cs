@@ -74,7 +74,12 @@ public sealed class OidcAccessTokenService(
         using var response = await options.Backchannel.SendAsync(request, ct);
         if (!response.IsSuccessStatusCode)
         {
-            logger.LogWarning("OIDC token refresh failed with status {StatusCode}", response.StatusCode);
+            var oauthError = await ReadOAuthErrorAsync(response, ct);
+            logger.LogWarning(
+                "OIDC token refresh failed with status {StatusCode} error={Error}",
+                response.StatusCode,
+                oauthError ?? "unknown");
+            await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return null;
         }
 
@@ -127,6 +132,21 @@ public sealed class OidcAccessTokenService(
         var handler = new JwtSecurityTokenHandler();
         return handler.CanReadToken(accessToken) &&
             handler.ReadJwtToken(accessToken).Audiences.Contains(requiredAudience, StringComparer.Ordinal);
+    }
+
+    private static async Task<string?> ReadOAuthErrorAsync(HttpResponseMessage response, CancellationToken ct)
+    {
+        try
+        {
+            using var payload = JsonDocument.Parse(await response.Content.ReadAsStreamAsync(ct));
+            return payload.RootElement.TryGetProperty("error", out var errorProperty)
+                ? errorProperty.GetString()
+                : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     private static void SetToken(List<AuthenticationToken> tokens, string name, string? value)

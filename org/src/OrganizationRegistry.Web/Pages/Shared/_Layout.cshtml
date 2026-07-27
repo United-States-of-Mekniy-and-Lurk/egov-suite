@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/site.css" />
 </head>
-<body>
+<body data-session-keepalive-url="@((User.Identity?.IsAuthenticated == true) ? "/session/keepalive" : null)">
     <a class="skip-link" href="#main-content">@L["SkipToContent"]</a>
     <header class="site-header" role="banner">
         <div class="header-inner">
@@ -87,6 +87,7 @@
         </div>
     </footer>
 
+    <script src="/js/mklu-session.js" asp-append-version="true"></script>
     <script src="/js/site.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

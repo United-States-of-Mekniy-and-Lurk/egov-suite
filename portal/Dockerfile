@@ -12,6 +12,7 @@ RUN dotnet run --project gov-cli/Gov.Cli/Gov.Cli.csproj --no-restore -- catalog 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY portal/src/GovernmentPortal.Web/GovernmentPortal.Web.csproj portal/src/GovernmentPortal.Web/
+COPY platform/src/Egov.Platform.Identity/Egov.Platform.Identity.csproj platform/src/Egov.Platform.Identity/
 COPY platform/src/Egov.Platform.Localization/Egov.Platform.Localization.csproj platform/src/Egov.Platform.Localization/
 COPY design-system/MKLU-Flag-Small.svg design-system/
 COPY design-system/manticore.svg design-system/

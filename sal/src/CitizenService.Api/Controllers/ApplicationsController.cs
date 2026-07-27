@@ -26,6 +26,13 @@ public class ApplicationsController : ControllerBase
         _currentActor = currentActor;
     }
 
+    [HttpGet("mine")]
+    public async Task<IActionResult> ListMine(CancellationToken ct)
+    {
+        var applications = await _applicationService.ListByPersonIdAsync(_currentActor.PersonId, ct);
+        return Ok(applications);
+    }
+
     [HttpGet]
     public async Task<IActionResult> List(
         [FromQuery] Guid? personId,

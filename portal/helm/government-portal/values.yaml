@@ -52,6 +52,8 @@ config:
   oidcAuthority: "https://keycloak.example.com/realms/mekniy-and-lurk"
   oidcClientId: "government-portal-web"
   oidcRequireHttpsMetadata: "true"
+  citizenApiBaseUrl: "http://citizen-service-api"
+  organizationApiBaseUrl: "http://organization-registry-api"
   catalogPath: "/app/catalog/services.json"
   translationsPath: "/app/translations"
 secret:

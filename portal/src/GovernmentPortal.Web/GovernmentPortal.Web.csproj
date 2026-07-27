@@ -6,8 +6,16 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.9" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\platform\src\Egov.Platform.Identity\Egov.Platform.Identity.csproj" />
     <ProjectReference Include="..\..\..\platform\src\Egov.Platform.Localization\Egov.Platform.Localization.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\..\platform\src\Egov.Platform.Identity\wwwroot\mklu-session.js"
+             Link="wwwroot\js\mklu-session.js"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

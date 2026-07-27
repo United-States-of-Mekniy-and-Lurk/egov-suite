@@ -149,9 +149,8 @@ builder.Services.AddAuthentication(options =>
     options.Scope.Add("email");
 });
 
-builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
-builder.Services.AddScoped<OidcAccessTokenService>();
+builder.Services.AddMkluOidcSessionManagement();
 builder.Services.AddScoped<CurrentPersonService>();
 builder.Services.AddScoped<PersonDirectoryService>();
 
@@ -253,6 +252,7 @@ app.Use(async (context, next) =>
 });
 app.UseAuthorization();
 app.MapRazorPages();
+app.MapMkluOidcSessionKeepalive();
 
 app.Run();
 
