@@ -1,5 +1,6 @@
 using ElectionService.Web.Models;
 using ElectionService.Web.Services;
+using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -25,7 +26,12 @@ public sealed class CreateModel(ManagedElectionClient elections, IStringLocalize
         try
         {
             var election = await elections.CreateAsync(Input, ct);
-            return RedirectToPage("/Admin/Manage", new { id = election.Id, title = election.Title });
+            return RedirectToPage("/Admin/Manage", new { id = election.Id, title = election.Title, step = "ballot" });
+        }
+        catch (ElectionApiException exception) when (exception.StatusCode == HttpStatusCode.Conflict)
+        {
+            ErrorMessage = exception.Message;
+            return Page();
         }
         catch (ElectionApiException)
         {

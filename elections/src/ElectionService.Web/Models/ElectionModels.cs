@@ -96,19 +96,41 @@ public sealed record HistoricalElectionInput(
     IReadOnlyList<HistoricalPartyListInput>? PartyLists,
     IReadOnlyList<HistoricalReferendumOptionInput>? ReferendumOptions);
 
-public sealed class PartyListInput
+public sealed class PartyListInput : IValidatableObject
 {
-    [Display(Name = "Party organization ID"), Required] public Guid PartyOrganizationId { get; set; }
+    [Display(Name = "Party organization ID")] public Guid? PartyOrganizationId { get; set; }
+    [Display(Name = "Independent party name"), StringLength(240)] public string? PartyName { get; set; }
+    [Display(Name = "Registration number"), StringLength(100)] public string? PartyRegistrationNumber { get; set; }
     [Display(Name = "List name"), Required, StringLength(240)] public string ListName { get; set; } = string.Empty;
     [Display(Name = "Sort order")] public int SortOrder { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (PartyOrganizationId is null && string.IsNullOrWhiteSpace(PartyName))
+        {
+            yield return new ValidationResult(
+                "Enter a registered party organization ID or an independent party name.",
+                [nameof(PartyOrganizationId), nameof(PartyName)]);
+        }
+    }
 }
 
-public sealed class CandidateInput
+public sealed class CandidateInput : IValidatableObject
 {
     [Display(Name = "Person ID")] public Guid? PersonId { get; set; }
     [Display(Name = "Display name"), StringLength(240)] public string? DisplayName { get; set; }
     [Display(Name = "Description"), StringLength(2000)] public string? Description { get; set; }
     [Display(Name = "Position")] public int Position { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (PersonId is null && string.IsNullOrWhiteSpace(DisplayName))
+        {
+            yield return new ValidationResult(
+                "Enter a registered person ID or a display name.",
+                [nameof(PersonId), nameof(DisplayName)]);
+        }
+    }
 }
 
 public sealed class ReferendumOptionInput

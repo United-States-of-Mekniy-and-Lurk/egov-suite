@@ -180,20 +180,17 @@ public sealed class AdminElectionService(
             throw new ElectionValidationException("Party lists are only valid for party-list elections.");
         if (string.IsNullOrWhiteSpace(input.ListName))
             throw new ElectionValidationException("List name is required.");
-        if (election.PartyLists.Any(item => item.PartyOrganizationId == input.PartyOrganizationId || item.SortOrder == input.SortOrder))
-            throw new ElectionConflictException("Party organization and sort order must be unique in an election.");
+        if (election.PartyLists.Any(item => PartyIdentityConflicts(item, input) || item.SortOrder == input.SortOrder))
+            throw new ElectionConflictException("Party identity and sort order must be unique in an election.");
 
-        var organization = await organizations.GetAsync(input.PartyOrganizationId, ct)
-            ?? throw new ElectionValidationException("Party organization was not found.");
-        if (organization.Status != "Active" || !organization.ClassificationCodes.Contains("political-party", StringComparer.OrdinalIgnoreCase))
-            throw new ElectionValidationException("Organization must be active and classified as political-party.");
+        var identity = await ResolvePartyIdentityAsync(input, ct);
         var partyList = new PartyList
         {
             Id = Guid.NewGuid(),
             ElectionId = electionId,
-            PartyOrganizationId = organization.Id,
-            PartyRegistrationNumber = organization.RegistrationNumber,
-            PartyName = organization.LegalName,
+            PartyOrganizationId = identity.OrganizationId,
+            PartyRegistrationNumber = identity.RegistrationNumber,
+            PartyName = identity.Name,
             ListName = input.ListName.Trim(),
             SortOrder = input.SortOrder
         };
@@ -211,13 +208,13 @@ public sealed class AdminElectionService(
         if (string.IsNullOrWhiteSpace(input.ListName))
             throw new ElectionValidationException("List name is required.");
         if (election.PartyLists.Any(item => item.Id != partyListId &&
-            (item.PartyOrganizationId == input.PartyOrganizationId || item.SortOrder == input.SortOrder)))
-            throw new ElectionConflictException("Party organization and sort order must be unique in an election.");
+            (PartyIdentityConflicts(item, input) || item.SortOrder == input.SortOrder)))
+            throw new ElectionConflictException("Party identity and sort order must be unique in an election.");
 
-        var organization = await GetPoliticalPartyAsync(input.PartyOrganizationId, ct);
-        partyList.PartyOrganizationId = organization.Id;
-        partyList.PartyRegistrationNumber = organization.RegistrationNumber;
-        partyList.PartyName = organization.LegalName;
+        var identity = await ResolvePartyIdentityAsync(input, ct);
+        partyList.PartyOrganizationId = identity.OrganizationId;
+        partyList.PartyRegistrationNumber = identity.RegistrationNumber;
+        partyList.PartyName = identity.Name;
         partyList.ListName = input.ListName.Trim();
         partyList.SortOrder = input.SortOrder;
         election.UpdatedAt = DateTime.UtcNow;
@@ -510,6 +507,32 @@ public sealed class AdminElectionService(
             throw new ElectionValidationException("Organization must be active and classified as political-party.");
         return organization;
     }
+
+    private async Task<(Guid? OrganizationId, string RegistrationNumber, string Name)> ResolvePartyIdentityAsync(
+        PartyListInput input,
+        CancellationToken ct)
+    {
+        if (input.PartyOrganizationId.HasValue)
+        {
+            if (input.PartyOrganizationId.Value == Guid.Empty)
+                throw new ElectionValidationException("Party organization ID cannot be empty.");
+
+            var organization = await GetPoliticalPartyAsync(input.PartyOrganizationId.Value, ct);
+            return (organization.Id, organization.RegistrationNumber, organization.LegalName);
+        }
+
+        var partyName = input.PartyName?.Trim();
+        if (string.IsNullOrWhiteSpace(partyName))
+            throw new ElectionValidationException("Independent party name is required when no organization is selected.");
+
+        return (null, NormalizeOptional(input.PartyRegistrationNumber) ?? string.Empty, partyName);
+    }
+
+    private static bool PartyIdentityConflicts(PartyList existing, PartyListInput input) =>
+        input.PartyOrganizationId.HasValue
+            ? existing.PartyOrganizationId == input.PartyOrganizationId
+            : existing.PartyOrganizationId is null &&
+              string.Equals(existing.PartyName, input.PartyName?.Trim(), StringComparison.OrdinalIgnoreCase);
 
     private async Task<string> ResolveCandidateDisplayNameAsync(CandidateInput input, CancellationToken ct)
     {

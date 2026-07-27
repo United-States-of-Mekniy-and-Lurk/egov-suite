@@ -14,7 +14,12 @@ public sealed record ElectionInput(
     string? TerritoryCode,
     int? EligibleVoterCount = null);
 
-public sealed record PartyListInput(Guid PartyOrganizationId, string ListName, int SortOrder);
+public sealed record PartyListInput(
+    Guid? PartyOrganizationId,
+    string? PartyName,
+    string? PartyRegistrationNumber,
+    string ListName,
+    int SortOrder);
 public sealed record CandidateInput(Guid? PersonId, string? DisplayName, string? Description, int Position);
 public sealed record ReferendumOptionInput(string Code, string Label, string? Description, int SortOrder);
 public sealed record VoterRollInput(Guid PersonId);

@@ -12,6 +12,7 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer<
 {
     [BindProperty(SupportsGet = true)] public Guid Id { get; set; }
     [BindProperty(SupportsGet = true)] public string? Title { get; set; }
+    [BindProperty(SupportsGet = true)] public string Step { get; set; } = "details";
     [BindProperty] public ElectionInput Election { get; set; } = new();
     [BindProperty] public PartyListInput PartyList { get; set; } = new();
     [BindProperty] public Guid EditPartyListId { get; set; }
@@ -42,6 +43,7 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer<
 
     public async Task OnGetAsync(CancellationToken ct)
     {
+        Step = NormalizeStep(Step);
         if (TempData["SuccessMessage"] is string message) SuccessMessage = message;
         await LoadPublicAsync(ct, populateForm: true);
     }
@@ -52,28 +54,28 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer<
             var updated = await managed.UpdateAsync(Id, Election, ct);
             Title = updated.Title;
             SuccessMessage = localizer["Election details updated."];
-        }, ct);
+        }, ct, "details");
 
     public async Task<IActionResult> OnPostPartyListAsync(CancellationToken ct) =>
         await ExecuteAsync(PartyList, nameof(PartyList), async () =>
         {
             CreatedPartyList = await managed.AddPartyListAsync(Id, PartyList, ct);
             SuccessMessage = localizer["Party list added. List ID: {0}", CreatedPartyList.Id];
-        }, ct);
+        }, ct, "ballot");
 
     public async Task<IActionResult> OnPostUpdatePartyListAsync(CancellationToken ct) =>
         await ExecuteAsync(EditPartyList, nameof(EditPartyList), async () =>
         {
             await managed.UpdatePartyListAsync(Id, EditPartyListId, EditPartyList, ct);
             SuccessMessage = localizer["Party list updated."];
-        }, ct);
+        }, ct, "ballot");
 
     public async Task<IActionResult> OnPostDeletePartyListAsync(CancellationToken ct) =>
         await ExecuteActionAsync(async () =>
         {
             await managed.DeletePartyListAsync(Id, EditPartyListId, ct);
             SuccessMessage = localizer["Party list and its draft candidates deleted."];
-        }, ct);
+        }, ct, "ballot");
 
     public async Task<IActionResult> OnPostCandidateAsync(CancellationToken ct) =>
         await ExecuteAsync(Candidate, nameof(Candidate), async () =>
@@ -81,49 +83,49 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer<
             if (PartyListId == Guid.Empty) throw new InvalidOperationException(localizer["Party list is required."]);
             await managed.AddCandidateAsync(Id, PartyListId, Candidate, ct);
             SuccessMessage = localizer["Candidate added."];
-        }, ct);
+        }, ct, "ballot");
 
     public async Task<IActionResult> OnPostUpdateCandidateAsync(CancellationToken ct) =>
         await ExecuteAsync(EditCandidate, nameof(EditCandidate), async () =>
         {
             await managed.UpdateCandidateAsync(Id, EditCandidatePartyListId, EditCandidateId, EditCandidate, ct);
             SuccessMessage = localizer["Candidate updated."];
-        }, ct);
+        }, ct, "ballot");
 
     public async Task<IActionResult> OnPostDeleteCandidateAsync(CancellationToken ct) =>
         await ExecuteActionAsync(async () =>
         {
             await managed.DeleteCandidateAsync(Id, EditCandidatePartyListId, EditCandidateId, ct);
             SuccessMessage = localizer["Candidate deleted."];
-        }, ct);
+        }, ct, "ballot");
 
     public async Task<IActionResult> OnPostOptionAsync(CancellationToken ct) =>
         await ExecuteAsync(ReferendumOption, nameof(ReferendumOption), async () =>
         {
             await managed.AddOptionAsync(Id, ReferendumOption, ct);
             SuccessMessage = localizer["Referendum option added."];
-        }, ct);
+        }, ct, "ballot");
 
     public async Task<IActionResult> OnPostUpdateOptionAsync(CancellationToken ct) =>
         await ExecuteAsync(EditOption, nameof(EditOption), async () =>
         {
             await managed.UpdateOptionAsync(Id, EditOptionId, EditOption, ct);
             SuccessMessage = localizer["Referendum option updated."];
-        }, ct);
+        }, ct, "ballot");
 
     public async Task<IActionResult> OnPostDeleteOptionAsync(CancellationToken ct) =>
         await ExecuteActionAsync(async () =>
         {
             await managed.DeleteOptionAsync(Id, EditOptionId, ct);
             SuccessMessage = localizer["Referendum option deleted."];
-        }, ct);
+        }, ct, "ballot");
 
     public async Task<IActionResult> OnPostVoterAsync(CancellationToken ct) =>
         await ExecuteAsync(Voter, nameof(Voter), async () =>
         {
             await managed.AddVoterAsync(Id, Voter, ct);
             SuccessMessage = localizer["Voter added to the roll."];
-        }, ct);
+        }, ct, "voters");
 
     public async Task<IActionResult> OnPostBulkVotersAsync(CancellationToken ct) =>
         await ExecuteActionAsync(async () =>
@@ -131,21 +133,21 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer<
             var personIds = ParsePersonIds(BulkVoterPersonIds);
             var added = await managed.BulkAddVotersAsync(Id, new BulkVoterRollInput(personIds), ct);
             SuccessMessage = localizer["Added {0} new voter-roll entries.", added];
-        }, ct);
+        }, ct, "voters");
 
     public async Task<IActionResult> OnPostRemoveVoterAsync(Guid personId, CancellationToken ct) =>
         await ExecuteActionAsync(async () =>
         {
             await managed.RemoveVoterAsync(Id, personId, ct);
             SuccessMessage = localizer["Voter removed from the roll."];
-        }, ct);
+        }, ct, "voters");
 
     public async Task<IActionResult> OnPostInvitationAsync(CancellationToken ct) =>
         await ExecuteAsync(Invitation, nameof(Invitation), async () =>
         {
             CreatedInvitation = await managed.CreateInvitationAsync(Id, Invitation, ct);
             SuccessMessage = localizer["Invitation created. Its token is shown below once."];
-        }, ct);
+        }, ct, "invitations");
 
     public async Task<IActionResult> OnPostBulkInvitationsAsync(CancellationToken ct) =>
         await ExecuteActionAsync(async () =>
@@ -153,14 +155,14 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer<
             var items = ParseInvitations(BulkInvitationLines);
             CreatedInvitations = await managed.BulkCreateInvitationsAsync(Id, new BulkInvitationInput(items), ct);
             SuccessMessage = localizer["Created {0} invitations. Their tokens are shown below once.", CreatedInvitations.Count];
-        }, ct);
+        }, ct, "invitations");
 
     public async Task<IActionResult> OnPostRevokeInvitationAsync(Guid invitationId, CancellationToken ct) =>
         await ExecuteActionAsync(async () =>
         {
             await managed.RevokeInvitationAsync(Id, invitationId, ct);
             SuccessMessage = localizer["Invitation revoked."];
-        }, ct);
+        }, ct, "invitations");
 
     public async Task<IActionResult> OnPostTransitionAsync(CancellationToken ct) =>
         await ExecuteAsync(Transition, nameof(Transition), async () =>
@@ -170,10 +172,16 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer<
             var updated = await managed.TransitionAsync(Id, Transition, ct);
             Title = updated.Title;
             SuccessMessage = localizer["Election moved to {0}.", ElectionDisplay.Status(updated.Status, localizer)];
-        }, ct);
+        }, ct, "publish");
 
-    private async Task<IActionResult> ExecuteAsync(object input, string prefix, Func<Task> action, CancellationToken ct)
+    private async Task<IActionResult> ExecuteAsync(
+        object input,
+        string prefix,
+        Func<Task> action,
+        CancellationToken ct,
+        string step)
     {
+        Step = step;
         ModelState.Clear();
         if (!TryValidateModel(input, prefix))
         {
@@ -185,9 +193,9 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer<
         {
             await action();
         }
-        catch (ElectionApiException)
+        catch (ElectionApiException exception)
         {
-            ErrorMessage = localizer["The requested election change could not be completed. Check the data and try again."];
+            ErrorMessage = exception.Message;
         }
         catch (InvalidOperationException exception)
         {
@@ -202,16 +210,17 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer<
         return Page();
     }
 
-    private async Task<IActionResult> ExecuteActionAsync(Func<Task> action, CancellationToken ct)
+    private async Task<IActionResult> ExecuteActionAsync(Func<Task> action, CancellationToken ct, string step)
     {
+        Step = step;
         ModelState.Clear();
         try
         {
             await action();
         }
-        catch (ElectionApiException)
+        catch (ElectionApiException exception)
         {
-            ErrorMessage = localizer["The requested election change could not be completed. Check the data and try again."];
+            ErrorMessage = exception.Message;
         }
         catch (InvalidOperationException exception)
         {
@@ -302,4 +311,8 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer<
     private static IEnumerable<string> Lines(string input) => input
         .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
         .Where(line => line.Length != 0);
+
+    private static string NormalizeStep(string? step) => step is "details" or "ballot" or "voters" or "invitations" or "publish"
+        ? step
+        : "details";
 }

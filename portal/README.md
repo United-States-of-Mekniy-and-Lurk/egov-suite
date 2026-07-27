@@ -19,7 +19,18 @@ same output can be supplied as a generated ConfigMap at `Catalog__Path`.
 ## Authentication
 
 Configure `Oidc__Authority`, `Oidc__ClientId`, and `Oidc__ClientSecret`. The Keycloak client needs the
-standard authorization-code redirect URI `/signin-oidc`; it does not require any roles.
+standard authorization-code redirect URI `/signin-oidc`; it does not require any roles. Its access
+tokens must include the `citizen-service` and `organization-registry` audiences used by the personal
+overview. Reconcile the audience mappers declared in `portal.gov.yaml` with:
+
+```sh
+dotnet run --project gov-cli/Gov.Cli/Gov.Cli.csproj -- plan portal/portal.gov.yaml
+dotnet run --project gov-cli/Gov.Cli/Gov.Cli.csproj -- apply portal/portal.gov.yaml
+```
+
+These commands require the `GOV_KEYCLOAK_URL`, `GOV_KEYCLOAK_REALM`, `GOV_KEYCLOAK_CLIENT_ID`, and
+`GOV_KEYCLOAK_CLIENT_SECRET` environment variables described in `gov-cli/README.md`. Users must sign
+in again after audience mappers change because existing access tokens retain their original audience.
 
 ## Kubernetes and Argo CD
 

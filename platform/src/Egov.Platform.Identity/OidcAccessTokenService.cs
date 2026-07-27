@@ -1,5 +1,7 @@
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -17,7 +19,9 @@ public sealed class OidcAccessTokenService(
     IConfiguration configuration,
     ILogger<OidcAccessTokenService> logger)
 {
+    private static readonly TimeSpan RefreshHandoffLifetime = TimeSpan.FromMinutes(2);
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
+    private readonly Dictionary<string, RefreshResult> _refreshHandoffs = new(StringComparer.Ordinal);
 
     public async Task<string?> GetAccessTokenAsync(CancellationToken ct)
     {
@@ -58,6 +62,14 @@ public sealed class OidcAccessTokenService(
             return null;
         }
 
+        var refreshTokenKey = HashToken(refreshToken);
+        if (TryGetRefreshHandoff(refreshTokenKey, out var handoff))
+        {
+            await StoreRefreshResultAsync(context, authentication, handoff);
+            logger.LogDebug("Reused a concurrent OIDC token refresh result");
+            return handoff.AccessToken;
+        }
+
         var options = oidcOptions.Get(OpenIdConnectDefaults.AuthenticationScheme);
         var oidcConfiguration = await options.ConfigurationManager!.GetConfigurationAsync(ct);
         using var request = new HttpRequestMessage(HttpMethod.Post, oidcConfiguration.TokenEndpoint)
@@ -96,14 +108,33 @@ public sealed class OidcAccessTokenService(
             return null;
         }
 
+        var refreshedToken = payload.RootElement.TryGetProperty("refresh_token", out var refreshTokenProperty)
+            ? refreshTokenProperty.GetString()
+            : null;
+        int? expiresIn = payload.RootElement.TryGetProperty("expires_in", out var expiresInProperty) &&
+            expiresInProperty.TryGetInt32(out var parsedExpiresIn)
+                ? parsedExpiresIn
+                : null;
+        var result = new RefreshResult(accessToken, refreshedToken, expiresIn, DateTimeOffset.UtcNow);
+        _refreshHandoffs[refreshTokenKey] = result;
+        RemoveExpiredRefreshHandoffs(result.RefreshedAt);
+        await StoreRefreshResultAsync(context, authentication, result);
+        logger.LogInformation("Refreshed the OIDC access token");
+        return accessToken;
+    }
+
+    private static async Task StoreRefreshResultAsync(
+        HttpContext context,
+        AuthenticateResult authentication,
+        RefreshResult result)
+    {
+        var properties = authentication.Properties!;
         var tokens = properties.GetTokens().ToList();
-        SetToken(tokens, "access_token", accessToken);
-        if (payload.RootElement.TryGetProperty("refresh_token", out var refreshTokenProperty))
-            SetToken(tokens, "refresh_token", refreshTokenProperty.GetString());
-        if (payload.RootElement.TryGetProperty("expires_in", out var expiresInProperty) &&
-            expiresInProperty.TryGetInt32(out var expiresIn))
+        SetToken(tokens, "access_token", result.AccessToken);
+        SetToken(tokens, "refresh_token", result.RefreshToken);
+        if (result.ExpiresIn.HasValue)
         {
-            SetToken(tokens, "expires_at", DateTimeOffset.UtcNow.AddSeconds(expiresIn)
+            SetToken(tokens, "expires_at", result.RefreshedAt.AddSeconds(result.ExpiresIn.Value)
                 .ToString("o", CultureInfo.InvariantCulture));
         }
 
@@ -112,9 +143,39 @@ public sealed class OidcAccessTokenService(
             CookieAuthenticationDefaults.AuthenticationScheme,
             authentication.Principal!,
             properties);
-        logger.LogInformation("Refreshed the OIDC access token");
-        return accessToken;
     }
+
+    private bool TryGetRefreshHandoff(string refreshTokenKey, out RefreshResult result)
+    {
+        if (_refreshHandoffs.TryGetValue(refreshTokenKey, out result!) &&
+            DateTimeOffset.UtcNow - result.RefreshedAt <= RefreshHandoffLifetime)
+        {
+            return true;
+        }
+
+        _refreshHandoffs.Remove(refreshTokenKey);
+        return false;
+    }
+
+    private void RemoveExpiredRefreshHandoffs(DateTimeOffset now)
+    {
+        foreach (var key in _refreshHandoffs
+                     .Where(entry => now - entry.Value.RefreshedAt > RefreshHandoffLifetime)
+                     .Select(entry => entry.Key)
+                     .ToArray())
+        {
+            _refreshHandoffs.Remove(key);
+        }
+    }
+
+    private static string HashToken(string token) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+
+    private sealed record RefreshResult(
+        string AccessToken,
+        string? RefreshToken,
+        int? ExpiresIn,
+        DateTimeOffset RefreshedAt);
 
     private static bool NeedsRefresh(string? accessToken)
     {

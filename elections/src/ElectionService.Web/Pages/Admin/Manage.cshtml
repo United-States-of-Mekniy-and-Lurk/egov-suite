@@ -44,9 +44,18 @@
     }
     else
     {
+    <nav class="setup-steps" aria-label="@L["Election setup"]">
+        <a class="@(Model.Step == "details" ? "active" : null)" asp-route-id="@Model.Id" asp-route-title="@Model.Title" asp-route-step="details">@L["1. Details"]</a>
+        <a class="@(Model.Step == "ballot" ? "active" : null)" asp-route-id="@Model.Id" asp-route-title="@Model.Title" asp-route-step="ballot">@L["2. Ballot"]</a>
+        <a class="@(Model.Step == "voters" ? "active" : null)" asp-route-id="@Model.Id" asp-route-title="@Model.Title" asp-route-step="voters">@L["3. Voter roll"]</a>
+        <a class="@(Model.Step == "invitations" ? "active" : null)" asp-route-id="@Model.Id" asp-route-title="@Model.Title" asp-route-step="invitations">@L["4. Voting links"]</a>
+        <a class="@(Model.Step == "publish" ? "active" : null)" asp-route-id="@Model.Id" asp-route-title="@Model.Title" asp-route-step="publish">@L["5. Review and publish"]</a>
+    </nav>
     <div class="admin-sections">
-        <details>
-            <summary>@L["Election details"]</summary>
+        @if (Model.Step == "details")
+        {
+        <section class="setup-section">
+            <h2>@L["Election details"]</h2>
             <form method="post" asp-page-handler="Update" class="admin-form compact-form">
                 <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
                 <div class="field"><label asp-for="Election.Slug">@L["Record slug"]</label><input asp-for="Election.Slug" /></div>
@@ -58,10 +67,14 @@
                 <div class="field"><label asp-for="Election.EligibleVoterCount">@L["Eligible voters (optional)"]</label><input asp-for="Election.EligibleVoterCount" type="number" min="0" /></div>
                 <button class="primary-button" type="submit">@L["Update details"]</button>
             </form>
-        </details>
+        </section>
+        }
 
-        <details open>
-            <summary>@L["Party lists and candidates"]</summary>
+        @if (Model.Step == "ballot" && Model.PublicElection?.Type == "PartyList")
+        {
+        <section class="setup-section">
+            <h2>@L["Party lists and candidates"]</h2>
+            <p class="section-intro">@L["Use a registered political-party organization ID, or leave it blank and enter an independent party name."]</p>
             @if (Model.PublicElection is not null && Model.PublicElection.PartyLists.Count > 0)
             {
                 <div class="resource-list">
@@ -73,6 +86,8 @@
                                 <input type="hidden" name="EditPartyListId" value="@party.Id" />
                                 <div class="form-grid">
                                     <div class="field"><label>@L["Party organization ID"]</label><input name="EditPartyList.PartyOrganizationId" value="@party.PartyOrganizationId" /></div>
+                                    <div class="field"><label>@L["Independent party name"]</label><input name="EditPartyList.PartyName" value="@(party.PartyOrganizationId is null ? party.PartyName : null)" /></div>
+                                    <div class="field"><label>@L["Registration number (optional)"]</label><input name="EditPartyList.PartyRegistrationNumber" value="@(party.PartyOrganizationId is null ? party.PartyRegistrationNumber : null)" /></div>
                                     <div class="field"><label>@L["List name"]</label><input name="EditPartyList.ListName" value="@party.ListName" /></div>
                                     <div class="field"><label>@L["Sort order"]</label><input name="EditPartyList.SortOrder" value="@party.SortOrder" type="number" /></div>
                                 </div>
@@ -112,26 +127,31 @@
                 <form method="post" asp-page-handler="PartyList" class="admin-form compact-form">
                     <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
                     <h3>@L["Add party list"]</h3>
-                    <div class="field"><label asp-for="PartyList.PartyOrganizationId">@L["Party organization ID"]</label><input asp-for="PartyList.PartyOrganizationId" /></div>
-                    <div class="field"><label asp-for="PartyList.ListName">@L["List name"]</label><input asp-for="PartyList.ListName" /></div>
+                    <div class="field"><label asp-for="PartyList.PartyOrganizationId">@L["Registered party organization ID (optional)"]</label><input asp-for="PartyList.PartyOrganizationId" /><span asp-validation-for="PartyList.PartyOrganizationId"></span></div>
+                    <div class="field"><label asp-for="PartyList.PartyName">@L["Independent party name"]</label><input asp-for="PartyList.PartyName" /><span asp-validation-for="PartyList.PartyName"></span></div>
+                    <div class="field"><label asp-for="PartyList.PartyRegistrationNumber">@L["Registration number (optional)"]</label><input asp-for="PartyList.PartyRegistrationNumber" /><span asp-validation-for="PartyList.PartyRegistrationNumber"></span></div>
+                    <div class="field"><label asp-for="PartyList.ListName">@L["List name"]</label><input asp-for="PartyList.ListName" /><span asp-validation-for="PartyList.ListName"></span></div>
                     <div class="field"><label asp-for="PartyList.SortOrder">@L["Sort order"]</label><input asp-for="PartyList.SortOrder" type="number" /></div>
                     <button class="secondary-button" type="submit">@L["Add party list"]</button>
                 </form>
                 <form method="post" asp-page-handler="Candidate" class="admin-form compact-form">
                     <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
                     <h3>@L["Add candidate"]</h3>
-                    <div class="field"><label asp-for="PartyListId">@L["Party list"]</label><select asp-for="PartyListId"><option value="">@L["Select a party list"]</option>@if (Model.PublicElection is not null) { @foreach (var party in Model.PublicElection.PartyLists.OrderBy(item => item.SortOrder)) { <option value="@party.Id">@party.ListName</option> } }</select></div>
-                    <div class="field"><label asp-for="Candidate.PersonId">@L["Person ID"]</label><input asp-for="Candidate.PersonId" /></div>
-                    <div class="field"><label asp-for="Candidate.DisplayName">@L["Display name for text candidate"]</label><input asp-for="Candidate.DisplayName" /></div>
+                    <div class="field"><label asp-for="PartyListId">@L["Party list"]</label><select asp-for="PartyListId"><option value="">@L["Select a party list"]</option>@if (Model.PublicElection is not null) { @foreach (var party in Model.PublicElection.PartyLists.OrderBy(item => item.SortOrder)) { <option value="@party.Id">@party.ListName</option> } }</select><span asp-validation-for="PartyListId"></span></div>
+                    <div class="field"><label asp-for="Candidate.PersonId">@L["Registered person ID (optional)"]</label><input asp-for="Candidate.PersonId" /><span asp-validation-for="Candidate.PersonId"></span></div>
+                    <div class="field"><label asp-for="Candidate.DisplayName">@L["Candidate display name"]</label><input asp-for="Candidate.DisplayName" /><span asp-validation-for="Candidate.DisplayName"></span></div>
                     <div class="field"><label asp-for="Candidate.Description">@L["Description"]</label><textarea asp-for="Candidate.Description" rows="2"></textarea></div>
                     <div class="field"><label asp-for="Candidate.Position">@L["Position"]</label><input asp-for="Candidate.Position" type="number" /></div>
                     <button class="secondary-button" type="submit">@L["Add candidate"]</button>
                 </form>
             </div>
-        </details>
+        </section>
+        }
 
-        <details>
-            <summary>@L["Referendum options"]</summary>
+        @if (Model.Step == "ballot" && Model.PublicElection?.Type == "Referendum")
+        {
+        <section class="setup-section">
+            <h2>@L["Referendum options"]</h2>
             @if (Model.PublicElection is not null && Model.PublicElection.ReferendumOptions.Count > 0)
             {
                 <div class="resource-list">
@@ -163,10 +183,13 @@
                 <div class="field"><label asp-for="ReferendumOption.Description">@L["Description"]</label><textarea asp-for="ReferendumOption.Description" rows="3"></textarea></div>
                 <button class="secondary-button" type="submit">@L["Add option"]</button>
             </form>
-        </details>
+        </section>
+        }
 
-        <details>
-            <summary>@L["Voter roll"]</summary>
+        @if (Model.Step == "voters")
+        {
+        <section class="setup-section">
+            <h2>@L["Voter roll"]</h2>
             @if (Model.VoterRoll.Count > 0)
             {
                 <div class="resource-list">
@@ -196,10 +219,14 @@
                     <button class="secondary-button" type="submit">@L["Add voter list"]</button>
                 </form>
             </div>
-        </details>
+        </section>
+        }
 
-        <details>
-            <summary>@L["Invitations"]</summary>
+        @if (Model.Step == "invitations")
+        {
+        <section class="setup-section">
+            <h2>@L["Anonymous one-use voting links"]</h2>
+            <p class="section-intro">@L["Leave Person ID empty to create a link that is not associated with a citizen. Each link can submit one ballot only."]</p>
             @if (Model.Invitations.Count > 0)
             {
                 <div class="resource-list">
@@ -222,8 +249,8 @@
             <div class="paired-forms">
                 <form method="post" asp-page-handler="Invitation" class="admin-form compact-form">
                     <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
-                    <h3>@L["Create invitation"]</h3>
-                    <div class="field"><label asp-for="Invitation.PersonId">@L["Person ID"]</label><input asp-for="Invitation.PersonId" /></div>
+                    <h3>@L["Create one-use voting link"]</h3>
+                    <div class="field"><label asp-for="Invitation.PersonId">@L["Person ID (optional)"]</label><input asp-for="Invitation.PersonId" /></div>
                     <div class="field"><label asp-for="Invitation.Label">@L["Label"]</label><input asp-for="Invitation.Label" /></div>
                     <button class="secondary-button" type="submit">@L["Create invitation"]</button>
                 </form>
@@ -234,10 +261,13 @@
                     <button class="secondary-button" type="submit">@L["Create invitations"]</button>
                 </form>
             </div>
-        </details>
+        </section>
+        }
 
-        <details>
-            <summary>@L["Election state"]</summary>
+        @if (Model.Step == "publish")
+        {
+        <section class="setup-section">
+            <h2>@L["Review and publish"]</h2>
             <form method="post" asp-page-handler="Transition" class="admin-form compact-form narrow-form">
                 <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
                 <div class="field"><label asp-for="Transition.Status">@L["Move to"]</label><select asp-for="Transition.Status"><option value="Published">@L["Status_Published"]</option><option value="Closed">@L["Status_Closed"]</option><option value="Finalized">@L["Status_Finalized"]</option><option value="Archived">@L["Status_Archived"]</option></select></div>
@@ -245,7 +275,8 @@
                 <div class="field checkbox-field"><label><input asp-for="ConfirmPublish" /> @L["I confirm this election is ready to publish"]</label></div>
                 <button class="primary-button" type="submit">@L["Change state"]</button>
             </form>
-        </details>
+        </section>
+        }
     </div>
     }
 </div>

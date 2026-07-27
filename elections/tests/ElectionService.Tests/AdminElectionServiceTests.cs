@@ -92,6 +92,45 @@ public sealed class AdminElectionServiceTests
     }
 
     [Fact]
+    public async Task AddPartyListAndCandidate_AllowsIndependentIdentities()
+    {
+        await using var database = await ElectionTestDatabase.CreateAsync();
+        var (election, _) = await database.SeedPartyElectionAsync(DateTime.UtcNow, status: ElectionStatus.Draft);
+        var service = CreateService(database.Context);
+
+        var partyList = await service.AddPartyListAsync(
+            election.Id,
+            new PartyListInput(null, "Independent Civic List", null, "Central list", 2),
+            default);
+        var candidate = await service.AddCandidateAsync(
+            election.Id,
+            partyList.Id,
+            new CandidateInput(null, "Alex Example", "Independent candidate", 1),
+            default);
+
+        Assert.Null(partyList.PartyOrganizationId);
+        Assert.Equal("Independent Civic List", partyList.PartyName);
+        Assert.Equal("Alex Example", candidate.DisplayName);
+        Assert.Null((await database.Context.Candidates.SingleAsync(item => item.Id == candidate.Id)).PersonId);
+    }
+
+    [Fact]
+    public async Task AddPartyList_RejectsEmptyOrganizationIdExplicitly()
+    {
+        await using var database = await ElectionTestDatabase.CreateAsync();
+        var (election, _) = await database.SeedPartyElectionAsync(DateTime.UtcNow, status: ElectionStatus.Draft);
+        var service = CreateService(database.Context);
+
+        var exception = await Assert.ThrowsAsync<ElectionValidationException>(() =>
+            service.AddPartyListAsync(
+                election.Id,
+                new PartyListInput(Guid.Empty, null, null, "Invalid list", 2),
+                default));
+
+        Assert.Equal("Party organization ID cannot be empty.", exception.Message);
+    }
+
+    [Fact]
     public async Task ImportHistorical_CreatesArchivedAggregateRecordWithoutVotingRows()
     {
         await using var database = await ElectionTestDatabase.CreateAsync();
