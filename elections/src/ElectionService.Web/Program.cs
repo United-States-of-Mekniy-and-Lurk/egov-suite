@@ -11,13 +11,14 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.Warning);
-builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+var translationsPath = builder.Configuration["Translations:Path"]
+    ?? Path.Combine(builder.Environment.ContentRootPath, "..", "..", "..", "translations");
+builder.Services.AddMkluRequestLocalization(builder.Configuration);
+builder.Services.AddMkluJsonLocalization(translationsPath);
 builder.Services.AddRazorPages()
     .AddViewLocalization()
-    .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = (_, factory) =>
-        factory.Create(typeof(SharedResource)));
+    .AddDataAnnotationsLocalization();
 builder.Services.AddHealthChecks();
-builder.Services.AddMkluRequestLocalization(builder.Configuration);
 
 var keysPath = builder.Configuration["DataProtection:KeysPath"];
 if (!string.IsNullOrWhiteSpace(keysPath))

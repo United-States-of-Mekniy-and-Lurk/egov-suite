@@ -8,7 +8,7 @@ using Microsoft.Extensions.Localization;
 namespace ElectionService.Web.Pages.Admin;
 
 [Authorize(Policy = "RequireAdmin")]
-public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer<SharedResource> localizer) : PageModel
+public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer localizer) : PageModel
 {
     [BindProperty(SupportsGet = true)] public Guid Id { get; set; }
     [BindProperty(SupportsGet = true)] public string? Title { get; set; }
@@ -41,8 +41,8 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer<
     public string? SuccessMessage { get; private set; }
     public string? ErrorMessage { get; private set; }
 
-    public string InviteUrl(string token) =>
-        $"{Request.Scheme}://{Request.Host}/Invite/{Id}/{Uri.EscapeDataString(token)}";
+    public string? InviteUrl(string? token) =>
+        string.IsNullOrEmpty(token) ? null : $"{Request.Scheme}://{Request.Host}/Invite/{Id}/{Uri.EscapeDataString(token)}";
 
     public async Task OnGetAsync(CancellationToken ct)
     {

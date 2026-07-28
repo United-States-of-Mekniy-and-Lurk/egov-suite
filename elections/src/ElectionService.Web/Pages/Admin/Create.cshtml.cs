@@ -9,7 +9,7 @@ using Microsoft.Extensions.Localization;
 namespace ElectionService.Web.Pages.Admin;
 
 [Authorize(Policy = "RequireAdmin")]
-public sealed class CreateModel(ManagedElectionClient elections, IStringLocalizer<SharedResource> localizer) : PageModel
+public sealed class CreateModel(ManagedElectionClient elections, IStringLocalizer localizer) : PageModel
 {
     [BindProperty]
     public ElectionInput Input { get; set; } = new()

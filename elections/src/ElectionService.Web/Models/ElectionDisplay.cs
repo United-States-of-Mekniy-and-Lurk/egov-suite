@@ -7,13 +7,13 @@ public static partial class ElectionDisplay
 {
     public static string Words(string value) => PascalCaseBoundary().Replace(value, " $1");
 
-    public static string Status(string value, IStringLocalizer<SharedResource> localizer) =>
+    public static string Status(string value, IStringLocalizer localizer) =>
         localizer[$"Status_{value}"];
 
-    public static string Type(string value, IStringLocalizer<SharedResource> localizer) =>
+    public static string Type(string value, IStringLocalizer localizer) =>
         localizer[$"Type_{value}"];
 
-    public static string Eligibility(string mode, IStringLocalizer<SharedResource> localizer) => mode switch
+    public static string Eligibility(string mode, IStringLocalizer localizer) => mode switch
     {
         "AllActiveCitizens" => localizer["Eligibility_AllActiveCitizens"],
         "SpecificVoterRoll" => localizer["Eligibility_SpecificVoterRoll"],

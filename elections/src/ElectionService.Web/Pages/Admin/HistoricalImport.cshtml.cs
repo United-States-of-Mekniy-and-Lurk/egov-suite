@@ -11,7 +11,7 @@ namespace ElectionService.Web.Pages.Admin;
 [Authorize(Policy = "RequireAdmin")]
 public sealed class HistoricalImportModel(
     ManagedElectionClient elections,
-    IStringLocalizer<SharedResource> localizer) : PageModel
+    IStringLocalizer localizer) : PageModel
 {
     [BindProperty] public HistoricalImportForm Input { get; set; } = new();
     public string? ErrorMessage { get; private set; }

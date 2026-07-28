@@ -38,8 +38,8 @@
                 <dl class="record-list">
                     <div><dt>@L["Type"]</dt><dd>@ElectionDisplay.Type(election.Type, L)</dd></div>
                     <div><dt>@L["Eligibility"]</dt><dd>@ElectionDisplay.Eligibility(election.EligibilityMode, L)</dd></div>
-                    <div><dt>@L["Voting starts"]</dt><dd>@election.VotingStartsAt.ToString("d MMMM yyyy, HH:mm") UTC · @ElectionInput.UtcToPrague(election.VotingStartsAt).ToString("d MMMM yyyy, HH:mm") Prague</dd></div>
-                    <div><dt>@L["Voting ends"]</dt><dd>@election.VotingEndsAt.ToString("d MMMM yyyy, HH:mm") UTC · @ElectionInput.UtcToPrague(election.VotingEndsAt).ToString("d MMMM yyyy, HH:mm") Prague</dd></div>
+                    <div><dt>@L["Voting starts"]</dt><dd>@ElectionInput.UtcToPrague(election.VotingStartsAt).ToString("d MMMM yyyy, HH:mm")</dd></div>
+                    <div><dt>@L["Voting ends"]</dt><dd>@ElectionInput.UtcToPrague(election.VotingEndsAt).ToString("d MMMM yyyy, HH:mm")</dd></div>
                     @if (!string.IsNullOrWhiteSpace(election.TerritoryCode))
                     {
                         <div><dt>@L["Territory"]</dt><dd>@election.TerritoryCode</dd></div>

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Localization;
 
 namespace ElectionService.Web.Pages.Invite;
 
-public sealed class VoteModel(InvitationElectionClient invitations, IStringLocalizer<SharedResource> localizer) : PageModel
+public sealed class VoteModel(InvitationElectionClient invitations, IStringLocalizer localizer) : PageModel
 {
     public ElectionView? Election { get; private set; }
     public InvitationDetail? Invitation { get; private set; }

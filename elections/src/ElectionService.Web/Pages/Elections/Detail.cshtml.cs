@@ -9,7 +9,7 @@ namespace ElectionService.Web.Pages.Elections;
 public sealed class DetailModel(
     PublicElectionClient publicElections,
     ManagedElectionClient managedElections,
-    IStringLocalizer<SharedResource> localizer) : PageModel
+    IStringLocalizer localizer) : PageModel
 {
     public ElectionView? Election { get; private set; }
     public OfficialElectionRecordView? OfficialRecord { get; private set; }

@@ -269,7 +269,8 @@
                         <div class="resource-row invitation-row">
                             <div>
                                 <strong>@(invitation.Label ?? invitation.PersonId?.ToString() ?? L["Unlabelled invitation"])</strong>
-                                <code class="invite-link">@Model.InviteUrl(invitation.Token)</code>
+                                @{ var url = Model.InviteUrl(invitation.Token); }
+                                @if (url is not null) { <code class="invite-link">@url</code> }
                                 <p class="identifier">@status · @L["Created {0}", invitation.CreatedAt.ToString("g")]</p>
                             </div>
                             @if (invitation.UsedOn is null && invitation.RevokedAt is null)
