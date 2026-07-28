@@ -5,7 +5,7 @@ image:
   repository: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-portal
   pullPolicy: Always
   # Automatically updated by the helm-release workflow after a successful push to main.
-  tag: "sha-07dbb1b"
+  tag: "sha-4db23a1"
 serviceAccount:
   create: true
   annotations: {}
