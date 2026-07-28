@@ -27,4 +27,29 @@ public sealed class PublicElectionClient(HttpClient httpClient)
 
     public async Task<IReadOnlyList<ResultView>> ResultsAsync(Guid electionId, CancellationToken ct) =>
         await httpClient.GetFromJsonAsync<List<ResultView>>($"/public/elections/{electionId}/results", ct) ?? [];
+
+    public async Task<TabularResultsView?> TabularResultsAsync(Guid electionId, CancellationToken ct)
+    {
+        using var response = await httpClient.GetAsync($"/public/elections/{electionId}/results/tabular", ct);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        if (!response.IsSuccessStatusCode) throw await ElectionApiException.FromResponseAsync(response, ct);
+        return await response.Content.ReadFromJsonAsync<TabularResultsView>(cancellationToken: ct);
+    }
+
+    public async Task<ReceiptVerificationResult?> VerifyReceiptAsync(Guid electionId, string receipt, CancellationToken ct)
+    {
+        using var response = await httpClient.GetAsync(
+            $"/public/elections/{electionId}/verify-receipt?receipt={Uri.EscapeDataString(receipt)}", ct);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        if (!response.IsSuccessStatusCode) throw await ElectionApiException.FromResponseAsync(response, ct);
+        return await response.Content.ReadFromJsonAsync<ReceiptVerificationResult>(cancellationToken: ct);
+    }
+
+    public async Task<CertificationView?> CertificationStatusAsync(Guid electionId, CancellationToken ct)
+    {
+        using var response = await httpClient.GetAsync($"/public/elections/{electionId}/certification", ct);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        if (!response.IsSuccessStatusCode) throw await ElectionApiException.FromResponseAsync(response, ct);
+        return await response.Content.ReadFromJsonAsync<CertificationView>(cancellationToken: ct);
+    }
 }

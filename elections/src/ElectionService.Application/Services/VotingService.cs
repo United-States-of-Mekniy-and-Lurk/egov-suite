@@ -24,11 +24,11 @@ public sealed class VotingService(
 
         var now = DateTime.UtcNow;
         var recordedOn = DateOnly.FromDateTime(now);
-        await store.SubmitBallotAsync(new SubmitBallotCommand(
+        var receiptHash = await store.SubmitBallotAsync(new SubmitBallotCommand(
             electionId, ParticipationChannel.Citizen,
             hashes.HashCitizen(electionId, actor.PersonId, election.CredentialHashKeyVersion),
             input.SelectionId, recordedOn, null, actor.PersonId), now, ct);
-        return new BallotReceipt(electionId, recordedOn);
+        return new BallotReceipt(electionId, recordedOn, receiptHash);
     }
 
     public async Task<BallotReceipt> VoteByInvitationAsync(Guid electionId, string token, VoteInput input, CancellationToken ct)
@@ -39,9 +39,9 @@ public sealed class VotingService(
             ?? throw new ElectionNotFoundException("Invitation was not found.");
         var now = DateTime.UtcNow;
         var recordedOn = DateOnly.FromDateTime(now);
-        await store.SubmitBallotAsync(new SubmitBallotCommand(
+        var receiptHash = await store.SubmitBallotAsync(new SubmitBallotCommand(
             electionId, ParticipationChannel.Invitation, tokenHash, input.SelectionId, recordedOn, invitation.Id, null),
             now, ct);
-        return new BallotReceipt(electionId, recordedOn);
+        return new BallotReceipt(electionId, recordedOn, receiptHash);
     }
 }

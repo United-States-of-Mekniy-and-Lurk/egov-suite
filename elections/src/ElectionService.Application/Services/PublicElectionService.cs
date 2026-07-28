@@ -16,7 +16,7 @@ public sealed class PublicElectionService(IElectionStore store, ICredentialHashS
     public async Task<IReadOnlyList<ResultView>> ResultsAsync(Guid electionId, CancellationToken ct)
     {
         var election = await store.GetAsync(electionId, ct) ?? throw new ElectionNotFoundException("Election was not found.");
-        if (election.Status is not (ElectionStatus.Finalized or ElectionStatus.Archived))
+        if (election.Status is not (ElectionStatus.Finalized or ElectionStatus.Certified or ElectionStatus.Archived))
             throw new ElectionNotFoundException("Election results are not available.");
         return (await store.GetResultsAsync(electionId, ct)).Select(item => new ResultView(
             item.SelectionType, item.SelectionId, item.SelectionLabel, item.TerritoryCode, item.VoteCount)).ToList();
@@ -26,7 +26,7 @@ public sealed class PublicElectionService(IElectionStore store, ICredentialHashS
     {
         var election = await store.GetPublicAsync(identifier, ct)
             ?? throw new ElectionNotFoundException("Election was not found.");
-        if (election.Status is not (ElectionStatus.Finalized or ElectionStatus.Archived))
+        if (election.Status is not (ElectionStatus.Finalized or ElectionStatus.Certified or ElectionStatus.Archived))
             throw new ElectionNotFoundException("Election official record is not available.");
 
         var results = (await store.GetResultsAsync(election.Id, ct)).Select(item => new ResultView(
@@ -69,5 +69,83 @@ public sealed class PublicElectionService(IElectionStore store, ICredentialHashS
         return new InvitationDetail(election.Id, election.Title, election.VotingStartsAt, election.VotingEndsAt,
             invitation.UsedOn is null && invitation.RevokedAt is null && election.Status == ElectionStatus.Published &&
             now >= election.VotingStartsAt && now < election.VotingEndsAt);
+    }
+
+    public async Task<IReadOnlyList<ElectionCalendarEntry>> CalendarAsync(CancellationToken ct)
+    {
+        var elections = await store.ListPublicAsync(ct);
+        return elections.Select(e => new ElectionCalendarEntry(
+            e.Id, e.Slug, e.Title, e.Type.ToString(), e.Status.ToString(),
+            e.VotingStartsAt, e.VotingEndsAt, e.TerritoryCode)).ToList();
+    }
+
+    public async Task<TabularResultsView> TabularResultsAsync(Guid electionId, CancellationToken ct)
+    {
+        var election = await store.GetAsync(electionId, ct)
+            ?? throw new ElectionNotFoundException("Election was not found.");
+
+        bool isLive;
+        int totalValidBallots;
+        int participatingVoters;
+        List<TabularResultRow> rows;
+
+        if (election.Status is ElectionStatus.Finalized or ElectionStatus.Certified or ElectionStatus.Archived)
+        {
+            isLive = false;
+            var results = await store.GetResultsAsync(electionId, ct);
+            totalValidBallots = results.Sum(r => r.VoteCount);
+            var counts = await store.GetLiveAggregateCountsAsync(electionId, ct);
+            participatingVoters = election.IsHistorical
+                ? election.HistoricalParticipatingVoterCount ?? counts.ParticipatingVoterCount
+                : counts.ParticipatingVoterCount;
+            rows = results.Select(r => new TabularResultRow(
+                r.SelectionLabel, r.SelectionType.ToString(), r.VoteCount,
+                totalValidBallots > 0 ? Math.Round(r.VoteCount * 100m / totalValidBallots, 2) : 0,
+                r.TerritoryCode)).ToList();
+        }
+        else if (election.Status == ElectionStatus.Published)
+        {
+            isLive = true;
+            var counts = await store.GetLiveAggregateCountsAsync(electionId, ct);
+            totalValidBallots = counts.ValidBallotCount;
+            participatingVoters = counts.ParticipatingVoterCount;
+            rows = [];
+        }
+        else
+        {
+            throw new ElectionNotFoundException("Results are not available for this election.");
+        }
+
+        var turnoutPct = election.EligibleVoterCount is > 0
+            ? Math.Round(participatingVoters * 100m / election.EligibleVoterCount.Value, 2)
+            : (decimal?)null;
+
+        return new TabularResultsView(
+            electionId, election.Title, election.Status.ToString(),
+            totalValidBallots, participatingVoters, election.EligibleVoterCount,
+            turnoutPct, isLive, DateTime.UtcNow, rows);
+    }
+
+    public async Task<ReceiptVerificationResult> VerifyReceiptAsync(Guid electionId, string receiptHash, CancellationToken ct)
+    {
+        var election = await store.GetAsync(electionId, ct)
+            ?? throw new ElectionNotFoundException("Election was not found.");
+        if (election.Status == ElectionStatus.Draft)
+            throw new ElectionNotFoundException("Election was not found.");
+        var isValid = await store.VerifyReceiptAsync(electionId, receiptHash, ct);
+        return new ReceiptVerificationResult(isValid, electionId);
+    }
+
+    public async Task<CertificationView> GetCertificationStatusAsync(Guid electionId, CancellationToken ct)
+    {
+        var election = await store.GetAsync(electionId, ct)
+            ?? throw new ElectionNotFoundException("Election was not found.");
+        if (election.Status is not (ElectionStatus.Finalized or ElectionStatus.Certified or ElectionStatus.Archived))
+            throw new ElectionNotFoundException("Certification is not available for this election.");
+        var decisions = await store.ListCertificationDecisionsAsync(electionId, ct);
+        var approvals = decisions.Count(d => d.IsApproved);
+        var rejections = decisions.Count(d => !d.IsApproved);
+        return new CertificationView(approvals, rejections, election.CertificationQuorum,
+            election.CertifiedAt.HasValue, election.CertifiedAt);
     }
 }

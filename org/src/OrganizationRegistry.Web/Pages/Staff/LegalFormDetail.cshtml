@@ -1,0 +1,45 @@
+@page "/staff/legal-forms/{code}"
+@model OrganizationRegistry.Web.Pages.Staff.LegalFormDetailModel
+@{
+    ViewData["Title"] = Model.LegalForm?.LabelEn ?? L["LegalFormDetail"];
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+}
+
+<div class="content-width workspace-page">
+    <a class="back-link" asp-page="/Staff/LegalForms">@L["BackToLegalForms"]</a>
+
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage)) { <div class="notice notice-error" role="alert">@Model.ErrorMessage</div> }
+    @if (!string.IsNullOrWhiteSpace(Model.SuccessMessage)) { <div class="notice notice-success" role="alert">@Model.SuccessMessage</div> }
+
+    @if (Model.LegalForm is not null)
+    {
+        var lf = Model.LegalForm;
+        <header class="workspace-header">
+            <div>
+                <p class="eyebrow">@lf.Code</p>
+                <h1>@(culture == "cs" ? lf.LabelCs : lf.LabelEn)</h1>
+            </div>
+            <span class="status">@(lf.IsActive ? L["Active"] : L["Inactive"])</span>
+        </header>
+
+        <section class="workspace-section">
+            <div class="section-heading compact"><h2>@L["Description"]</h2></div>
+            <form method="post" asp-page-handler="UpdateDescription" class="legal-form-editor">
+                <label><span>@L["EnglishDescription"]</span><textarea name="DescriptionEn" rows="6">@lf.DescriptionEn</textarea></label>
+                <label><span>@L["CzechDescription"]</span><textarea name="DescriptionCs" rows="6">@lf.DescriptionCs</textarea></label>
+                <button class="primary-button" type="submit">@L["SaveChanges"]</button>
+            </form>
+        </section>
+
+        @if (!string.IsNullOrWhiteSpace(lf.DescriptionEn) || !string.IsNullOrWhiteSpace(lf.DescriptionCs))
+        {
+            <section class="workspace-section">
+                <div class="section-heading compact"><h2>@L["Preview"]</h2></div>
+                <div class="legal-form-description">
+                    @if (culture == "cs" && !string.IsNullOrWhiteSpace(lf.DescriptionCs)) { <p>@lf.DescriptionCs</p> }
+                    else if (!string.IsNullOrWhiteSpace(lf.DescriptionEn)) { <p>@lf.DescriptionEn</p> }
+                </div>
+            </section>
+        }
+    }
+</div>

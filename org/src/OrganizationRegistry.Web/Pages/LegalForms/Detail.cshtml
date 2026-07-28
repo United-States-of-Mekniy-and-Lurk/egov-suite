@@ -1,0 +1,36 @@
+@page "/legal-forms/{code}"
+@model OrganizationRegistry.Web.Pages.LegalForms.DetailModel
+@{
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    ViewData["Title"] = Model.LegalForm is not null
+        ? (culture == "cs" ? Model.LegalForm.LabelCs : Model.LegalForm.LabelEn)
+        : L["LegalFormDetail"];
+}
+
+<div class="content-width detail-page">
+    <a class="back-link" asp-page="/Index">@L["BackToRegister"]</a>
+
+    @if (Model.LegalForm is null)
+    {
+        <div class="empty-state"><h1>@L["NotFound"]</h1></div>
+    }
+    else
+    {
+        var lf = Model.LegalForm;
+        <header class="record-header">
+            <div>
+                <p class="eyebrow">@L["LegalForm"] · @lf.Code</p>
+                <h1>@(culture == "cs" ? lf.LabelCs : lf.LabelEn)</h1>
+            </div>
+        </header>
+
+        var description = culture == "cs" ? (lf.DescriptionCs ?? lf.DescriptionEn) : (lf.DescriptionEn ?? lf.DescriptionCs);
+        @if (!string.IsNullOrWhiteSpace(description))
+        {
+            <section class="record-section">
+                <h2>@L["Description"]</h2>
+                <p>@description</p>
+            </section>
+        }
+    }
+</div>

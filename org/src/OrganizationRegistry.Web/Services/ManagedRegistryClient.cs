@@ -62,6 +62,9 @@ public sealed class ManagedRegistryClient(HttpClient httpClient)
     public async Task<IReadOnlyList<LegalForm>> ListLegalFormsAsync(CancellationToken ct) =>
         await GetAsync<List<LegalForm>>("/staff/legal-forms", ct) ?? [];
 
+    public Task<LegalForm?> GetLegalFormAsync(string code, CancellationToken ct) =>
+        GetAsync<LegalForm>($"/staff/legal-forms/{Uri.EscapeDataString(code)}", ct);
+
     public async Task CreateLegalFormAsync(CreateLegalFormInput input, CancellationToken ct)
     {
         using var response = await httpClient.PostAsJsonAsync("/staff/legal-forms", input, ct);
@@ -90,6 +93,18 @@ public sealed class ManagedRegistryClient(HttpClient httpClient)
         using var response = await httpClient.PostAsJsonAsync(
             $"/organizations/{organizationId}/correction-requests",
             new { fieldKey, proposedValue, reason },
+            ct);
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<IReadOnlyList<StaffOrganization>> ListStaffOrganizationsAsync(CancellationToken ct) =>
+        await GetAsync<List<StaffOrganization>>("/staff/organizations", ct) ?? [];
+
+    public async Task UpdateOrganizationDatesAsync(Guid organizationId, DateOnly? establishedOn, CancellationToken ct)
+    {
+        using var response = await httpClient.PatchAsJsonAsync(
+            $"/staff/organizations/{organizationId}/dates",
+            new { establishedOn },
             ct);
         response.EnsureSuccessStatusCode();
     }

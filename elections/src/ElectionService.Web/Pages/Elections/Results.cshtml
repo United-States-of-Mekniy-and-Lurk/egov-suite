@@ -1,0 +1,55 @@
+@page "/elections/{identifier}/results"
+@model ElectionService.Web.Pages.Elections.ResultsModel
+@{
+    ViewData["Title"] = Model.Results is not null ? $"{Model.Results.Title} — Results" : L["Results"];
+}
+
+<div class="content-width workspace-page">
+    <a class="back-link" asp-page="/Elections/Detail" asp-route-identifier="@Model.Identifier">@L["BackToElection"]</a>
+
+    @if (Model.Results is null)
+    {
+        <div class="empty-state"><h1>@L["ResultsNotAvailable"]</h1><p>@L["ResultsNotAvailableDescription"]</p></div>
+    }
+    else
+    {
+        var r = Model.Results;
+        <header class="workspace-header">
+            <div>
+                <p class="eyebrow">@r.Status @(r.IsLive ? $"· {L["LiveIntermediate"]}" : "")</p>
+                <h1>@r.Title</h1>
+            </div>
+        </header>
+
+        <section class="workspace-section">
+            <div class="section-heading compact"><h2>@L["Turnout"]</h2></div>
+            <dl class="record-list">
+                @if (r.EligibleVoters.HasValue) { <div><dt>@L["EligibleVoters"]</dt><dd>@r.EligibleVoters.Value.ToString("N0")</dd></div> }
+                <div><dt>@L["ParticipatingVoters"]</dt><dd>@r.ParticipatingVoters.ToString("N0")</dd></div>
+                <div><dt>@L["ValidBallots"]</dt><dd>@r.TotalValidBallots.ToString("N0")</dd></div>
+                @if (r.TurnoutPercentage.HasValue) { <div><dt>@L["Turnout"]</dt><dd>@r.TurnoutPercentage.Value.ToString("F2") %</dd></div> }
+            </dl>
+            <p class="muted-text">@L["Generated"] @r.GeneratedAt.ToString("yyyy-MM-dd HH:mm:ss") UTC</p>
+        </section>
+
+        @if (r.Rows.Count > 0)
+        {
+            <section class="workspace-section">
+                <div class="section-heading compact"><h2>@L["ResultsTable"]</h2></div>
+                <table class="data-table results-table">
+                    <thead><tr><th>@L["Option"]</th><th>@L["Votes"]</th><th>%</th></tr></thead>
+                    <tbody>
+                        @foreach (var row in r.Rows.OrderByDescending(x => x.VoteCount))
+                        {
+                            <tr>
+                                <td>@row.SelectionLabel</td>
+                                <td class="numeric">@row.VoteCount.ToString("N0")</td>
+                                <td class="numeric">@row.Percentage.ToString("F2") %</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+        }
+    }
+</div>

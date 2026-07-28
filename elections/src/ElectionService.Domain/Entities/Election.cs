@@ -27,6 +27,8 @@ public sealed class Election
     public DateTime? PublishedAt { get; set; }
     public DateTime? ClosedAt { get; set; }
     public DateTime? FinalizedAt { get; set; }
+    public DateTime? CertifiedAt { get; set; }
+    public int CertificationQuorum { get; set; } = 2;
     public Guid CreatedByPersonId { get; set; }
     public List<PartyList> PartyLists { get; set; } = [];
     public List<ReferendumOption> ReferendumOptions { get; set; } = [];

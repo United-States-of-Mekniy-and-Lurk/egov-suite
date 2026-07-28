@@ -24,7 +24,7 @@
             {
                 <form method="post" asp-page-handler="Update" class="legal-form-editor">
                     <input type="hidden" name="code" value="@legalForm.Code" />
-                    <div class="legal-form-code"><strong>@legalForm.Code</strong><span class="status">@(legalForm.IsActive ? L["Active"] : L["Inactive"])</span></div>
+                    <div class="legal-form-code"><strong>@legalForm.Code</strong><span class="status">@(legalForm.IsActive ? L["Active"] : L["Inactive"])</span><a asp-page="/Staff/LegalFormDetail" asp-route-code="@legalForm.Code" class="small-link">@L["EditDescription"]</a></div>
                     <label><span>@L["EnglishLabel"]</span><input name="labelEn" value="@legalForm.LabelEn" required maxlength="160" /></label>
                     <label><span>@L["CzechLabel"]</span><input name="labelCs" value="@legalForm.LabelCs" required maxlength="160" /></label>
                     <label><span>@L["SortOrder"]</span><input name="sortOrder" type="number" value="@legalForm.SortOrder" /></label>

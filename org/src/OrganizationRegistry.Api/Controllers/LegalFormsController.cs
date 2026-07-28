@@ -14,6 +14,13 @@ public sealed class LegalFormsController(LegalFormService legalForms) : Controll
     public Task<IReadOnlyList<LegalFormView>> List(CancellationToken ct) =>
         legalForms.ListAsync(activeOnly: false, ct);
 
+    [HttpGet("{code}")]
+    public async Task<ActionResult<LegalFormView>> Get(string code, CancellationToken ct)
+    {
+        var result = await legalForms.GetAsync(code, ct);
+        return result is null ? NotFound() : Ok(result);
+    }
+
     [HttpPost]
     public Task<LegalFormView> Create(CreateLegalFormInput input, CancellationToken ct) =>
         legalForms.CreateAsync(input, ct);

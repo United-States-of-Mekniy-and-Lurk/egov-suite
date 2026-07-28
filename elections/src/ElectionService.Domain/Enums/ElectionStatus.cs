@@ -6,5 +6,6 @@ public enum ElectionStatus
     Published,
     Closed,
     Finalized,
+    Certified,
     Archived
 }

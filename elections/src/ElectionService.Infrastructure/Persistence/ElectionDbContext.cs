@@ -15,6 +15,7 @@ public sealed class ElectionDbContext(DbContextOptions<ElectionDbContext> option
     public DbSet<ParticipationRecord> ParticipationRecords => Set<ParticipationRecord>();
     public DbSet<ElectionTransition> ElectionTransitions => Set<ElectionTransition>();
     public DbSet<ElectionResult> ElectionResults => Set<ElectionResult>();
+    public DbSet<CertificationDecision> CertificationDecisions => Set<CertificationDecision>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -92,8 +93,10 @@ public sealed class ElectionDbContext(DbContextOptions<ElectionDbContext> option
         {
             entity.HasKey(item => item.Id);
             entity.HasIndex(item => new { item.ElectionId, item.SelectionId, item.TerritoryCode });
+            entity.HasIndex(item => new { item.ElectionId, item.ReceiptHash }).IsUnique();
             entity.Property(item => item.SelectionType).HasConversion<string>().HasMaxLength(30);
             entity.Property(item => item.TerritoryCode).HasMaxLength(50);
+            entity.Property(item => item.ReceiptHash).HasMaxLength(128);
             entity.HasOne<Election>().WithMany().HasForeignKey(item => item.ElectionId).OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -125,6 +128,14 @@ public sealed class ElectionDbContext(DbContextOptions<ElectionDbContext> option
             entity.Property(item => item.TerritoryCode).HasMaxLength(50);
             entity.ToTable(table => table.HasCheckConstraint("CK_ElectionResults_VoteCount", "\"VoteCount\" >= 0"));
             entity.HasOne<Election>().WithMany().HasForeignKey(item => item.ElectionId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<CertificationDecision>(entity =>
+        {
+            entity.HasKey(item => item.Id);
+            entity.HasIndex(item => new { item.ElectionId, item.CertifierPersonId }).IsUnique();
+            entity.Property(item => item.Reason).HasMaxLength(2000);
+            entity.HasOne<Election>().WithMany().HasForeignKey(item => item.ElectionId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

@@ -1,18 +1,20 @@
 namespace OrganizationRegistry.Web.Models;
 
+public sealed record StaffOrganization(Guid Id, string LegalName, string RegistrationNumber, DateOnly? EstablishedOn);
+
 public sealed record Classification(string Scheme, string Code, string LabelEn, string LabelCs)
 {
     public string Label(string culture) => culture == "cs" ? LabelCs : LabelEn;
 }
 
-public sealed record LegalForm(string Code, string LabelEn, string LabelCs, bool IsActive, int SortOrder)
+public sealed record LegalForm(string Code, string LabelEn, string LabelCs, string? DescriptionEn, string? DescriptionCs, bool IsActive, int SortOrder)
 {
     public string Label(string culture) => culture == "cs" ? LabelCs : LabelEn;
 }
 
-public sealed record CreateLegalFormInput(string Code, string LabelEn, string LabelCs, int SortOrder);
+public sealed record CreateLegalFormInput(string Code, string LabelEn, string LabelCs, int SortOrder, string? DescriptionEn = null, string? DescriptionCs = null);
 
-public sealed record UpdateLegalFormInput(string LabelEn, string LabelCs, bool IsActive, int SortOrder);
+public sealed record UpdateLegalFormInput(string LabelEn, string LabelCs, bool IsActive, int SortOrder, string? DescriptionEn = null, string? DescriptionCs = null);
 
 public sealed record PublicOrganization(
     Guid Id,

@@ -1,25 +1,50 @@
 @model ElectionView
 
-<fieldset class="ballot-options">
-    <legend>@L["Select one option"]</legend>
-    @if (Model.Type == "PartyList")
-    {
-        @foreach (var list in Model.PartyLists.OrderBy(item => item.SortOrder))
+<div class="czech-ballot">
+    <div class="ballot-header">
+        <div class="ballot-title">@L["BallotPaper"]</div>
+        <div class="ballot-election-name">@Model.Title</div>
+    </div>
+
+    <fieldset class="ballot-body">
+        <legend class="sr-only">@L["Select one option"]</legend>
+        @if (Model.Type == "PartyList")
         {
-            <label>
-                <input type="radio" name="Vote.SelectionId" value="@list.Id" required />
-                <span><strong>@list.ListName</strong><small>@list.PartyName</small></span>
-            </label>
+            @foreach (var list in Model.PartyLists.OrderBy(item => item.SortOrder))
+            {
+                <label class="ballot-party-card">
+                    <input type="radio" name="Vote.SelectionId" value="@list.Id" required />
+                    <div class="ballot-party-content">
+                        <div class="ballot-party-header">
+                            <span class="ballot-party-number">@list.SortOrder</span>
+                            <span class="ballot-party-name">@list.ListName</span>
+                        </div>
+                        <div class="ballot-candidate-list">
+                            @foreach (var candidate in list.Candidates.Where(c => c.WithdrawnAt == null).OrderBy(c => c.Position))
+                            {
+                                <span class="ballot-candidate">@candidate.Position. @candidate.DisplayName</span>
+                            }
+                            @foreach (var candidate in list.Candidates.Where(c => c.WithdrawnAt != null).OrderBy(c => c.Position))
+                            {
+                                <span class="ballot-candidate withdrawn">@candidate.Position. <s>@candidate.DisplayName</s></span>
+                            }
+                        </div>
+                    </div>
+                </label>
+            }
         }
-    }
-    else
-    {
-        @foreach (var option in Model.ReferendumOptions.OrderBy(item => item.SortOrder))
+        else
         {
-            <label>
-                <input type="radio" name="Vote.SelectionId" value="@option.Id" required />
-                <span><strong>@option.Label</strong>@if (!string.IsNullOrWhiteSpace(option.Description)) { <small>@option.Description</small> }</span>
-            </label>
+            @foreach (var option in Model.ReferendumOptions.OrderBy(item => item.SortOrder))
+            {
+                <label class="ballot-referendum-option">
+                    <input type="radio" name="Vote.SelectionId" value="@option.Id" required />
+                    <div class="ballot-option-content">
+                        <span class="ballot-option-label">@option.Label</span>
+                        @if (!string.IsNullOrWhiteSpace(option.Description)) { <span class="ballot-option-desc">@option.Description</span> }
+                    </div>
+                </label>
+            }
         }
-    }
-</fieldset>
+    </fieldset>
+</div>

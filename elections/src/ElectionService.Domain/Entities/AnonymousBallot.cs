@@ -9,4 +9,5 @@ public sealed class AnonymousBallot
     public SelectionType SelectionType { get; set; }
     public Guid SelectionId { get; set; }
     public string? TerritoryCode { get; set; }
+    public string ReceiptHash { get; set; } = string.Empty;
 }

@@ -49,7 +49,7 @@ public sealed record OfficialElectionRecordView(
 public sealed record BallotReceipt(Guid ElectionId, DateOnly RecordedOn);
 public sealed record InvitationCreated(Guid Id, string Token, string? Label);
 public sealed record VoterRollEntryView(Guid PersonId, DateTime AddedAt, Guid AddedByPersonId);
-public sealed record InvitationAdminView(Guid Id, string? Label, Guid? PersonId, DateTime CreatedAt,
+public sealed record InvitationAdminView(Guid Id, string Token, string? Label, Guid? PersonId, DateTime CreatedAt,
     Guid CreatedByPersonId, DateOnly? UsedOn, DateTime? RevokedAt);
 public sealed record InvitationDetail(Guid ElectionId, string ElectionTitle, DateTime VotingStartsAt, DateTime VotingEndsAt, bool IsAvailable);
 
@@ -60,10 +60,18 @@ public sealed class ElectionInput
     [Display(Name = "Description"), Required, StringLength(4000)] public string Description { get; set; } = string.Empty;
     [Display(Name = "Type"), Required] public string Type { get; set; } = "PartyList";
     [Display(Name = "Eligibility"), Required] public string EligibilityMode { get; set; } = "AllActiveCitizens";
-    [Display(Name = "Voting starts"), Required] public DateTimeOffset VotingStartsAt { get; set; }
-    [Display(Name = "Voting ends"), Required] public DateTimeOffset VotingEndsAt { get; set; }
+    [Display(Name = "Voting starts"), Required] public DateTime VotingStartsAt { get; set; }
+    [Display(Name = "Voting ends"), Required] public DateTime VotingEndsAt { get; set; }
     [Display(Name = "Territory code"), StringLength(80)] public string? TerritoryCode { get; set; }
     [Display(Name = "Eligible voters (optional)"), Range(0, int.MaxValue)] public int? EligibleVoterCount { get; set; }
+
+    private static readonly TimeZoneInfo Prague = TimeZoneInfo.FindSystemTimeZoneById("Europe/Prague");
+
+    /// <summary>Convert VotingStartsAt/VotingEndsAt from Prague local to UTC DateTimeOffset for the API.</summary>
+    public DateTimeOffset VotingStartsAtUtc => new(TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(VotingStartsAt, DateTimeKind.Unspecified), Prague), TimeSpan.Zero);
+    public DateTimeOffset VotingEndsAtUtc => new(TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(VotingEndsAt, DateTimeKind.Unspecified), Prague), TimeSpan.Zero);
+
+    public static DateTime UtcToPrague(DateTime utc) => TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), Prague);
 }
 
 public sealed record HistoricalCandidateInput(Guid? PersonId, string DisplayName, string? Description, int Position);
@@ -146,4 +154,27 @@ public sealed record BulkVoterRollInput(IReadOnlyList<Guid> PersonIds);
 public sealed class InvitationInput { [Display(Name = "Person ID")] public Guid? PersonId { get; set; } [Display(Name = "Label"), StringLength(240)] public string? Label { get; set; } }
 public sealed record BulkInvitationInput(IReadOnlyList<InvitationInput> Items);
 public sealed class VoteInput { [Display(Name = "Ballot selection"), Required] public Guid SelectionId { get; set; } }
+
+public sealed record TabularResultsView(
+    Guid ElectionId,
+    string Title,
+    string Status,
+    int TotalValidBallots,
+    int ParticipatingVoters,
+    int? EligibleVoters,
+    decimal? TurnoutPercentage,
+    bool IsLive,
+    DateTime GeneratedAt,
+    IReadOnlyList<TabularResultRow> Rows);
+
+public sealed record TabularResultRow(
+    string SelectionLabel,
+    string SelectionType,
+    int VoteCount,
+    decimal Percentage,
+    string? TerritoryCode);
+
+public sealed record ReceiptVerificationResult(bool IsValid, Guid ElectionId);
+
+public sealed record CertificationView(int ApprovalCount, int RejectionCount, int Quorum, bool IsCertified, DateTime? CertifiedAt);
 public sealed class TransitionInput { [Display(Name = "Status"), Required] public string Status { get; set; } = string.Empty; [Display(Name = "Reason"), StringLength(1000)] public string? Reason { get; set; } }

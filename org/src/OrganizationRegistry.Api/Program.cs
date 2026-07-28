@@ -1,10 +1,12 @@
 using System.Security.Claims;
 using System.Text.Json.Serialization;
+using Egov.Platform.Feeds;
 using Egov.Platform.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using OrganizationRegistry.Api.Feeds;
 using OrganizationRegistry.Api.Services;
 using OrganizationRegistry.Application.Services;
 using OrganizationRegistry.Infrastructure;
@@ -76,6 +78,7 @@ builder.Services.AddAuthorization(options =>
 		policy.RequireRole("organization-registry:admin"));
 });
 builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
+builder.Services.AddScopedFeedProvider<NewOrganizationsFeedProvider>();
 
 builder.Services.AddRefitClient<IPersonRegistryApi>()
 	.ConfigureHttpClient(client => client.BaseAddress = new Uri(
@@ -109,6 +112,7 @@ app.Use(async (context, next) =>
 });
 app.UseAuthorization();
 app.MapControllers();
+app.MapRssFeeds("/feeds");
 app.MapHealthChecks("/health");
 
 using (var scope = app.Services.CreateScope())

@@ -35,7 +35,10 @@ public interface IElectionStore
     Task<VotingInvitation?> GetInvitationByIdAsync(Guid electionId, Guid invitationId, CancellationToken ct);
     Task TransitionAsync(Guid electionId, ElectionStatus target, Guid actorPersonId, string? reason, DateTime now, CancellationToken ct);
     Task FinalizeAsync(Guid electionId, Guid actorPersonId, string? reason, DateTime now, CancellationToken ct);
-    Task SubmitBallotAsync(SubmitBallotCommand command, DateTime now, CancellationToken ct);
+    Task<string> SubmitBallotAsync(SubmitBallotCommand command, DateTime now, CancellationToken ct);
+    Task<bool> VerifyReceiptAsync(Guid electionId, string receiptHash, CancellationToken ct);
+    Task AddCertificationDecisionAsync(CertificationDecision decision, CancellationToken ct);
+    Task<IReadOnlyList<CertificationDecision>> ListCertificationDecisionsAsync(Guid electionId, CancellationToken ct);
 }
 
 public interface ICredentialHashService

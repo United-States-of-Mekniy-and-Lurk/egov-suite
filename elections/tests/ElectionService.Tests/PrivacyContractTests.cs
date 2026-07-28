@@ -14,7 +14,7 @@ public sealed class PrivacyContractTests
         var propertyNames = PublicPropertyNames<AnonymousBallot>();
 
         Assert.Equal(
-            ["ElectionId", "Id", "SelectionId", "SelectionType", "TerritoryCode"],
+            ["ElectionId", "Id", "ReceiptHash", "SelectionId", "SelectionType", "TerritoryCode"],
             propertyNames.OrderBy(name => name, StringComparer.Ordinal));
     }
 
@@ -31,7 +31,7 @@ public sealed class PrivacyContractTests
     public void InvitationAdminView_ExposesOnlySafeAdministrationFields()
     {
         Assert.Equal(
-            ["CreatedAt", "CreatedByPersonId", "Id", "Label", "PersonId", "RevokedAt", "UsedOn"],
+            ["CreatedAt", "CreatedByPersonId", "Id", "Label", "PersonId", "RevokedAt", "Token", "UsedOn"],
             PublicPropertyNames<InvitationAdminView>().OrderBy(name => name, StringComparer.Ordinal));
         Assert.DoesNotContain("TokenHash", PublicPropertyNames<InvitationAdminView>());
     }

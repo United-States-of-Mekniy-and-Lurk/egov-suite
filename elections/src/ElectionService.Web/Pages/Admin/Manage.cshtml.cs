@@ -192,6 +192,14 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer<
             SuccessMessage = localizer["Election moved to {0}.", ElectionDisplay.Status(updated.Status, localizer)];
         }, ct, "publish");
 
+    public async Task<IActionResult> OnPostForceCertifyAsync(CancellationToken ct) =>
+        await ExecuteAsync(new { }, "ForceCertify", async () =>
+        {
+            var updated = await managed.ForceCertifyAsync(Id, ct);
+            Title = updated.Title;
+            SuccessMessage = localizer["Election certified by administrative override."];
+        }, ct, "publish");
+
     private async Task<IActionResult> ExecuteAsync(
         object input,
         string prefix,
@@ -277,8 +285,8 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer<
                 Description = PublicElection.Description,
                 Type = PublicElection.Type,
                 EligibilityMode = PublicElection.EligibilityMode,
-                VotingStartsAt = PublicElection.VotingStartsAt,
-                VotingEndsAt = PublicElection.VotingEndsAt,
+                VotingStartsAt = ElectionInput.UtcToPrague(PublicElection.VotingStartsAt),
+                VotingEndsAt = ElectionInput.UtcToPrague(PublicElection.VotingEndsAt),
                 TerritoryCode = PublicElection.TerritoryCode,
                 EligibleVoterCount = null
             };

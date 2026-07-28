@@ -37,6 +37,7 @@
   <data name="Status_Published" xml:space="preserve"><value>Zveřejněno</value></data>
   <data name="Status_Closed" xml:space="preserve"><value>Uzavřeno</value></data>
   <data name="Status_Finalized" xml:space="preserve"><value>Dokončeno</value></data>
+  <data name="Status_Certified" xml:space="preserve"><value>Certifikováno</value></data>
   <data name="Status_Archived" xml:space="preserve"><value>Archivováno</value></data>
   <data name="Type_PartyList" xml:space="preserve"><value>Volba kandidátních listin</value></data>
   <data name="Type_Referendum" xml:space="preserve"><value>Referendum</value></data>

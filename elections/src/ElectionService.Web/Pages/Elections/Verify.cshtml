@@ -1,0 +1,30 @@
+@page "/elections/{electionId:guid}/verify"
+@model ElectionService.Web.Pages.Elections.VerifyModel
+@{
+    ViewData["Title"] = L["VerifyBallotReceipt"];
+}
+
+<div class="content-width workspace-page">
+    <header class="workspace-header"><div><p class="eyebrow">@L["Official election service"]</p><h1>@L["VerifyBallotReceipt"]</h1><p>@L["VerifyBallotReceiptDescription"]</p></div></header>
+
+    <section class="workspace-section">
+        <form method="get" class="verify-form">
+            <label><span>@L["ReceiptCode"]</span><input name="receipt" value="@Model.Receipt" required class="receipt-input" /></label>
+            <button class="primary-button" type="submit">@L["Verify"]</button>
+        </form>
+    </section>
+
+    @if (Model.Result is not null)
+    {
+        <section class="workspace-section">
+            @if (Model.Result.IsValid)
+            {
+                <div class="notice notice-success" role="alert"><strong>@L["BallotVerified"]</strong><span>@L["BallotVerifiedDescription"]</span></div>
+            }
+            else
+            {
+                <div class="notice notice-error" role="alert"><strong>@L["BallotNotFound"]</strong><span>@L["BallotNotFoundDescription"]</span></div>
+            }
+        </section>
+    }
+</div>

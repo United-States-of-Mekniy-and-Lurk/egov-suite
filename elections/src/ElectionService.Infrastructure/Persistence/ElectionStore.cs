@@ -98,6 +98,7 @@ public sealed class ElectionStore(ElectionDbContext db) : IElectionStore
         election.UpdatedAt = now;
         if (target == ElectionStatus.Published) election.PublishedAt = now;
         if (target == ElectionStatus.Closed) election.ClosedAt = now;
+        if (target == ElectionStatus.Certified) election.CertifiedAt = now;
         db.ElectionTransitions.Add(NewTransition(electionId, previous, target, actorPersonId, reason, now));
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
@@ -149,7 +150,7 @@ public sealed class ElectionStore(ElectionDbContext db) : IElectionStore
         await transaction.CommitAsync(ct);
     }
 
-    public async Task SubmitBallotAsync(SubmitBallotCommand command, DateTime now, CancellationToken ct)
+    public async Task<string> SubmitBallotAsync(SubmitBallotCommand command, DateTime now, CancellationToken ct)
     {
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
         var election = await db.Elections.SingleOrDefaultAsync(item => item.Id == command.ElectionId, ct)
@@ -188,10 +189,13 @@ public sealed class ElectionStore(ElectionDbContext db) : IElectionStore
                 throw new ElectionConflictException("Invitation is invalid or has already been used.");
         }
 
+        var ballotId = Guid.NewGuid();
+        var receiptHash = ComputeReceiptHash(command.ElectionId, ballotId);
         db.AnonymousBallots.Add(new AnonymousBallot
         {
-            Id = Guid.NewGuid(), ElectionId = command.ElectionId, SelectionType = selectionType,
-            SelectionId = command.SelectionId, TerritoryCode = election.TerritoryCode
+            Id = ballotId, ElectionId = command.ElectionId, SelectionType = selectionType,
+            SelectionId = command.SelectionId, TerritoryCode = election.TerritoryCode,
+            ReceiptHash = receiptHash
         });
         db.ParticipationRecords.Add(new ParticipationRecord
         {
@@ -209,7 +213,28 @@ public sealed class ElectionStore(ElectionDbContext db) : IElectionStore
         {
             throw new ElectionConflictException("This voting credential has already been used.");
         }
+
+        return receiptHash;
     }
+
+    private static string ComputeReceiptHash(Guid electionId, Guid ballotId)
+    {
+        var data = System.Text.Encoding.UTF8.GetBytes($"{electionId}:{ballotId}:{Guid.NewGuid()}");
+        var hash = System.Security.Cryptography.SHA256.HashData(data);
+        return Convert.ToHexStringLower(hash);
+    }
+
+    public Task<bool> VerifyReceiptAsync(Guid electionId, string receiptHash, CancellationToken ct) =>
+        db.AnonymousBallots.AnyAsync(item => item.ElectionId == electionId && item.ReceiptHash == receiptHash, ct);
+
+    public async Task AddCertificationDecisionAsync(CertificationDecision decision, CancellationToken ct)
+    {
+        await db.CertificationDecisions.AddAsync(decision, ct);
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<CertificationDecision>> ListCertificationDecisionsAsync(Guid electionId, CancellationToken ct) =>
+        await db.CertificationDecisions.Where(item => item.ElectionId == electionId).OrderBy(item => item.DecidedAt).ToListAsync(ct);
 
     private IQueryable<Election> FullQuery() => db.Elections
         .Include(item => item.PartyLists).ThenInclude(item => item.Candidates)

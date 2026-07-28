@@ -63,7 +63,7 @@ public sealed class AdminElectionService(
     {
         EnsureAdmin();
         ValidateElectionInput(input);
-        var election = await DraftAsync(electionId, ct);
+        var election = await MutableAsync(electionId, ct);
         var slug = NormalizeSlug(input.Slug);
         if (await store.SlugExistsAsync(slug, electionId, ct))
             throw new ElectionConflictException("Election slug already exists.");
@@ -73,7 +73,8 @@ public sealed class AdminElectionService(
         election.Slug = slug;
         election.Title = input.Title.Trim();
         election.Description = input.Description.Trim();
-        election.Type = input.Type;
+        if (election.Status == ElectionStatus.Draft)
+            election.Type = input.Type;
         election.EligibilityMode = input.EligibilityMode;
         election.VotingStartsAt = input.VotingStartsAt.ToUniversalTime();
         election.VotingEndsAt = input.VotingEndsAt.ToUniversalTime();
@@ -449,6 +450,7 @@ public sealed class AdminElectionService(
         var invitation = new VotingInvitation
         {
             Id = Guid.NewGuid(), ElectionId = electionId, TokenHash = generated.Hash,
+            Token = generated.Token,
             Label = NormalizeOptional(input.Label), PersonId = input.PersonId,
             CreatedAt = DateTime.UtcNow, CreatedByPersonId = actor.PersonId
         };
@@ -471,6 +473,7 @@ public sealed class AdminElectionService(
             var invitation = new VotingInvitation
             {
                 Id = Guid.NewGuid(), ElectionId = electionId, TokenHash = generated.Hash,
+                Token = generated.Token,
                 Label = NormalizeOptional(item.Label), PersonId = item.PersonId,
                 CreatedAt = now, CreatedByPersonId = actor.PersonId
             };
@@ -519,6 +522,14 @@ public sealed class AdminElectionService(
         var election = await store.GetAsync(electionId, ct) ?? throw new ElectionNotFoundException("Election was not found.");
         if (election.Status != ElectionStatus.Draft)
             throw new ElectionValidationException("Only draft elections can be modified.");
+        return election;
+    }
+
+    private async Task<Election> MutableAsync(Guid electionId, CancellationToken ct)
+    {
+        var election = await store.GetAsync(electionId, ct) ?? throw new ElectionNotFoundException("Election was not found.");
+        if (election.Status is not (ElectionStatus.Draft or ElectionStatus.Published))
+            throw new ElectionValidationException("Only draft or published elections can be edited.");
         return election;
     }
 
@@ -614,7 +625,7 @@ public sealed class AdminElectionService(
         election.ImportedByPersonId);
 
     private static InvitationAdminView ToAdminView(VotingInvitation invitation) =>
-        new(invitation.Id, invitation.Label, invitation.PersonId, invitation.CreatedAt,
+        new(invitation.Id, invitation.Token, invitation.Label, invitation.PersonId, invitation.CreatedAt,
             invitation.CreatedByPersonId, invitation.UsedOn, invitation.RevokedAt);
 
     private void EnsureAdmin()

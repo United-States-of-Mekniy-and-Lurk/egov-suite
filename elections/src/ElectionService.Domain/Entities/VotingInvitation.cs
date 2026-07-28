@@ -5,6 +5,7 @@ public sealed class VotingInvitation
     public Guid Id { get; set; }
     public Guid ElectionId { get; set; }
     public string TokenHash { get; set; } = string.Empty;
+    public string Token { get; set; } = string.Empty;
     public string? Label { get; set; }
     public Guid? PersonId { get; set; }
     public DateTime CreatedAt { get; set; }

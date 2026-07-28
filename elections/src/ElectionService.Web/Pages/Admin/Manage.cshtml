@@ -65,7 +65,8 @@
                 <div class="field"><label asp-for="Election.Title">@L["Title"]</label><input asp-for="Election.Title" /></div>
                 <div class="field"><label asp-for="Election.Description">@L["Description"]</label><textarea asp-for="Election.Description" rows="4"></textarea></div>
                 <div class="form-grid"><div class="field"><label asp-for="Election.Type">@L["Type"]</label><select asp-for="Election.Type"><option value="PartyList">@L["Type_PartyList"]</option><option value="Referendum">@L["Type_Referendum"]</option></select></div><div class="field"><label asp-for="Election.EligibilityMode">@L["Eligibility"]</label><select asp-for="Election.EligibilityMode"><option value="AllActiveCitizens">@L["Eligibility_AllActiveCitizens"]</option><option value="SpecificVoterRoll">@L["Eligibility_SpecificVoterRoll"]</option></select></div></div>
-                <div class="form-grid"><div class="field"><label asp-for="Election.VotingStartsAt">@L["Voting starts"]</label><input asp-for="Election.VotingStartsAt" type="datetime-local" /></div><div class="field"><label asp-for="Election.VotingEndsAt">@L["Voting ends"]</label><input asp-for="Election.VotingEndsAt" type="datetime-local" /></div></div>
+                <div class="form-grid"><div class="field"><label asp-for="Election.VotingStartsAt">@L["Voting starts (Prague time)"]</label><input asp-for="Election.VotingStartsAt" type="datetime-local" /></div><div class="field"><label asp-for="Election.VotingEndsAt">@L["Voting ends (Prague time)"]</label><input asp-for="Election.VotingEndsAt" type="datetime-local" /></div></div>
+                @if (Model.PublicElection is not null) { <p class="field-help">UTC: @Model.PublicElection.VotingStartsAt.ToString("yyyy-MM-dd HH:mm") – @Model.PublicElection.VotingEndsAt.ToString("yyyy-MM-dd HH:mm")</p> }
                 <div class="field"><label asp-for="Election.TerritoryCode">@L["Territory code"]</label><input asp-for="Election.TerritoryCode" /></div>
                 <div class="field"><label asp-for="Election.EligibleVoterCount">@L["Eligible voters (optional)"]</label><input asp-for="Election.EligibleVoterCount" type="number" min="0" /></div>
                 <button class="primary-button" type="submit">@L["Update details"]</button>
@@ -265,8 +266,12 @@
                     @foreach (var invitation in Model.Invitations)
                     {
                         var status = invitation.UsedOn is not null ? L["Used {0}", invitation.UsedOn.Value.ToString("d")] : invitation.RevokedAt is not null ? L["Revoked {0}", invitation.RevokedAt.Value.ToString("g")] : L["Available"];
-                        <div class="resource-row compact-resource-row">
-                            <div><strong>@(invitation.Label ?? invitation.PersonId?.ToString() ?? L["Unlabelled invitation"])</strong><p class="identifier">@status · @L["Created {0}", invitation.CreatedAt.ToString("g")]</p></div>
+                        <div class="resource-row invitation-row">
+                            <div>
+                                <strong>@(invitation.Label ?? invitation.PersonId?.ToString() ?? L["Unlabelled invitation"])</strong>
+                                <code class="invite-link">@Model.InviteUrl(invitation.Token)</code>
+                                <p class="identifier">@status · @L["Created {0}", invitation.CreatedAt.ToString("g")]</p>
+                            </div>
                             @if (invitation.UsedOn is null && invitation.RevokedAt is null)
                             {
                                 <form method="post" asp-page-handler="RevokeInvitation" class="inline-action-form">
@@ -302,11 +307,20 @@
             <h2>@L["Review and publish"]</h2>
             <form method="post" asp-page-handler="Transition" class="admin-form compact-form narrow-form">
                 <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
-                <div class="field"><label asp-for="Transition.Status">@L["Move to"]</label><select asp-for="Transition.Status"><option value="Published">@L["Status_Published"]</option><option value="Closed">@L["Status_Closed"]</option><option value="Finalized">@L["Status_Finalized"]</option><option value="Archived">@L["Status_Archived"]</option></select></div>
+                <div class="field"><label asp-for="Transition.Status">@L["Move to"]</label><select asp-for="Transition.Status"><option value="Published">@L["Status_Published"]</option><option value="Closed">@L["Status_Closed"]</option><option value="Finalized">@L["Status_Finalized"]</option><option value="Certified">@L["Status_Certified"]</option><option value="Archived">@L["Status_Archived"]</option></select></div>
                 <div class="field"><label asp-for="Transition.Reason">@L["Reason"]</label><textarea asp-for="Transition.Reason" rows="3"></textarea></div>
                 <div class="field checkbox-field"><label><input asp-for="ConfirmPublish" /> @L["I confirm this election is ready to publish"]</label></div>
                 <button class="primary-button" type="submit">@L["Change state"]</button>
             </form>
+
+            @if (Model.PublicElection?.Status == "Finalized")
+            {
+                <form method="post" asp-page-handler="ForceCertify" class="admin-form compact-form narrow-form">
+                    <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
+                    <p class="notice notice-warning">@L["ForceCertifyWarning"]</p>
+                    <button class="danger-button" type="submit">@L["Force Certify (Admin Override)"]</button>
+                </form>
+            }
         </section>
         }
     </div>

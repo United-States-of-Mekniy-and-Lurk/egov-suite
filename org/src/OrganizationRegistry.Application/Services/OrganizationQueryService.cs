@@ -14,7 +14,7 @@ public sealed class OrganizationQueryService(IOrganizationRegistryStore store, I
 
     public async Task<IReadOnlyList<LegalFormView>> ListLegalFormsAsync(CancellationToken ct) =>
         (await store.ListLegalFormsAsync(activeOnly: true, ct))
-            .Select(item => new LegalFormView(item.Code, item.LabelEn, item.LabelCs, item.IsActive, item.SortOrder))
+            .Select(item => new LegalFormView(item.Code, item.LabelEn, item.LabelCs, item.DescriptionEn, item.DescriptionCs, item.IsActive, item.SortOrder))
             .ToList();
 
     public async Task<IReadOnlyList<PublicOrganizationView>> ListPublicAsync(

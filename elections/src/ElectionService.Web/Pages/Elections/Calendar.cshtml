@@ -1,0 +1,73 @@
+@page "/elections/calendar"
+@model ElectionService.Web.Pages.Elections.CalendarModel
+@{
+    ViewData["Title"] = L["Election Calendar"];
+    var now = DateTime.UtcNow;
+    var ongoing = Model.Elections.Where(e => e.VotingStartsAt <= now && e.VotingEndsAt > now).OrderBy(e => e.VotingEndsAt).ToList();
+    var upcoming = Model.Elections.Where(e => e.VotingStartsAt > now).OrderBy(e => e.VotingStartsAt).ToList();
+    var past = Model.Elections.Where(e => e.VotingEndsAt <= now).OrderByDescending(e => e.VotingEndsAt).ToList();
+}
+
+<div class="content-width workspace-page">
+    <header class="workspace-header"><div><p class="eyebrow">@L["Official election service"]</p><h1>@L["Election Calendar"]</h1></div></header>
+
+    @if (ongoing.Count > 0)
+    {
+        <section class="workspace-section" aria-labelledby="ongoing-heading">
+            <div class="section-heading compact"><h2 id="ongoing-heading">@L["Ongoing"] <span class="record-count">@ongoing.Count</span></h2></div>
+            <div class="election-list">
+                @foreach (var e in ongoing)
+                {
+                    <article class="election-row">
+                        <div class="date-block"><strong>@e.VotingEndsAt.ToString("dd")</strong><span>@e.VotingEndsAt.ToString("MMM yyyy")</span></div>
+                        <div class="election-summary">
+                            <span class="status status-published">@L["VotingOpen"]</span>
+                            <h3><a asp-page="/Elections/Detail" asp-route-identifier="@e.Slug">@e.Title</a></h3>
+                            <p>@L["Ends"] @e.VotingEndsAt.ToString("d MMM yyyy, HH:mm") UTC</p>
+                        </div>
+                    </article>
+                }
+            </div>
+        </section>
+    }
+
+    @if (upcoming.Count > 0)
+    {
+        <section class="workspace-section" aria-labelledby="upcoming-heading">
+            <div class="section-heading compact"><h2 id="upcoming-heading">@L["Upcoming"] <span class="record-count">@upcoming.Count</span></h2></div>
+            <div class="election-list">
+                @foreach (var e in upcoming)
+                {
+                    <article class="election-row">
+                        <div class="date-block"><strong>@e.VotingStartsAt.ToString("dd")</strong><span>@e.VotingStartsAt.ToString("MMM yyyy")</span></div>
+                        <div class="election-summary">
+                            <span class="status status-draft">@L["Scheduled"]</span>
+                            <h3><a asp-page="/Elections/Detail" asp-route-identifier="@e.Slug">@e.Title</a></h3>
+                            <p>@e.VotingStartsAt.ToString("d MMM yyyy, HH:mm") – @e.VotingEndsAt.ToString("d MMM yyyy, HH:mm") UTC</p>
+                        </div>
+                    </article>
+                }
+            </div>
+        </section>
+    }
+
+    @if (past.Count > 0)
+    {
+        <section class="workspace-section" aria-labelledby="past-heading">
+            <div class="section-heading compact"><h2 id="past-heading">@L["Past"] <span class="record-count">@past.Count</span></h2></div>
+            <div class="election-list">
+                @foreach (var e in past)
+                {
+                    <article class="election-row">
+                        <div class="date-block"><strong>@e.VotingEndsAt.ToString("dd")</strong><span>@e.VotingEndsAt.ToString("MMM yyyy")</span></div>
+                        <div class="election-summary">
+                            <span class="status status-@e.Status.ToLowerInvariant()">@e.Status</span>
+                            <h3><a asp-page="/Elections/Detail" asp-route-identifier="@e.Slug">@e.Title</a></h3>
+                            <p>@e.VotingStartsAt.ToString("d MMM yyyy") – @e.VotingEndsAt.ToString("d MMM yyyy")</p>
+                        </div>
+                    </article>
+                }
+            </div>
+        </section>
+    }
+</div>

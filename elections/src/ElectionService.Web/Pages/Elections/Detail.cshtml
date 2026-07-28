@@ -38,8 +38,8 @@
                 <dl class="record-list">
                     <div><dt>@L["Type"]</dt><dd>@ElectionDisplay.Type(election.Type, L)</dd></div>
                     <div><dt>@L["Eligibility"]</dt><dd>@ElectionDisplay.Eligibility(election.EligibilityMode, L)</dd></div>
-                    <div><dt>@L["Voting starts"]</dt><dd>@election.VotingStartsAt.ToString("d MMMM yyyy, HH:mm") UTC</dd></div>
-                    <div><dt>@L["Voting ends"]</dt><dd>@election.VotingEndsAt.ToString("d MMMM yyyy, HH:mm") UTC</dd></div>
+                    <div><dt>@L["Voting starts"]</dt><dd>@election.VotingStartsAt.ToString("d MMMM yyyy, HH:mm") UTC · @ElectionInput.UtcToPrague(election.VotingStartsAt).ToString("d MMMM yyyy, HH:mm") Prague</dd></div>
+                    <div><dt>@L["Voting ends"]</dt><dd>@election.VotingEndsAt.ToString("d MMMM yyyy, HH:mm") UTC · @ElectionInput.UtcToPrague(election.VotingEndsAt).ToString("d MMMM yyyy, HH:mm") Prague</dd></div>
                     @if (!string.IsNullOrWhiteSpace(election.TerritoryCode))
                     {
                         <div><dt>@L["Territory"]</dt><dd>@election.TerritoryCode</dd></div>
@@ -131,5 +131,10 @@
                 </div>
             </section>
         }
+
+        <section class="record-section record-actions">
+            <a class="secondary-button" asp-page="/Elections/Results" asp-route-identifier="@election.Slug">@L["TabularResults"]</a>
+            <a class="secondary-button" asp-page="/Elections/Verify" asp-route-electionId="@election.Id">@L["VerifyBallotReceipt"]</a>
+        </section>
     }
 </div>

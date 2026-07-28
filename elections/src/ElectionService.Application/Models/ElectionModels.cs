@@ -128,11 +128,12 @@ public sealed record HistoricalElectionInput(
     IReadOnlyList<HistoricalPartyListInput>? PartyLists,
     IReadOnlyList<HistoricalReferendumOptionInput>? ReferendumOptions);
 public sealed record ElectionAggregateCounts(int ParticipatingVoterCount, int ValidBallotCount);
-public sealed record BallotReceipt(Guid ElectionId, DateOnly RecordedOn);
+public sealed record BallotReceipt(Guid ElectionId, DateOnly RecordedOn, string ReceiptHash);
 public sealed record InvitationCreated(Guid Id, string Token, string? Label);
 public sealed record VoterRollEntryView(Guid PersonId, DateTime AddedAt, Guid AddedByPersonId);
 public sealed record InvitationAdminView(
     Guid Id,
+    string Token,
     string? Label,
     Guid? PersonId,
     DateTime CreatedAt,
@@ -158,3 +159,36 @@ public sealed record SubmitBallotCommand(
     DateOnly RecordedOn,
     Guid? InvitationId,
     Guid? CitizenPersonId);
+
+public sealed record CertificationInput(bool IsApproved, string? Reason);
+public sealed record CertificationView(int ApprovalCount, int RejectionCount, int Quorum, bool IsCertified, DateTime? CertifiedAt);
+public sealed record ReceiptVerificationResult(bool IsValid, Guid ElectionId);
+
+public sealed record ElectionCalendarEntry(
+    Guid Id,
+    string Slug,
+    string Title,
+    string Type,
+    string Status,
+    DateTime VotingStartsAt,
+    DateTime VotingEndsAt,
+    string? TerritoryCode);
+
+public sealed record TabularResultRow(
+    string SelectionLabel,
+    string SelectionType,
+    int VoteCount,
+    decimal Percentage,
+    string? TerritoryCode);
+
+public sealed record TabularResultsView(
+    Guid ElectionId,
+    string Title,
+    string Status,
+    int TotalValidBallots,
+    int ParticipatingVoters,
+    int? EligibleVoters,
+    decimal? TurnoutPercentage,
+    bool IsLive,
+    DateTime GeneratedAt,
+    IReadOnlyList<TabularResultRow> Rows);

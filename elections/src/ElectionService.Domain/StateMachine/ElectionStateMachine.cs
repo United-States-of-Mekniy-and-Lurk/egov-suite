@@ -10,7 +10,8 @@ public static class ElectionStateMachine
             [ElectionStatus.Draft] = Set(ElectionStatus.Published),
             [ElectionStatus.Published] = Set(ElectionStatus.Closed),
             [ElectionStatus.Closed] = Set(ElectionStatus.Finalized),
-            [ElectionStatus.Finalized] = Set(ElectionStatus.Archived),
+            [ElectionStatus.Finalized] = Set(ElectionStatus.Certified, ElectionStatus.Archived),
+            [ElectionStatus.Certified] = Set(ElectionStatus.Archived),
             [ElectionStatus.Archived] = Set()
         };
 

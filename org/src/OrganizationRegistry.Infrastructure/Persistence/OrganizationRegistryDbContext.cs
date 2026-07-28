@@ -50,6 +50,8 @@ public sealed class OrganizationRegistryDbContext(DbContextOptions<OrganizationR
             entity.Property(item => item.Code).HasMaxLength(80);
             entity.Property(item => item.LabelEn).HasMaxLength(160);
             entity.Property(item => item.LabelCs).HasMaxLength(160);
+            entity.Property(item => item.DescriptionEn).HasMaxLength(2000);
+            entity.Property(item => item.DescriptionCs).HasMaxLength(2000);
             entity.HasData(SeedLegalForms());
         });
 

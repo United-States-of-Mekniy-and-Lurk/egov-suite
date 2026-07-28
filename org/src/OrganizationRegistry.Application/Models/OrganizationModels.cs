@@ -4,11 +4,11 @@ namespace OrganizationRegistry.Application.Models;
 
 public sealed record ClassificationView(string Scheme, string Code, string LabelEn, string LabelCs);
 
-public sealed record LegalFormView(string Code, string LabelEn, string LabelCs, bool IsActive, int SortOrder);
+public sealed record LegalFormView(string Code, string LabelEn, string LabelCs, string? DescriptionEn, string? DescriptionCs, bool IsActive, int SortOrder);
 
-public sealed record CreateLegalFormInput(string Code, string LabelEn, string LabelCs, int SortOrder);
+public sealed record CreateLegalFormInput(string Code, string LabelEn, string LabelCs, int SortOrder, string? DescriptionEn = null, string? DescriptionCs = null);
 
-public sealed record UpdateLegalFormInput(string LabelEn, string LabelCs, bool IsActive, int SortOrder);
+public sealed record UpdateLegalFormInput(string LabelEn, string LabelCs, bool IsActive, int SortOrder, string? DescriptionEn = null, string? DescriptionCs = null);
 
 public sealed record PublicOrganizationView(
     Guid Id,

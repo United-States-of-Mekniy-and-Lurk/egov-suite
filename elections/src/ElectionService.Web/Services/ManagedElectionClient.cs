@@ -17,13 +17,13 @@ public sealed class ManagedElectionClient(
         SendAsync<BallotReceipt>(HttpMethod.Post, $"/elections/{electionId}/vote", input, ct);
 
     public Task<ElectionView> CreateAsync(ElectionInput input, CancellationToken ct) =>
-        SendAsync<ElectionView>(HttpMethod.Post, "/admin/elections", input, ct);
+        SendAsync<ElectionView>(HttpMethod.Post, "/admin/elections", ToApiInput(input), ct);
 
     public Task<ElectionView> ImportHistoricalAsync(HistoricalElectionInput input, CancellationToken ct) =>
         SendAsync<ElectionView>(HttpMethod.Post, "/admin/historical-elections", input, ct);
 
     public Task<ElectionView> UpdateAsync(Guid electionId, ElectionInput input, CancellationToken ct) =>
-        SendAsync<ElectionView>(HttpMethod.Put, $"/admin/elections/{electionId}", input, ct);
+        SendAsync<ElectionView>(HttpMethod.Put, $"/admin/elections/{electionId}", ToApiInput(input), ct);
 
     public Task<PartyListView> AddPartyListAsync(Guid electionId, PartyListInput input, CancellationToken ct) =>
         SendAsync<PartyListView>(HttpMethod.Post, $"/admin/elections/{electionId}/party-lists", input, ct);
@@ -85,6 +85,9 @@ public sealed class ManagedElectionClient(
     public Task<ElectionView> TransitionAsync(Guid electionId, TransitionInput input, CancellationToken ct) =>
         SendAsync<ElectionView>(HttpMethod.Post, $"/admin/elections/{electionId}/transitions", input, ct);
 
+    public Task<ElectionView> ForceCertifyAsync(Guid electionId, CancellationToken ct) =>
+        SendAsync<ElectionView>(HttpMethod.Post, $"/admin/elections/{electionId}/force-certify", new { }, ct);
+
     private async Task<T> GetAsync<T>(string path, CancellationToken ct)
     {
         using var response = await httpClient.GetAsync(path, ct);
@@ -131,4 +134,17 @@ public sealed class ManagedElectionClient(
             throw await ElectionApiException.FromResponseAsync(response, ct);
         }
     }
+
+    private static object ToApiInput(ElectionInput input) => new
+    {
+        input.Slug,
+        input.Title,
+        input.Description,
+        input.Type,
+        input.EligibilityMode,
+        VotingStartsAt = input.VotingStartsAtUtc,
+        VotingEndsAt = input.VotingEndsAtUtc,
+        input.TerritoryCode,
+        input.EligibleVoterCount
+    };
 }

@@ -1,5 +1,8 @@
 using System.Text.Json.Serialization;
+using Egov.Platform.Feeds;
+using ElectionService.Api.Feeds;
 using ElectionService.Api.Middleware;
+using ElectionService.Application.Services;
 using ElectionService.Infrastructure;
 using ElectionService.Infrastructure.Persistence;
 using Egov.Platform.Identity;
@@ -29,8 +32,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 builder.Services.AddAuthorization(options =>
-    options.AddPolicy("RequireAdmin", policy => policy.RequireRole("election-service:admin")));
+{
+    options.AddPolicy("RequireAdmin", policy => policy.RequireRole("election-service:admin"));
+    options.AddPolicy("RequireCertifier", policy => policy.RequireRole("election-service:certifier"));
+});
 builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
+builder.Services.AddScoped<CertificationService>();
+builder.Services.AddScopedFeedProvider<ElectionsFeedProvider>();
 builder.Services.AddHttpClient("PersonRegistry", client => client.BaseAddress = new Uri(
     builder.Configuration["PersonRegistry:BaseUrl"] ?? "http://ego"));
 
@@ -47,6 +55,7 @@ app.UseAuthentication();
 app.UseMiddleware<PersonIdEnrichmentMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
+app.MapRssFeeds("/feeds");
 app.MapHealthChecks("/health");
 
 using (var scope = app.Services.CreateScope())

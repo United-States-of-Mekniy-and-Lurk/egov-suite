@@ -1,0 +1,32 @@
+@page "/staff/organizations"
+@model OrganizationRegistry.Web.Pages.Staff.OrganizationsModel
+@{
+    ViewData["Title"] = L["ManageOrganizations"];
+}
+
+<div class="content-width workspace-page">
+    <header class="workspace-header"><div><p class="eyebrow">@L["RegistryStaff"]</p><h1>@L["ManageOrganizations"]</h1></div></header>
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage)) { <div class="notice notice-error" role="alert">@Model.ErrorMessage</div> }
+    @if (!string.IsNullOrWhiteSpace(Model.SuccessMessage)) { <div class="notice notice-success" role="alert">@Model.SuccessMessage</div> }
+
+    <table class="data-table">
+        <thead><tr><th>@L["OrganizationName"]</th><th>@L["RegistrationNumber"]</th><th>@L["EstablishedOn"]</th><th></th></tr></thead>
+        <tbody>
+            @foreach (var org in Model.Organizations)
+            {
+                <tr>
+                    <td>@org.LegalName</td>
+                    <td>@org.RegistrationNumber</td>
+                    <td>@(org.EstablishedOn?.ToString("yyyy-MM-dd") ?? "—")</td>
+                    <td>
+                        <form method="post" asp-page-handler="UpdateDates" class="inline-form">
+                            <input type="hidden" name="OrganizationId" value="@org.Id" />
+                            <input type="date" name="EstablishedOn" value="@(org.EstablishedOn?.ToString("yyyy-MM-dd"))" />
+                            <button class="small-button" type="submit">@L["Save"]</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -4,6 +4,7 @@
     <ProjectReference Include="..\OrganizationRegistry.Application\OrganizationRegistry.Application.csproj" />
     <ProjectReference Include="..\OrganizationRegistry.Infrastructure\OrganizationRegistry.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\platform\src\Egov.Platform.Identity\Egov.Platform.Identity.csproj" />
+    <ProjectReference Include="..\..\..\platform\src\Egov.Platform.Feeds\Egov.Platform.Feeds.csproj" />
   </ItemGroup>
 
   <ItemGroup>

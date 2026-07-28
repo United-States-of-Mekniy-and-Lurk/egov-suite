@@ -12,6 +12,12 @@ public sealed partial class LegalFormService(IOrganizationRegistryStore store, I
     public async Task<IReadOnlyList<LegalFormView>> ListAsync(bool activeOnly, CancellationToken ct) =>
         (await store.ListLegalFormsAsync(activeOnly, ct)).Select(ToView).ToList();
 
+    public async Task<LegalFormView?> GetAsync(string code, CancellationToken ct)
+    {
+        var item = await store.GetLegalFormAsync(code, ct);
+        return item is null ? null : ToView(item);
+    }
+
     public async Task<LegalFormView> CreateAsync(CreateLegalFormInput input, CancellationToken ct)
     {
         EnsureAdmin();
@@ -25,6 +31,8 @@ public sealed partial class LegalFormService(IOrganizationRegistryStore store, I
             Code = code,
             LabelEn = input.LabelEn.Trim(),
             LabelCs = input.LabelCs.Trim(),
+            DescriptionEn = input.DescriptionEn?.Trim(),
+            DescriptionCs = input.DescriptionCs?.Trim(),
             SortOrder = input.SortOrder
         };
         await store.AddLegalFormAsync(legalForm, ct);
@@ -40,6 +48,8 @@ public sealed partial class LegalFormService(IOrganizationRegistryStore store, I
             ?? throw new RegistryNotFoundException("Legal form not found.");
         legalForm.LabelEn = input.LabelEn.Trim();
         legalForm.LabelCs = input.LabelCs.Trim();
+        legalForm.DescriptionEn = input.DescriptionEn?.Trim();
+        legalForm.DescriptionCs = input.DescriptionCs?.Trim();
         legalForm.IsActive = input.IsActive;
         legalForm.SortOrder = input.SortOrder;
         await store.SaveChangesAsync(ct);
@@ -69,7 +79,7 @@ public sealed partial class LegalFormService(IOrganizationRegistryStore store, I
     }
 
     private static LegalFormView ToView(LegalFormDefinition item) =>
-        new(item.Code, item.LabelEn, item.LabelCs, item.IsActive, item.SortOrder);
+        new(item.Code, item.LabelEn, item.LabelCs, item.DescriptionEn, item.DescriptionCs, item.IsActive, item.SortOrder);
 
     [GeneratedRegex("^[A-Z0-9]+(?:-[A-Z0-9]+)*$")]
     private static partial Regex CodeRegex();

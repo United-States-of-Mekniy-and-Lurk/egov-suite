@@ -1,5 +1,6 @@
 using ElectionService.Application.Models;
 using ElectionService.Application.Services;
+using ElectionService.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -127,4 +128,8 @@ public sealed class AdminElectionsController(AdminElectionService service) : Con
     [HttpPost("{electionId:guid}/transitions")]
     public Task<AdminElectionView> Transition(Guid electionId, [FromBody] TransitionInput input, CancellationToken ct) =>
         service.TransitionAsync(electionId, input, ct);
+
+    [HttpPost("{electionId:guid}/force-certify")]
+    public Task<AdminElectionView> ForceCertify(Guid electionId, CancellationToken ct) =>
+        service.TransitionAsync(electionId, new TransitionInput(ElectionStatus.Certified, "Administrative certification override"), ct);
 }

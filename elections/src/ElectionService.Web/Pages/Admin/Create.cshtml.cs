@@ -14,8 +14,8 @@ public sealed class CreateModel(ManagedElectionClient elections, IStringLocalize
     [BindProperty]
     public ElectionInput Input { get; set; } = new()
     {
-        VotingStartsAt = DateTimeOffset.UtcNow.AddDays(7),
-        VotingEndsAt = DateTimeOffset.UtcNow.AddDays(8)
+        VotingStartsAt = ElectionInput.UtcToPrague(DateTime.UtcNow.AddDays(7)),
+        VotingEndsAt = ElectionInput.UtcToPrague(DateTime.UtcNow.AddDays(8))
     };
 
     public string? ErrorMessage { get; private set; }

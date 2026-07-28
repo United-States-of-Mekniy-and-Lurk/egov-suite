@@ -1,6 +1,8 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Egov.Platform.Documents/Egov.Platform.Documents.csproj" />
+    <Project Path="src/Egov.Platform.Exports/Egov.Platform.Exports.csproj" />
+    <Project Path="src/Egov.Platform.Feeds/Egov.Platform.Feeds.csproj" />
     <Project Path="src/Egov.Platform.Forms/Egov.Platform.Forms.csproj" />
     <Project Path="src/Egov.Platform.Identity/Egov.Platform.Identity.csproj" />
     <Project Path="src/Egov.Platform.Localization/Egov.Platform.Localization.csproj" />
