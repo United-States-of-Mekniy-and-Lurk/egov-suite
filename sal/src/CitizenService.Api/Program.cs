@@ -4,15 +4,12 @@ using CitizenService.Infrastructure.Data;
 using CitizenService.Infrastructure.Http;
 using CitizenService.Infrastructure.Repositories;
 using CitizenService.Infrastructure.Services;
+using Egov.Platform.Identity;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Refit;
-using System.Security.Claims;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,7 +25,7 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "CitizenService API", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the ******",
+        Description = "JWT Authorization header",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
@@ -43,60 +40,12 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority = builder.Configuration["Jwt:Authority"];
-        options.Audience = builder.Configuration["Jwt:Audience"];
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-        };
-        options.Events = new JwtBearerEvents
-        {
-            OnAuthenticationFailed = context =>
-            {
-                context.HttpContext.RequestServices
-                    .GetRequiredService<ILoggerFactory>()
-                    .CreateLogger("JwtBearer")
-                    .LogWarning(
-                        context.Exception,
-                        "JWT authentication failed for {Method} {Path}; expected issuer={Issuer} audience={Audience}",
-                        context.Request.Method,
-                        context.Request.Path,
-                        options.Authority,
-                        options.Audience);
-                return Task.CompletedTask;
-            },
-            OnChallenge = context =>
-            {
-                context.HttpContext.RequestServices
-                    .GetRequiredService<ILoggerFactory>()
-                    .CreateLogger("JwtBearer")
-                    .LogWarning(
-                        "JWT challenge for {Method} {Path}: error={Error} description={Description}",
-                        context.Request.Method,
-                        context.Request.Path,
-                        context.Error,
-                        context.ErrorDescription);
-                return Task.CompletedTask;
-            }
-        };
-    });
-
-builder.Services.AddAuthorization(options =>
+builder.Services.AddMkluApiAuth(builder.Configuration, options =>
 {
-    options.AddPolicy("RequireClerk", policy =>
-        policy.RequireRole("citizen-service:clerk", "citizen-service:admin"));
-    options.AddPolicy("RequireAdmin", policy =>
-        policy.RequireRole("citizen-service:admin"));
+    options.ServiceName = "citizen-service";
+    options.Policies["RequireClerk"] = ["citizen-service:clerk", "citizen-service:admin"];
+    options.Policies["RequireAdmin"] = ["citizen-service:admin"];
 });
-
-// Extract Keycloak realm roles into standard ClaimTypes.Role claims
-builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
 
 builder.Services.AddDbContext<CitizenDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -122,6 +71,8 @@ builder.Services.AddScoped<ICurrentActor, CurrentActorService>();
 var personRegistryBaseUrl = builder.Configuration["PersonRegistry:BaseUrl"] ?? "http://ego";
 builder.Services.AddRefitClient<IPersonRegistryApi>()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri(personRegistryBaseUrl));
+builder.Services.AddHttpClient("PersonRegistry", client =>
+    client.BaseAddress = new Uri(personRegistryBaseUrl));
 builder.Services.AddScoped<IPersonClient, PersonClient>();
 
 builder.Services.AddFluentValidationAutoValidation();
@@ -136,27 +87,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthentication();
-app.Use(async (context, next) =>
-{
-    if (context.User.Identity is ClaimsIdentity identity &&
-        identity.IsAuthenticated &&
-        !identity.HasClaim(claim => claim.Type == "person_id"))
-    {
-        var authorization = context.Request.Headers.Authorization.ToString();
-        if (!string.IsNullOrWhiteSpace(authorization))
-        {
-            var personRegistry = context.RequestServices.GetRequiredService<IPersonRegistryApi>();
-            var response = await personRegistry.GetCurrentPersonAsync(
-                authorization, context.RequestAborted);
-            if (response.IsSuccessStatusCode && response.Content != null)
-            {
-                identity.AddClaim(new Claim("person_id", response.Content.Id.ToString()));
-            }
-        }
-    }
-
-    await next();
-});
+app.UseMkluPersonIdEnrichment();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health");

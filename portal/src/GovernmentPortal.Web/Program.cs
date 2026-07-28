@@ -1,8 +1,6 @@
 using GovernmentPortal.Web.Services;
 using Egov.Platform.Identity;
 using Egov.Platform.Localization;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,39 +24,18 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-})
-.AddCookie(options => options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest)
-.AddOpenIdConnect(options =>
-{
-    options.Authority = builder.Configuration["Oidc:Authority"];
-    options.ClientId = builder.Configuration["Oidc:ClientId"];
-    options.ClientSecret = builder.Configuration["Oidc:ClientSecret"];
-    options.ResponseType = "code";
-    options.SaveTokens = true;
-    options.GetClaimsFromUserInfoEndpoint = true;
-    options.PushedAuthorizationBehavior = PushedAuthorizationBehavior.Disable;
-    options.RequireHttpsMetadata = builder.Configuration.GetValue("Oidc:RequireHttpsMetadata", true);
-    options.Scope.Add("openid");
-    options.Scope.Add("profile");
-    options.Scope.Add("email");
-});
+builder.Services.AddMkluWebAuth(builder.Configuration, options => options.ValidateAudience = false);
 builder.Services.AddAuthorization();
-builder.Services.AddMkluOidcSessionManagement();
-builder.Services.AddTransient<PortalBearerTokenHandler>();
 builder.Services.AddHttpClient("CitizenApi", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["CitizenApi:BaseUrl"] ?? "http://citizen-service-api");
     client.Timeout = TimeSpan.FromSeconds(10);
-}).AddHttpMessageHandler<PortalBearerTokenHandler>();
+}).AddHttpMessageHandler<MkluBearerTokenHandler>();
 builder.Services.AddHttpClient("OrganizationApi", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["OrganizationApi:BaseUrl"] ?? "http://organization-registry-api");
     client.Timeout = TimeSpan.FromSeconds(10);
-}).AddHttpMessageHandler<PortalBearerTokenHandler>();
+}).AddHttpMessageHandler<MkluBearerTokenHandler>();
 
 var app = builder.Build();
 

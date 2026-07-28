@@ -1,17 +1,12 @@
-using System.Security.Claims;
 using System.Text.Json.Serialization;
 using Egov.Platform.Feeds;
 using Egov.Platform.Identity;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using OrganizationRegistry.Api.Feeds;
 using OrganizationRegistry.Api.Services;
 using OrganizationRegistry.Application.Services;
 using OrganizationRegistry.Infrastructure;
 using OrganizationRegistry.Infrastructure.Persistence;
-using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,62 +22,16 @@ builder.Services.AddScoped<CorrectionService>();
 builder.Services.AddScoped<HistoricalOrganizationService>();
 builder.Services.AddScoped<LegalFormService>();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-	.AddJwtBearer(options =>
-	{
-		options.Authority = builder.Configuration["Jwt:Authority"];
-		options.Audience = builder.Configuration["Jwt:Audience"];
-		options.TokenValidationParameters = new TokenValidationParameters
-		{
-			ValidateIssuer = true,
-			ValidateAudience = true,
-			ValidateLifetime = true,
-			ValidateIssuerSigningKey = true
-		};
-		options.Events = new JwtBearerEvents
-		{
-			OnAuthenticationFailed = context =>
-			{
-				context.HttpContext.RequestServices
-					.GetRequiredService<ILoggerFactory>()
-					.CreateLogger("JwtBearer")
-					.LogWarning(
-						context.Exception,
-						"JWT authentication failed for {Method} {Path}; expected issuer={Issuer} audience={Audience}",
-						context.Request.Method,
-						context.Request.Path,
-						options.Authority,
-						options.Audience);
-				return Task.CompletedTask;
-			},
-			OnChallenge = context =>
-			{
-				context.HttpContext.RequestServices
-					.GetRequiredService<ILoggerFactory>()
-					.CreateLogger("JwtBearer")
-					.LogWarning(
-						"JWT challenge for {Method} {Path}: error={Error} description={Description}",
-						context.Request.Method,
-						context.Request.Path,
-						context.Error,
-						context.ErrorDescription);
-				return Task.CompletedTask;
-			}
-		};
-	});
-builder.Services.AddAuthorization(options =>
+builder.Services.AddMkluApiAuth(builder.Configuration, options =>
 {
-	options.AddPolicy("RequireClerk", policy =>
-		policy.RequireRole("organization-registry:clerk", "organization-registry:admin"));
-	options.AddPolicy("RequireAdmin", policy =>
-		policy.RequireRole("organization-registry:admin"));
+	options.ServiceName = "organization-registry";
+	options.Policies["RequireClerk"] = ["organization-registry:clerk", "organization-registry:admin"];
+	options.Policies["RequireAdmin"] = ["organization-registry:admin"];
 });
-builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
 builder.Services.AddScopedFeedProvider<NewOrganizationsFeedProvider>();
 
-builder.Services.AddRefitClient<IPersonRegistryApi>()
-	.ConfigureHttpClient(client => client.BaseAddress = new Uri(
-		builder.Configuration["PersonRegistry:BaseUrl"] ?? "http://ego"));
+builder.Services.AddHttpClient("PersonRegistry", client => client.BaseAddress = new Uri(
+	builder.Configuration["PersonRegistry:BaseUrl"] ?? "http://ego"));
 
 var app = builder.Build();
 
@@ -94,22 +43,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseMiddleware<RegistryExceptionMiddleware>();
 app.UseAuthentication();
-app.Use(async (context, next) =>
-{
-	if (context.User.Identity is ClaimsIdentity identity && identity.IsAuthenticated &&
-		!identity.HasClaim(claim => claim.Type == "person_id"))
-	{
-		var authorization = context.Request.Headers.Authorization.ToString();
-		if (!string.IsNullOrWhiteSpace(authorization))
-		{
-			var response = await context.RequestServices.GetRequiredService<IPersonRegistryApi>()
-				.GetCurrentPersonAsync(authorization, context.RequestAborted);
-			if (response.IsSuccessStatusCode && response.Content != null)
-				identity.AddClaim(new Claim("person_id", response.Content.Id.ToString()));
-		}
-	}
-	await next();
-});
+app.UseMkluPersonIdEnrichment();
 app.UseAuthorization();
 app.MapControllers();
 app.MapRssFeeds("/feeds");

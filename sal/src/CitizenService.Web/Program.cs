@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using CitizenService.Web.Services;
+using Egov.Platform.Identity;
 using Egov.Platform.Localization;
-using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 
@@ -32,125 +32,11 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor |
                                ForwardedHeaders.XForwardedProto |
                                ForwardedHeaders.XForwardedHost;
-
-    // Cloudflare/ingress proxies are dynamic in many local setups.
     options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
 });
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-})
-.AddCookie(options =>
-{
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-})
-.AddOpenIdConnect(options =>
-{
-    options.Authority = builder.Configuration["Oidc:Authority"];
-    options.ClientId = builder.Configuration["Oidc:ClientId"];
-    options.ClientSecret = builder.Configuration["Oidc:ClientSecret"];
-    options.ResponseType = "code";
-    options.ResponseMode = "query";
-    options.CorrelationCookie.SameSite = SameSiteMode.Lax;
-    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
-    options.NonceCookie.SameSite = SameSiteMode.Lax;
-    options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
-    options.SaveTokens = true;
-    options.GetClaimsFromUserInfoEndpoint = true;
-    // Some Keycloak setups reject PAR with generic invalid_request errors.
-    // Disable PAR and use the standard authorization code flow endpoint.
-    options.PushedAuthorizationBehavior = PushedAuthorizationBehavior.Disable;
-    options.RequireHttpsMetadata = true;
-    options.Events = new OpenIdConnectEvents
-    {
-        OnTokenValidated = context =>
-        {
-            var accessToken = context.TokenEndpointResponse?.AccessToken;
-            var requiredAudience = builder.Configuration["Jwt:Audience"];
-            if (!string.IsNullOrWhiteSpace(requiredAudience) &&
-                !string.IsNullOrWhiteSpace(accessToken))
-            {
-                var token = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
-                if (!token.Audiences.Contains(requiredAudience, StringComparer.Ordinal))
-                {
-                    throw new AuthenticationFailureException(
-                        $"The access token does not contain the required audience '{requiredAudience}'. " +
-                        "Configure the Keycloak OIDC client with an audience mapper for this API.");
-                }
-            }
-
-            KeycloakClaimsTransformation.AddRolesFromAccessToken(
-                context.Principal,
-                accessToken);
-
-            var roles = context.Principal?.FindAll(ClaimTypes.Role)
-                .Select(claim => claim.Value)
-                .OrderBy(role => role)
-                .ToArray() ?? [];
-            var logger = context.HttpContext.RequestServices
-                .GetRequiredService<ILoggerFactory>()
-                .CreateLogger("OpenIdConnect");
-            logger.LogInformation("OIDC token validated with roles [{Roles}]", string.Join(", ", roles));
-            return Task.CompletedTask;
-        },
-        OnRedirectToIdentityProvider = context =>
-        {
-            var configuredPublicBaseUrl = builder.Configuration["Oidc:PublicBaseUrl"]?.TrimEnd('/');
-            if (!string.IsNullOrWhiteSpace(configuredPublicBaseUrl))
-            {
-                context.ProtocolMessage.RedirectUri = $"{configuredPublicBaseUrl}{options.CallbackPath}";
-            }
-
-            var logger = context.HttpContext.RequestServices
-                .GetRequiredService<ILoggerFactory>()
-                .CreateLogger("OpenIdConnect");
-
-            logger.LogInformation(
-                "OIDC challenge authority={Authority} redirectUri={RedirectUri} requestScheme={Scheme} requestHost={Host} pathBase={PathBase}",
-                options.Authority,
-                context.ProtocolMessage.RedirectUri,
-                context.Request.Scheme,
-                context.Request.Host,
-                context.Request.PathBase);
-
-            return Task.CompletedTask;
-        },
-        OnRemoteFailure = context =>
-        {
-            var logger = context.HttpContext.RequestServices
-                .GetRequiredService<ILoggerFactory>()
-                .CreateLogger("OpenIdConnect");
-
-            logger.LogWarning(
-                context.Failure,
-                "OIDC remote failure path={Path} query={QueryString}",
-                context.Request.Path,
-                context.Request.QueryString);
-            context.HandleResponse();
-            context.Response.Redirect("/Error");
-            return Task.CompletedTask;
-        },
-        OnRedirectToIdentityProviderForSignOut = context =>
-        {
-            var configuredPublicBaseUrl = builder.Configuration["Oidc:PublicBaseUrl"]?.TrimEnd('/');
-            if (!string.IsNullOrWhiteSpace(configuredPublicBaseUrl))
-            {
-                context.ProtocolMessage.PostLogoutRedirectUri = $"{configuredPublicBaseUrl}/";
-            }
-
-            return Task.CompletedTask;
-        }
-    };
-    options.Scope.Add("openid");
-    options.Scope.Add("profile");
-    options.Scope.Add("email");
-});
-
-builder.Services.AddMemoryCache();
-builder.Services.AddMkluOidcSessionManagement();
+builder.Services.AddMkluWebAuth(builder.Configuration);
 builder.Services.AddScoped<CurrentPersonService>();
 builder.Services.AddScoped<PersonDirectoryService>();
 
@@ -167,9 +53,6 @@ builder.Services.AddHttpClient("PersonRegistry", client =>
     var baseUrl = builder.Configuration["PersonRegistry:BaseUrl"] ?? "http://ego";
     client.BaseAddress = new Uri(baseUrl);
 }).AddHttpMessageHandler<BearerTokenHandler>();
-
-// Keycloak role extraction
-builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
 
 builder.Services.AddAuthorization(options =>
 {

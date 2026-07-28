@@ -6,10 +6,7 @@ using ElectionService.Application.Services;
 using ElectionService.Infrastructure;
 using ElectionService.Infrastructure.Persistence;
 using Egov.Platform.Identity;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,24 +16,12 @@ builder.Services.AddHealthChecks();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddElectionInfrastructure(builder.Configuration);
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+builder.Services.AddMkluApiAuth(builder.Configuration, options =>
 {
-    options.Authority = builder.Configuration["Jwt:Authority"];
-    options.Audience = builder.Configuration["Jwt:Audience"];
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true
-    };
+    options.ServiceName = "election-service";
+    options.Policies["RequireAdmin"] = ["election-service:admin"];
+    options.Policies["RequireCertifier"] = ["election-service:certifier"];
 });
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("RequireAdmin", policy => policy.RequireRole("election-service:admin"));
-    options.AddPolicy("RequireCertifier", policy => policy.RequireRole("election-service:certifier"));
-});
-builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
 builder.Services.AddScoped<CertificationService>();
 builder.Services.AddScopedFeedProvider<ElectionsFeedProvider>();
 builder.Services.AddHttpClient("PersonRegistry", client => client.BaseAddress = new Uri(
@@ -52,7 +37,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseMiddleware<ElectionExceptionMiddleware>();
 app.UseAuthentication();
-app.UseMiddleware<PersonIdEnrichmentMiddleware>();
+app.UseMkluPersonIdEnrichment();
 app.UseAuthorization();
 app.MapControllers();
 app.MapRssFeeds("/feeds");

@@ -1,11 +1,7 @@
 using Egov.Platform.Identity;
 using Egov.Platform.Localization;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
-using System.IdentityModel.Tokens.Jwt;
 using OrganizationRegistry.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,52 +28,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-})
-.AddCookie(options => options.Cookie.SecurePolicy = CookieSecurePolicy.Always)
-.AddOpenIdConnect(options =>
-{
-    options.Authority = builder.Configuration["Oidc:Authority"];
-    options.ClientId = builder.Configuration["Oidc:ClientId"];
-    options.ClientSecret = builder.Configuration["Oidc:ClientSecret"];
-    options.RequireHttpsMetadata = builder.Configuration.GetValue("Oidc:RequireHttpsMetadata", true);
-    options.ResponseType = "code";
-    options.SaveTokens = true;
-    options.GetClaimsFromUserInfoEndpoint = true;
-    options.PushedAuthorizationBehavior = PushedAuthorizationBehavior.Disable;
-    options.Scope.Add("openid");
-    options.Scope.Add("profile");
-    options.Scope.Add("email");
-    options.Events.OnTokenValidated = context =>
-    {
-        var accessToken = context.TokenEndpointResponse?.AccessToken;
-        var requiredAudience = builder.Configuration["Jwt:Audience"];
-        if (!string.IsNullOrWhiteSpace(requiredAudience) && !string.IsNullOrWhiteSpace(accessToken))
-        {
-            var token = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
-            if (!token.Audiences.Contains(requiredAudience, StringComparer.Ordinal))
-            {
-                throw new AuthenticationFailureException(
-                    $"The access token does not contain the required audience '{requiredAudience}'.");
-            }
-        }
-        KeycloakClaimsTransformation.AddRolesFromAccessToken(
-            context.Principal,
-            accessToken);
-        return Task.CompletedTask;
-    };
-    options.Events.OnRedirectToIdentityProvider = context =>
-    {
-        var publicBaseUrl = builder.Configuration["Oidc:PublicBaseUrl"]?.TrimEnd('/');
-        if (!string.IsNullOrWhiteSpace(publicBaseUrl))
-            context.ProtocolMessage.RedirectUri = $"{publicBaseUrl}{options.CallbackPath}";
-        return Task.CompletedTask;
-    };
-});
-builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
+builder.Services.AddMkluWebAuth(builder.Configuration);
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("RequireClerk", policy =>
@@ -86,8 +37,6 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole("organization-registry:admin"));
 });
 
-builder.Services.AddMkluOidcSessionManagement();
-builder.Services.AddTransient<BearerTokenHandler>();
 builder.Services.AddHttpClient<PublicRegistryClient>(client =>
 {
     var baseUrl = builder.Configuration["OrganizationApi:BaseUrl"] ?? "http://organization-registry-api";
@@ -99,7 +48,7 @@ builder.Services.AddHttpClient<ManagedRegistryClient>(client =>
     var baseUrl = builder.Configuration["OrganizationApi:BaseUrl"] ?? "http://organization-registry-api";
     client.BaseAddress = new Uri(baseUrl);
     client.Timeout = TimeSpan.FromSeconds(15);
-}).AddHttpMessageHandler<BearerTokenHandler>();
+}).AddHttpMessageHandler<MkluBearerTokenHandler>();
 
 var app = builder.Build();
 
