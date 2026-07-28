@@ -324,5 +324,6 @@
   "Ends": "Ends",
   "Scheduled": "Scheduled",
   "ForceCertifyWarning": "This will certify the election by administrative override, bypassing the normal certification quorum. Use only in emergencies.",
-  "Force Certify (Admin Override)": "Force Certify (Admin Override)"
+  "Force Certify (Admin Override)": "Force Certify (Admin Override)",
+  "Ballot paper": "Ballot paper"
 }

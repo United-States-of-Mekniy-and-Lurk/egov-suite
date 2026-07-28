@@ -2,7 +2,7 @@
 
 <div class="czech-ballot">
     <div class="ballot-header">
-        <div class="ballot-title">@L["BallotPaper"]</div>
+        <div class="ballot-title">@L["Ballot paper"]</div>
         <div class="ballot-election-name">@Model.Title</div>
     </div>
 
@@ -16,19 +16,19 @@
                     <input type="radio" name="Vote.SelectionId" value="@list.Id" required />
                     <div class="ballot-party-content">
                         <div class="ballot-party-header">
-                            <span class="ballot-party-number">@list.SortOrder</span>
+                            <span class="ballot-party-number">@(list.SortOrder + 1)</span>
                             <span class="ballot-party-name">@list.ListName</span>
                         </div>
-                        <div class="ballot-candidate-list">
+                        <ol class="ballot-candidate-list">
                             @foreach (var candidate in list.Candidates.Where(c => c.WithdrawnAt == null).OrderBy(c => c.Position))
                             {
-                                <span class="ballot-candidate">@candidate.Position. @candidate.DisplayName</span>
+                                <li class="ballot-candidate">@candidate.DisplayName</li>
                             }
                             @foreach (var candidate in list.Candidates.Where(c => c.WithdrawnAt != null).OrderBy(c => c.Position))
                             {
-                                <span class="ballot-candidate withdrawn">@candidate.Position. <s>@candidate.DisplayName</s></span>
+                                <li class="ballot-candidate withdrawn"><s>@candidate.DisplayName</s></li>
                             }
-                        </div>
+                        </ol>
                     </div>
                 </label>
             }

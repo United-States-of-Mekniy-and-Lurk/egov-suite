@@ -4,9 +4,12 @@
     ViewData["Title"] = Model.Election?.Title ?? L["Invitation ballot"];
 }
 
+@{
+    var pragueZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Prague");
+}
 <div class="content-width invite-page">
     <header class="record-header compact-header">
-        <div><p class="eyebrow">@L["Invitation ballot"]</p><h1>@(Model.Election?.Title ?? L["Election invitation"])</h1></div>
+        <div><h1>@(Model.Election?.Title ?? L["Election invitation"])</h1></div>
     </header>
 
     @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage) && Model.Election is null)
@@ -22,10 +25,6 @@
     }
     else if (Model.Election is not null && Model.Invitation is not null)
     {
-        <dl class="invite-schedule">
-            <div><dt>@L["Voting starts"]</dt><dd>@Model.Invitation.VotingStartsAt.ToString("d MMMM yyyy, HH:mm") UTC</dd></div>
-            <div><dt>@L["Voting ends"]</dt><dd>@Model.Invitation.VotingEndsAt.ToString("d MMMM yyyy, HH:mm") UTC</dd></div>
-        </dl>
         @if (Model.Invitation.IsAvailable)
         {
             <form method="post" class="ballot-form">
@@ -38,5 +37,9 @@
         {
             <div class="notice">@L["This invitation is not currently available for voting."]</div>
         }
+        <dl class="invite-schedule">
+            <div><dt>@L["Voting starts"]</dt><dd>@TimeZoneInfo.ConvertTimeFromUtc(Model.Invitation.VotingStartsAt, pragueZone).ToString("d MMMM yyyy, HH:mm")</dd></div>
+            <div><dt>@L["Voting ends"]</dt><dd>@TimeZoneInfo.ConvertTimeFromUtc(Model.Invitation.VotingEndsAt, pragueZone).ToString("d MMMM yyyy, HH:mm")</dd></div>
+        </dl>
     }
 </div>
