@@ -6,6 +6,8 @@ COPY elections/src/ElectionService.Application/ElectionService.Application.cspro
 COPY elections/src/ElectionService.Infrastructure/ElectionService.Infrastructure.csproj elections/src/ElectionService.Infrastructure/
 COPY elections/src/ElectionService.Api/ElectionService.Api.csproj elections/src/ElectionService.Api/
 COPY platform/src/Egov.Platform.Identity/Egov.Platform.Identity.csproj platform/src/Egov.Platform.Identity/
+COPY platform/src/Egov.Platform.Feeds/Egov.Platform.Feeds.csproj platform/src/Egov.Platform.Feeds/
+COPY platform/src/Egov.Platform.Exports/Egov.Platform.Exports.csproj platform/src/Egov.Platform.Exports/
 
 RUN dotnet restore elections/src/ElectionService.Api/ElectionService.Api.csproj
 

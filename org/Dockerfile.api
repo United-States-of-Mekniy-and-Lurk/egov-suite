@@ -6,6 +6,7 @@ COPY org/src/OrganizationRegistry.Application/OrganizationRegistry.Application.c
 COPY org/src/OrganizationRegistry.Infrastructure/OrganizationRegistry.Infrastructure.csproj org/src/OrganizationRegistry.Infrastructure/
 COPY org/src/OrganizationRegistry.Api/OrganizationRegistry.Api.csproj org/src/OrganizationRegistry.Api/
 COPY platform/src/Egov.Platform.Identity/Egov.Platform.Identity.csproj platform/src/Egov.Platform.Identity/
+COPY platform/src/Egov.Platform.Feeds/Egov.Platform.Feeds.csproj platform/src/Egov.Platform.Feeds/
 
 RUN dotnet restore org/src/OrganizationRegistry.Api/OrganizationRegistry.Api.csproj
 
