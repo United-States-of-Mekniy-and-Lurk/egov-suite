@@ -12,6 +12,7 @@ public interface IElectionStore
     Task<Election?> GetPublicAsync(string identifier, CancellationToken ct);
     Task<IReadOnlyList<ElectionResult>> GetResultsAsync(Guid electionId, CancellationToken ct);
     Task<ElectionAggregateCounts> GetLiveAggregateCountsAsync(Guid electionId, CancellationToken ct);
+    Task<IReadOnlyList<ElectionSelectionCount>> GetLiveSelectionCountsAsync(Guid electionId, CancellationToken ct);
     Task<VotingInvitation?> GetInvitationAsync(Guid electionId, string tokenHash, CancellationToken ct);
     Task AddElectionAsync(Election election, CancellationToken ct);
     Task ImportHistoricalAsync(Election election, IReadOnlyList<ElectionResult> results,

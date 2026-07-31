@@ -36,6 +36,13 @@ public sealed class ElectionStore(ElectionDbContext db) : IElectionStore
             await db.ParticipationRecords.CountAsync(item => item.ElectionId == electionId, ct),
             await db.AnonymousBallots.CountAsync(item => item.ElectionId == electionId, ct));
 
+    public async Task<IReadOnlyList<ElectionSelectionCount>> GetLiveSelectionCountsAsync(Guid electionId, CancellationToken ct) =>
+        await db.AnonymousBallots.AsNoTracking().Where(item => item.ElectionId == electionId)
+            .GroupBy(item => new { item.SelectionType, item.SelectionId, item.TerritoryCode })
+            .Select(group => new ElectionSelectionCount(
+                group.Key.SelectionType, group.Key.SelectionId, group.Key.TerritoryCode, group.Count()))
+            .ToListAsync(ct);
+
     public Task<VotingInvitation?> GetInvitationAsync(Guid electionId, string tokenHash, CancellationToken ct) =>
         db.VotingInvitations.AsNoTracking().SingleOrDefaultAsync(item => item.ElectionId == electionId && item.TokenHash == tokenHash, ct);
 

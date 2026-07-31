@@ -16,6 +16,7 @@ public sealed class Election
     public DateTime VotingEndsAt { get; set; }
     public string? TerritoryCode { get; set; }
     public int? EligibleVoterCount { get; set; }
+    public int? SeatCount { get; set; }
     public int? HistoricalParticipatingVoterCount { get; set; }
     public int? HistoricalInvalidBallotCount { get; set; }
     public bool IsHistorical { get; set; }

@@ -13,6 +13,7 @@ data:
   OrganizationRegistry__BaseUrl: {{ .Values.config.organizationRegistryBaseUrl | quote }}
   Voting__ActiveKeyVersion: {{ .Values.config.votingActiveKeyVersion | quote }}
   ElectionApi__BaseUrl: {{ .Values.config.electionApiBaseUrl | quote }}
+  ElectionApi__PublicBaseUrl: {{ .Values.config.electionApiPublicBaseUrl | quote }}
   Oidc__Authority: {{ .Values.config.oidcAuthority | quote }}
   Oidc__ClientId: {{ .Values.config.oidcClientId | quote }}
   Oidc__PublicBaseUrl: {{ .Values.config.oidcPublicBaseUrl | quote }}

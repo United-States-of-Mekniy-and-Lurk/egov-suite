@@ -8,7 +8,11 @@ using Microsoft.Extensions.Localization;
 namespace ElectionService.Web.Pages.Admin;
 
 [Authorize(Policy = "RequireAdmin")]
-public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer localizer) : PageModel
+public sealed class ManageModel(
+    ManagedElectionClient managed,
+    PublicElectionClient publicElections,
+    IConfiguration configuration,
+    IStringLocalizer localizer) : PageModel
 {
     [BindProperty(SupportsGet = true)] public Guid Id { get; set; }
     [BindProperty(SupportsGet = true)] public string? Title { get; set; }
@@ -31,6 +35,7 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer 
     [BindProperty] public string BulkInvitationLines { get; set; } = string.Empty;
     [BindProperty] public TransitionInput Transition { get; set; } = new();
     [BindProperty] public bool ConfirmPublish { get; set; }
+    [BindProperty] public IReadOnlyList<Guid> WinnerCandidateIds { get; set; } = [];
 
     public ElectionView? PublicElection { get; private set; }
     public InvitationCreated? CreatedInvitation { get; private set; }
@@ -38,8 +43,12 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer 
     public IReadOnlyList<VoterRollEntryView> VoterRoll { get; private set; } = [];
     public IReadOnlyList<InvitationAdminView> Invitations { get; private set; } = [];
     public PartyListView? CreatedPartyList { get; private set; }
+    public TabularResultsView? Results { get; private set; }
     public string? SuccessMessage { get; private set; }
     public string? ErrorMessage { get; private set; }
+    public string ResultsCsvUrl => $"{(configuration["ElectionApi:PublicBaseUrl"]
+        ?? configuration["ElectionApi:BaseUrl"]
+        ?? "http://localhost:8085").TrimEnd('/')}/public/elections/{Id}/results.csv";
 
     public string? InviteUrl(string? token) =>
         string.IsNullOrEmpty(token) ? null : $"{Request.Scheme}://{Request.Host}/Invite/{Id}/{Uri.EscapeDataString(token)}";
@@ -200,6 +209,13 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer 
             SuccessMessage = localizer["Election certified by administrative override."];
         }, ct, "publish");
 
+    public async Task<IActionResult> OnPostWinnersAsync(CancellationToken ct) =>
+        await ExecuteActionAsync(async () =>
+        {
+            await managed.SetWinnersAsync(Id, new WinnerSelectionInput(WinnerCandidateIds), ct);
+            SuccessMessage = localizer["Election winners updated."];
+        }, ct, "results");
+
     private async Task<IActionResult> ExecuteAsync(
         object input,
         string prefix,
@@ -276,6 +292,10 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer 
             await Task.WhenAll(voterRollTask, invitationsTask);
             VoterRoll = await voterRollTask;
             Invitations = await invitationsTask;
+            if (PublicElection.Status is "Published" or "Finalized" or "Certified" or "Archived")
+            {
+                Results = await publicElections.TabularResultsAsync(Id, ct);
+            }
             Title = PublicElection.Title;
             if (!populateForm) return;
             Election = new ElectionInput
@@ -288,7 +308,8 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer 
                 VotingStartsAt = ElectionInput.UtcToPrague(PublicElection.VotingStartsAt),
                 VotingEndsAt = ElectionInput.UtcToPrague(PublicElection.VotingEndsAt),
                 TerritoryCode = PublicElection.TerritoryCode,
-                EligibleVoterCount = null
+                EligibleVoterCount = null,
+                SeatCount = PublicElection.SeatCount
             };
         }
         catch (HttpRequestException)
@@ -338,7 +359,7 @@ public sealed class ManageModel(ManagedElectionClient managed, IStringLocalizer 
         .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
         .Where(line => line.Length != 0);
 
-    private static string NormalizeStep(string? step) => step is "details" or "ballot" or "voters" or "invitations" or "publish"
+    private static string NormalizeStep(string? step) => step is "details" or "ballot" or "voters" or "invitations" or "publish" or "results"
         ? step
         : "details";
 }

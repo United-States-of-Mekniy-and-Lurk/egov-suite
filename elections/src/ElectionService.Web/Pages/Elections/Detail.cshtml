@@ -44,6 +44,10 @@
                     {
                         <div><dt>@L["Territory"]</dt><dd>@election.TerritoryCode</dd></div>
                     }
+                    @if (election.SeatCount.HasValue)
+                    {
+                        <div><dt>@L["Seats"]</dt><dd>@election.SeatCount.Value</dd></div>
+                    }
                 </dl>
             </section>
 
@@ -61,7 +65,7 @@
                                 <ol>
                                     @foreach (var candidate in list.Candidates.OrderBy(item => item.Position))
                                     {
-                                        <li><strong>@candidate.DisplayName</strong>@if (!string.IsNullOrWhiteSpace(candidate.Description)) { <span>@candidate.Description</span> }</li>
+                                        <li><strong>@candidate.DisplayName</strong>@if (candidate.IsWinner) { <strong class="winner-badge">@L["Elected"]</strong> }@if (!string.IsNullOrWhiteSpace(candidate.Description)) { <span>@candidate.Description</span> }</li>
                                     }
                                 </ol>
                             </section>

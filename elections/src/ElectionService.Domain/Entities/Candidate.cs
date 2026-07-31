@@ -10,4 +10,7 @@ public sealed class Candidate
     public string? Description { get; set; }
     public int Position { get; set; }
     public DateTime? WithdrawnAt { get; set; }
+    public bool IsWinner { get; set; }
+    public DateTime? WinnerSelectedAt { get; set; }
+    public Guid? WinnerSelectedByPersonId { get; set; }
 }

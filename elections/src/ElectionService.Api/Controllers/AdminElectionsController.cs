@@ -129,6 +129,10 @@ public sealed class AdminElectionsController(AdminElectionService service) : Con
     public Task<AdminElectionView> Transition(Guid electionId, [FromBody] TransitionInput input, CancellationToken ct) =>
         service.TransitionAsync(electionId, input, ct);
 
+    [HttpPut("{electionId:guid}/winners")]
+    public Task<AdminElectionView> SetWinners(Guid electionId, [FromBody] WinnerSelectionInput input, CancellationToken ct) =>
+        service.SetWinnersAsync(electionId, input, ct);
+
     [HttpPost("{electionId:guid}/force-certify")]
     public Task<AdminElectionView> ForceCertify(Guid electionId, CancellationToken ct) =>
         service.TransitionAsync(electionId, new TransitionInput(ElectionStatus.Certified, "Administrative certification override"), ct);

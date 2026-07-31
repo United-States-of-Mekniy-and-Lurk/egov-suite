@@ -16,6 +16,7 @@ internal static class ElectionMapping
         election.VotingStartsAt,
         election.VotingEndsAt,
         election.TerritoryCode,
+        election.SeatCount,
         election.PartyLists.OrderBy(item => item.SortOrder).Select(item => new PartyListView(
             item.Id,
             item.PartyOrganizationId,
@@ -24,7 +25,8 @@ internal static class ElectionMapping
             item.ListName,
             item.SortOrder,
             item.Candidates.OrderBy(candidate => candidate.Position).Select(candidate => new CandidateView(
-                candidate.Id, candidate.DisplayName, candidate.Description, candidate.Position, candidate.WithdrawnAt.HasValue)).ToList())).ToList(),
+                candidate.Id, candidate.DisplayName, candidate.Description, candidate.Position,
+                candidate.WithdrawnAt.HasValue, candidate.IsWinner)).ToList())).ToList(),
         election.ReferendumOptions.OrderBy(item => item.SortOrder).Select(item => new ReferendumOptionView(
             item.Id, item.Code, item.Label, item.Description, item.SortOrder)).ToList(),
         election.IsHistorical,

@@ -25,7 +25,7 @@ Administrators can import an aggregate historical election with `POST /admin/his
 
 ## Local configuration
 
-Set configuration with environment variables or local user secrets. The API requires `ConnectionStrings__DefaultConnection`, `Jwt__Authority`, `Jwt__Audience`, `Voting__ActiveKeyVersion`, at least one matching `Voting__CredentialHashKeys__<version>` value of 32 or more characters, `PersonRegistry__BaseUrl`, `CitizenRegistry__BaseUrl`, and `OrganizationRegistry__BaseUrl`. The Web requires `ElectionApi__BaseUrl`, `Oidc__Authority`, `Oidc__ClientId`, `Oidc__ClientSecret`, and `Oidc__PublicBaseUrl`; `DataProtection__KeysPath` is recommended when sessions must survive restarts.
+Set configuration with environment variables or local user secrets. The API requires `ConnectionStrings__DefaultConnection`, `Jwt__Authority`, `Jwt__Audience`, `Voting__ActiveKeyVersion`, at least one matching `Voting__CredentialHashKeys__<version>` value of 32 or more characters, `PersonRegistry__BaseUrl`, `CitizenRegistry__BaseUrl`, and `OrganizationRegistry__BaseUrl`. The Web requires `ElectionApi__BaseUrl`, `ElectionApi__PublicBaseUrl`, `Oidc__Authority`, `Oidc__ClientId`, `Oidc__ClientSecret`, and `Oidc__PublicBaseUrl`; `DataProtection__KeysPath` is recommended when sessions must survive restarts.
 
 Each election freezes the active credential-hash key version when it is created. Rotate keys by adding a new version and changing `Voting__ActiveKeyVersion`; retain every older key while elections or invitations created with it must remain usable.
 

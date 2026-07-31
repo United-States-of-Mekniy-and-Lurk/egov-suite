@@ -1,5 +1,6 @@
 @page "/elections/{identifier}/results"
 @model ElectionService.Web.Pages.Elections.ResultsModel
+@inject IConfiguration Configuration
 @{
     ViewData["Title"] = Model.Results is not null ? $"{Model.Results.Title} — Results" : L["Results"];
 }
@@ -19,6 +20,7 @@
                 <p class="eyebrow">@r.Status @(r.IsLive ? $"· {L["LiveIntermediate"]}" : "")</p>
                 <h1>@r.Title</h1>
             </div>
+            <a class="secondary-link" href="@($"{(Configuration["ElectionApi:PublicBaseUrl"] ?? Configuration["ElectionApi:BaseUrl"] ?? "http://localhost:8085").TrimEnd('/')}/public/elections/{r.ElectionId}/results.csv")">@L["Download CSV"]</a>
         </header>
 
         <section class="workspace-section">
@@ -35,13 +37,39 @@
         @if (r.Rows.Count > 0)
         {
             <section class="workspace-section">
+                <div class="section-heading compact"><h2>@L["Vote distribution"]</h2></div>
+                @{
+                    var palette = new[] { "#006fbe", "#d1495b", "#2f7d32", "#d18b00", "#6f4c8b", "#00838f", "#8c564b", "#566573" };
+                    var cumulative = 0m;
+                    var segments = new List<string>();
+                    for (var index = 0; index < r.Rows.Count; index++)
+                    {
+                        var end = cumulative + r.Rows[index].Percentage;
+                        segments.Add($"{palette[index % palette.Length]} {cumulative.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}% {end.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}%");
+                        cumulative = end;
+                    }
+                }
+                <div class="results-visual">
+                    @if (r.TotalValidBallots > 0)
+                    {
+                        <div class="results-pie" style="background: conic-gradient(@string.Join(", ", segments))" role="img" aria-label="@L["Vote distribution chart"]"></div>
+                    }
+                    <ol class="results-legend">
+                        @for (var index = 0; index < r.Rows.Count; index++)
+                        {
+                            var row = r.Rows[index];
+                            <li><span style="background:@palette[index % palette.Length]"></span><strong>@row.SelectionLabel</strong> @row.Percentage.ToString("F2") %</li>
+                        }
+                    </ol>
+                </div>
                 <div class="section-heading compact"><h2>@L["ResultsTable"]</h2></div>
                 <table class="data-table results-table">
-                    <thead><tr><th>@L["Option"]</th><th>@L["Votes"]</th><th>%</th></tr></thead>
+                    <thead><tr><th>@L["Party"]</th><th>@L["List or option"]</th><th>@L["Votes"]</th><th>%</th></tr></thead>
                     <tbody>
                         @foreach (var row in r.Rows.OrderByDescending(x => x.VoteCount))
                         {
                             <tr>
+                                <td>@row.PartyName</td>
                                 <td>@row.SelectionLabel</td>
                                 <td class="numeric">@row.VoteCount.ToString("N0")</td>
                                 <td class="numeric">@row.Percentage.ToString("F2") %</td>
@@ -50,6 +78,25 @@
                     </tbody>
                 </table>
             </section>
+
+            @if (r.PartyGroups.Count > 0)
+            {
+                <section class="workspace-section">
+                    <div class="section-heading compact"><h2>@L["Candidates by party list"]</h2></div>
+                    @foreach (var party in r.PartyGroups.OrderByDescending(item => item.VoteCount))
+                    {
+                        <section class="public-result-group">
+                            <header><div><h3>@party.ListName</h3><p>@party.PartyName</p></div><strong>@party.VoteCount.ToString("N0") · @party.Percentage.ToString("F2") %</strong></header>
+                            <ol>
+                                @foreach (var candidate in party.Candidates.OrderBy(item => item.Position))
+                                {
+                                    <li class="@(candidate.IsWithdrawn ? "withdrawn" : null)"><span>@candidate.DisplayName</span>@if (candidate.IsWinner) { <strong class="winner-badge">@L["Elected"]</strong> }</li>
+                                }
+                            </ol>
+                        </section>
+                    }
+                </section>
+            }
         }
     }
 </div>

@@ -23,6 +23,7 @@
             </div>
             <div class="field"><label asp-for="Input.TerritoryCode">@L["Territory code"]</label><input asp-for="Input.TerritoryCode" /></div>
             <div class="field"><label asp-for="Input.EligibleVoterCount">@L["Eligible voters (optional)"]</label><input asp-for="Input.EligibleVoterCount" type="number" min="0" /></div>
+            <div class="field"><label asp-for="Input.SeatCount">@L["Seats (party-list elections, optional)"]</label><input asp-for="Input.SeatCount" type="number" min="1" /></div>
         </fieldset>
         <div class="form-actions"><a class="secondary-link" asp-page="/Admin/Index">@L["Cancel"]</a><button class="primary-button" type="submit">@L["Create election"]</button></div>
     </form>

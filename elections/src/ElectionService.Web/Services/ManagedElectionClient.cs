@@ -88,6 +88,9 @@ public sealed class ManagedElectionClient(
     public Task<ElectionView> ForceCertifyAsync(Guid electionId, CancellationToken ct) =>
         SendAsync<ElectionView>(HttpMethod.Post, $"/admin/elections/{electionId}/force-certify", new { }, ct);
 
+    public Task<ElectionView> SetWinnersAsync(Guid electionId, WinnerSelectionInput input, CancellationToken ct) =>
+        SendAsync<ElectionView>(HttpMethod.Put, $"/admin/elections/{electionId}/winners", input, ct);
+
     private async Task<T> GetAsync<T>(string path, CancellationToken ct)
     {
         using var response = await httpClient.GetAsync(path, ct);
@@ -145,6 +148,7 @@ public sealed class ManagedElectionClient(
         VotingStartsAt = input.VotingStartsAtUtc,
         VotingEndsAt = input.VotingEndsAtUtc,
         input.TerritoryCode,
-        input.EligibleVoterCount
+        input.EligibleVoterCount,
+        input.SeatCount
     };
 }

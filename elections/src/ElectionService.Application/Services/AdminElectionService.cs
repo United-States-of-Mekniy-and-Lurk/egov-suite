@@ -51,6 +51,7 @@ public sealed class AdminElectionService(
             VotingEndsAt = input.VotingEndsAt.ToUniversalTime(),
             TerritoryCode = NormalizeOptional(input.TerritoryCode),
             EligibleVoterCount = input.EligibleVoterCount,
+            SeatCount = input.SeatCount,
             CreatedAt = now,
             UpdatedAt = now,
             CreatedByPersonId = actor.PersonId
@@ -69,6 +70,8 @@ public sealed class AdminElectionService(
             throw new ElectionConflictException("Election slug already exists.");
         if (election.Type != input.Type && (election.PartyLists.Count != 0 || election.ReferendumOptions.Count != 0))
             throw new ElectionValidationException("Election type cannot change after voting targets are added.");
+        if (election.Status != ElectionStatus.Draft && election.SeatCount != input.SeatCount)
+            throw new ElectionValidationException("Seat count cannot change after an election is published.");
 
         election.Slug = slug;
         election.Title = input.Title.Trim();
@@ -80,6 +83,7 @@ public sealed class AdminElectionService(
         election.VotingEndsAt = input.VotingEndsAt.ToUniversalTime();
         election.TerritoryCode = NormalizeOptional(input.TerritoryCode);
         election.EligibleVoterCount = input.EligibleVoterCount;
+        election.SeatCount = input.SeatCount;
         election.UpdatedAt = DateTime.UtcNow;
         await store.SaveChangesAsync(ct);
         return ToAdminView(election);
@@ -517,6 +521,38 @@ public sealed class AdminElectionService(
         return ToAdminView(updated);
     }
 
+    public async Task<AdminElectionView> SetWinnersAsync(Guid electionId, WinnerSelectionInput input, CancellationToken ct)
+    {
+        EnsureAdmin();
+        var election = await RequireElectionAsync(electionId, ct);
+        if (election.Type != ElectionType.PartyList)
+            throw new ElectionValidationException("Winners can only be selected for party-list elections.");
+        if (election.Status != ElectionStatus.Finalized)
+            throw new ElectionValidationException("Winners can only be selected while an election is finalized.");
+
+        var candidateIds = input.CandidateIds.Distinct().ToHashSet();
+        var candidates = election.PartyLists.SelectMany(item => item.Candidates).ToList();
+        if (candidateIds.Any(id => candidates.All(candidate => candidate.Id != id)))
+            throw new ElectionValidationException("Winner selection contains a candidate outside this election.");
+        if (candidates.Any(candidate => candidateIds.Contains(candidate.Id) && candidate.WithdrawnAt.HasValue))
+            throw new ElectionValidationException("A withdrawn candidate cannot be selected as a winner.");
+        if (election.SeatCount.HasValue && candidateIds.Count > election.SeatCount.Value)
+            throw new ElectionValidationException($"No more than {election.SeatCount.Value} winners can be selected.");
+
+        var now = DateTime.UtcNow;
+        foreach (var candidate in candidates)
+        {
+            var isWinner = candidateIds.Contains(candidate.Id);
+            if (candidate.IsWinner == isWinner) continue;
+            candidate.IsWinner = isWinner;
+            candidate.WinnerSelectedAt = isWinner ? now : null;
+            candidate.WinnerSelectedByPersonId = isWinner ? actor.PersonId : null;
+        }
+        election.UpdatedAt = now;
+        await store.SaveChangesAsync(ct);
+        return ToAdminView(election);
+    }
+
     private async Task<Election> DraftAsync(Guid electionId, CancellationToken ct)
     {
         var election = await store.GetAsync(electionId, ct) ?? throw new ElectionNotFoundException("Election was not found.");
@@ -594,7 +630,8 @@ public sealed class AdminElectionService(
     }
 
     private static CandidateView ToView(Candidate candidate) =>
-        new(candidate.Id, candidate.DisplayName, candidate.Description, candidate.Position, candidate.WithdrawnAt.HasValue);
+        new(candidate.Id, candidate.DisplayName, candidate.Description, candidate.Position,
+            candidate.WithdrawnAt.HasValue, candidate.IsWinner);
 
     private static AdminElectionView ToAdminView(Election election) => new(
         election.Id,
@@ -615,10 +652,12 @@ public sealed class AdminElectionService(
             item.ListName,
             item.SortOrder,
             item.Candidates.OrderBy(candidate => candidate.Position).Select(candidate => new CandidateAdminView(
-                candidate.Id, candidate.PersonId, candidate.DisplayName, candidate.Description, candidate.Position, candidate.WithdrawnAt)).ToList())).ToList(),
+                candidate.Id, candidate.PersonId, candidate.DisplayName, candidate.Description, candidate.Position,
+                candidate.WithdrawnAt, candidate.IsWinner)).ToList())).ToList(),
         election.ReferendumOptions.OrderBy(item => item.SortOrder).Select(item => new ReferendumOptionView(
             item.Id, item.Code, item.Label, item.Description, item.SortOrder)).ToList(),
         election.EligibleVoterCount,
+        election.SeatCount,
         election.IsHistorical,
         election.HistoricalSourceReference,
         election.ImportedAt,
@@ -644,6 +683,10 @@ public sealed class AdminElectionService(
             throw new ElectionValidationException("Voting start must be before voting end.");
         if (input.EligibleVoterCount is < 0)
             throw new ElectionValidationException("Eligible voter count cannot be negative.");
+        if (input.SeatCount is <= 0)
+            throw new ElectionValidationException("Seat count must be greater than zero.");
+        if (input.Type != ElectionType.PartyList && input.SeatCount.HasValue)
+            throw new ElectionValidationException("Seat count is only valid for party-list elections.");
     }
 
     private static void ValidateHistoricalInput(HistoricalElectionInput input)

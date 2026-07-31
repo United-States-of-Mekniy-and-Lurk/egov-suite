@@ -105,6 +105,7 @@ config:
   citizenRegistryBaseUrl: http://citizen-service-api
   organizationRegistryBaseUrl: http://organization-registry-api
   electionApiBaseUrl: http://election-service-api
+  electionApiPublicBaseUrl: https://elections-api.local
   votingActiveKeyVersion: v1
   oidcAuthority: http://keycloak:8080/realms/mekniy-and-lurk
   oidcClientId: election-service-web

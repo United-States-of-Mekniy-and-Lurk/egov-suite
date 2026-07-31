@@ -87,21 +87,19 @@ public sealed class PublicElectionService(IElectionStore store, ICredentialHashS
         bool isLive;
         int totalValidBallots;
         int participatingVoters;
-        List<TabularResultRow> rows;
+        IReadOnlyList<ElectionSelectionCount> countsBySelection;
 
         if (election.Status is ElectionStatus.Finalized or ElectionStatus.Certified or ElectionStatus.Archived)
         {
             isLive = false;
             var results = await store.GetResultsAsync(electionId, ct);
             totalValidBallots = results.Sum(r => r.VoteCount);
+            countsBySelection = results.Select(r => new ElectionSelectionCount(
+                r.SelectionType, r.SelectionId, r.TerritoryCode, r.VoteCount)).ToList();
             var counts = await store.GetLiveAggregateCountsAsync(electionId, ct);
             participatingVoters = election.IsHistorical
                 ? election.HistoricalParticipatingVoterCount ?? counts.ParticipatingVoterCount
                 : counts.ParticipatingVoterCount;
-            rows = results.Select(r => new TabularResultRow(
-                r.SelectionLabel, r.SelectionType.ToString(), r.VoteCount,
-                totalValidBallots > 0 ? Math.Round(r.VoteCount * 100m / totalValidBallots, 2) : 0,
-                r.TerritoryCode)).ToList();
         }
         else if (election.Status == ElectionStatus.Published)
         {
@@ -109,7 +107,7 @@ public sealed class PublicElectionService(IElectionStore store, ICredentialHashS
             var counts = await store.GetLiveAggregateCountsAsync(electionId, ct);
             totalValidBallots = counts.ValidBallotCount;
             participatingVoters = counts.ParticipatingVoterCount;
-            rows = [];
+            countsBySelection = await store.GetLiveSelectionCountsAsync(electionId, ct);
         }
         else
         {
@@ -120,10 +118,37 @@ public sealed class PublicElectionService(IElectionStore store, ICredentialHashS
             ? Math.Round(participatingVoters * 100m / election.EligibleVoterCount.Value, 2)
             : (decimal?)null;
 
+        var countLookup = countsBySelection
+            .GroupBy(item => item.SelectionId)
+            .ToDictionary(group => group.Key, group => group.Sum(item => item.VoteCount));
+        var partyGroups = election.PartyLists.OrderBy(item => item.SortOrder).Select(party =>
+        {
+            var voteCount = countLookup.GetValueOrDefault(party.Id);
+            var percentage = totalValidBallots > 0 ? Math.Round(voteCount * 100m / totalValidBallots, 2) : 0;
+            return new PartyResultGroup(
+                party.Id, party.PartyName, party.ListName, voteCount, percentage,
+                party.Candidates.OrderBy(candidate => candidate.Position).Select(candidate => new CandidateResultView(
+                    candidate.Id, candidate.DisplayName, candidate.Position,
+                    candidate.WithdrawnAt.HasValue, candidate.IsWinner)).ToList());
+        }).ToList();
+        var rows = election.Type == ElectionType.PartyList
+            ? partyGroups.Select(group => new TabularResultRow(
+                group.PartyListId, group.ListName, SelectionType.PartyList.ToString(), group.PartyName,
+                group.VoteCount, group.Percentage, election.TerritoryCode)).ToList()
+            : election.ReferendumOptions.OrderBy(item => item.SortOrder).Select(option =>
+            {
+                var voteCount = countLookup.GetValueOrDefault(option.Id);
+                return new TabularResultRow(
+                    option.Id, option.Label, SelectionType.ReferendumOption.ToString(), null, voteCount,
+                    totalValidBallots > 0 ? Math.Round(voteCount * 100m / totalValidBallots, 2) : 0,
+                    election.TerritoryCode);
+            }).ToList();
+
         return new TabularResultsView(
             electionId, election.Title, election.Status.ToString(),
             totalValidBallots, participatingVoters, election.EligibleVoterCount,
-            turnoutPct, isLive, DateTime.UtcNow, rows);
+            turnoutPct, isLive, DateTime.UtcNow, election.SeatCount,
+            partyGroups.Sum(group => group.Candidates.Count(candidate => candidate.IsWinner)), rows, partyGroups);
     }
 
     public async Task<ReceiptVerificationResult> VerifyReceiptAsync(Guid electionId, string receiptHash, CancellationToken ct)

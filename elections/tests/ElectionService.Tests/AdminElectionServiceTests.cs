@@ -131,6 +131,62 @@ public sealed class AdminElectionServiceTests
     }
 
     [Fact]
+    public async Task SetWinners_EnforcesSeatCountAndPersistsSelectedCandidates()
+    {
+        await using var database = await ElectionTestDatabase.CreateAsync();
+        var (election, partyList) = await database.SeedPartyElectionAsync(
+            DateTime.UtcNow, status: ElectionStatus.Finalized);
+        election.SeatCount = 1;
+        var first = Candidate(partyList.Id, "First candidate", 1);
+        var second = Candidate(partyList.Id, "Second candidate", 2);
+        database.Context.Candidates.AddRange(first, second);
+        await database.Context.SaveChangesAsync();
+        var service = CreateService(database.Context);
+
+        await Assert.ThrowsAsync<ElectionValidationException>(() =>
+            service.SetWinnersAsync(election.Id, new WinnerSelectionInput([first.Id, second.Id]), default));
+
+        var updated = await service.SetWinnersAsync(
+            election.Id, new WinnerSelectionInput([second.Id]), default);
+
+        Assert.Equal(1, updated.SeatCount);
+        Assert.False(updated.PartyLists.Single().Candidates.Single(item => item.Id == first.Id).IsWinner);
+        Assert.True(updated.PartyLists.Single().Candidates.Single(item => item.Id == second.Id).IsWinner);
+        var persisted = await database.Context.Candidates.AsNoTracking().SingleAsync(item => item.Id == second.Id);
+        Assert.True(persisted.IsWinner);
+        Assert.NotNull(persisted.WinnerSelectedAt);
+        Assert.NotNull(persisted.WinnerSelectedByPersonId);
+    }
+
+    [Fact]
+    public async Task TabularResults_ReturnsLivePartyTotalsAndCandidateLists()
+    {
+        await using var database = await ElectionTestDatabase.CreateAsync();
+        var (election, firstParty) = await database.SeedPartyElectionAsync(
+            DateTime.UtcNow, status: ElectionStatus.Published);
+        var secondParty = new PartyList
+        {
+            Id = Guid.NewGuid(), ElectionId = election.Id, PartyOrganizationId = Guid.NewGuid(),
+            PartyRegistrationNumber = "REG-2", PartyName = "Second Party", ListName = "Second List", SortOrder = 2
+        };
+        database.Context.PartyLists.Add(secondParty);
+        database.Context.Candidates.Add(Candidate(firstParty.Id, "Listed candidate", 1));
+        database.Context.AnonymousBallots.AddRange(
+            Ballot(election.Id, firstParty.Id), Ballot(election.Id, firstParty.Id));
+        await database.Context.SaveChangesAsync();
+
+        var results = await new PublicElectionService(new ElectionStore(database.Context), new TestHashService())
+            .TabularResultsAsync(election.Id, default);
+
+        Assert.True(results.IsLive);
+        Assert.Equal(2, results.TotalValidBallots);
+        Assert.Equal(2, results.PartyGroups.Count);
+        Assert.Equal(2, results.PartyGroups.Single(item => item.PartyListId == firstParty.Id).VoteCount);
+        Assert.Equal(0, results.PartyGroups.Single(item => item.PartyListId == secondParty.Id).VoteCount);
+        Assert.Single(results.PartyGroups.Single(item => item.PartyListId == firstParty.Id).Candidates);
+    }
+
+    [Fact]
     public async Task ImportHistorical_CreatesArchivedAggregateRecordWithoutVotingRows()
     {
         await using var database = await ElectionTestDatabase.CreateAsync();
@@ -203,6 +259,17 @@ public sealed class AdminElectionServiceTests
         new NullOrganizationClient(),
         new NullPersonClient(),
         new TestActor());
+
+    private static Candidate Candidate(Guid partyListId, string displayName, int position) => new()
+    {
+        Id = Guid.NewGuid(), PartyListId = partyListId, DisplayName = displayName, Position = position
+    };
+
+    private static AnonymousBallot Ballot(Guid electionId, Guid selectionId) => new()
+    {
+        Id = Guid.NewGuid(), ElectionId = electionId, SelectionType = SelectionType.PartyList,
+        SelectionId = selectionId, ReceiptHash = Guid.NewGuid().ToString("N")
+    };
 
     private sealed class TestActor : ICurrentActor
     {

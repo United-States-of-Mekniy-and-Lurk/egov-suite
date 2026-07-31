@@ -53,6 +53,7 @@
         <a class="@(Model.Step == "voters" ? "active" : null)" asp-route-id="@Model.Id" asp-route-title="@Model.Title" asp-route-step="voters">@L["3. Voter roll"]</a>
         <a class="@(Model.Step == "invitations" ? "active" : null)" asp-route-id="@Model.Id" asp-route-title="@Model.Title" asp-route-step="invitations">@L["4. Voting links"]</a>
         <a class="@(Model.Step == "publish" ? "active" : null)" asp-route-id="@Model.Id" asp-route-title="@Model.Title" asp-route-step="publish">@L["5. Review and publish"]</a>
+        <a class="@(Model.Step == "results" ? "active" : null)" asp-route-id="@Model.Id" asp-route-title="@Model.Title" asp-route-step="results">@L["6. Results"]</a>
     </nav>
     <div class="admin-sections">
         @if (Model.Step == "details")
@@ -69,6 +70,7 @@
                 @if (Model.PublicElection is not null) { <p class="field-help">UTC: @Model.PublicElection.VotingStartsAt.ToString("yyyy-MM-dd HH:mm") – @Model.PublicElection.VotingEndsAt.ToString("yyyy-MM-dd HH:mm")</p> }
                 <div class="field"><label asp-for="Election.TerritoryCode">@L["Territory code"]</label><input asp-for="Election.TerritoryCode" /></div>
                 <div class="field"><label asp-for="Election.EligibleVoterCount">@L["Eligible voters (optional)"]</label><input asp-for="Election.EligibleVoterCount" type="number" min="0" /></div>
+                <div class="field"><label asp-for="Election.SeatCount">@L["Seats (party-list elections, optional)"]</label><input asp-for="Election.SeatCount" type="number" min="1" /></div>
                 <button class="primary-button" type="submit">@L["Update details"]</button>
             </form>
             @if (Model.PublicElection?.Status is "Published" or "Draft")
@@ -321,6 +323,53 @@
                     <p class="notice notice-warning">@L["ForceCertifyWarning"]</p>
                     <button class="danger-button" type="submit">@L["Force Certify (Admin Override)"]</button>
                 </form>
+            }
+        </section>
+        }
+
+        @if (Model.Step == "results")
+        {
+        <section class="setup-section">
+            <h2>@L["Results and winners"]</h2>
+            @if (Model.Results is null)
+            {
+                <p class="section-intro">@L["Results become available while voting is published and remain available after finalization."]</p>
+            }
+            else
+            {
+                <p class="section-intro">@L["Public CSV feed"]: <a href="@Model.ResultsCsvUrl">@Model.ResultsCsvUrl</a></p>
+                @foreach (var party in Model.Results.PartyGroups.OrderByDescending(item => item.VoteCount))
+                {
+                    <section class="admin-result-group">
+                        <h3>@party.ListName</h3>
+                        <p>@party.PartyName · @party.VoteCount.ToString("N0") @L["votes"] · @party.Percentage.ToString("F2") %</p>
+                    </section>
+                }
+                @if (Model.PublicElection?.Status == "Finalized" && Model.Results.PartyGroups.Count > 0)
+                {
+                    <form method="post" asp-page-handler="Winners" class="winner-form">
+                        <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
+                        <p><strong>@L["Selected winners"]:</strong> @Model.Results.WinnerCount@(Model.Results.SeatCount.HasValue ? $" / {Model.Results.SeatCount}" : "")</p>
+                        @foreach (var party in Model.Results.PartyGroups.OrderByDescending(item => item.VoteCount))
+                        {
+                            <fieldset>
+                                <legend>@party.ListName</legend>
+                                @foreach (var candidate in party.Candidates.OrderBy(item => item.Position))
+                                {
+                                    <label class="winner-option @(candidate.IsWithdrawn ? "withdrawn" : null)">
+                                        <input type="checkbox" name="WinnerCandidateIds" value="@candidate.Id" checked="@candidate.IsWinner" disabled="@candidate.IsWithdrawn" />
+                                        <span>@candidate.Position. @candidate.DisplayName</span>
+                                    </label>
+                                }
+                            </fieldset>
+                        }
+                        <button class="primary-button" type="submit">@L["Save winners"]</button>
+                    </form>
+                }
+                else if (Model.PublicElection?.Status is "Certified" or "Archived")
+                {
+                    <p class="notice">@L["Winner selection is locked after certification."]</p>
+                }
             }
         </section>
         }

@@ -12,7 +12,8 @@ public sealed record ElectionInput(
     DateTime VotingStartsAt,
     DateTime VotingEndsAt,
     string? TerritoryCode,
-    int? EligibleVoterCount = null);
+    int? EligibleVoterCount = null,
+    int? SeatCount = null);
 
 public sealed record PartyListInput(
     Guid? PartyOrganizationId,
@@ -30,8 +31,9 @@ public sealed record VoteInput(Guid SelectionId);
 public sealed record TransitionInput(ElectionStatus Status, string? Reason);
 public sealed record ScheduleInput(DateTime VotingStartsAt, DateTime VotingEndsAt);
 
-public sealed record CandidateView(Guid Id, string DisplayName, string? Description, int Position, bool IsWithdrawn);
-public sealed record CandidateAdminView(Guid Id, Guid? PersonId, string DisplayName, string? Description, int Position, DateTime? WithdrawnAt);
+public sealed record CandidateView(Guid Id, string DisplayName, string? Description, int Position, bool IsWithdrawn, bool IsWinner);
+public sealed record CandidateAdminView(Guid Id, Guid? PersonId, string DisplayName, string? Description, int Position, DateTime? WithdrawnAt, bool IsWinner);
+public sealed record WinnerSelectionInput(IReadOnlyList<Guid> CandidateIds);
 public sealed record PartyListView(
     Guid Id,
     Guid? PartyOrganizationId,
@@ -52,6 +54,7 @@ public sealed record ElectionView(
     DateTime VotingStartsAt,
     DateTime VotingEndsAt,
     string? TerritoryCode,
+    int? SeatCount,
     IReadOnlyList<PartyListView> PartyLists,
     IReadOnlyList<ReferendumOptionView> ReferendumOptions,
     bool IsHistorical,
@@ -78,6 +81,7 @@ public sealed record AdminElectionView(
     IReadOnlyList<PartyListAdminView> PartyLists,
     IReadOnlyList<ReferendumOptionView> ReferendumOptions,
     int? EligibleVoterCount,
+    int? SeatCount,
     bool IsHistorical,
     string? HistoricalSourceReference,
     DateTime? ImportedAt,
@@ -128,6 +132,7 @@ public sealed record HistoricalElectionInput(
     IReadOnlyList<HistoricalPartyListInput>? PartyLists,
     IReadOnlyList<HistoricalReferendumOptionInput>? ReferendumOptions);
 public sealed record ElectionAggregateCounts(int ParticipatingVoterCount, int ValidBallotCount);
+public sealed record ElectionSelectionCount(SelectionType SelectionType, Guid SelectionId, string? TerritoryCode, int VoteCount);
 public sealed record BallotReceipt(Guid ElectionId, DateOnly RecordedOn, string ReceiptHash);
 public sealed record InvitationCreated(Guid Id, string Token, string? Label);
 public sealed record VoterRollEntryView(Guid PersonId, DateTime AddedAt, Guid AddedByPersonId);
@@ -175,11 +180,28 @@ public sealed record ElectionCalendarEntry(
     string? TerritoryCode);
 
 public sealed record TabularResultRow(
+    Guid SelectionId,
     string SelectionLabel,
     string SelectionType,
+    string? PartyName,
     int VoteCount,
     decimal Percentage,
     string? TerritoryCode);
+
+public sealed record CandidateResultView(
+    Guid Id,
+    string DisplayName,
+    int Position,
+    bool IsWithdrawn,
+    bool IsWinner);
+
+public sealed record PartyResultGroup(
+    Guid PartyListId,
+    string PartyName,
+    string ListName,
+    int VoteCount,
+    decimal Percentage,
+    IReadOnlyList<CandidateResultView> Candidates);
 
 public sealed record TabularResultsView(
     Guid ElectionId,
@@ -191,4 +213,7 @@ public sealed record TabularResultsView(
     decimal? TurnoutPercentage,
     bool IsLive,
     DateTime GeneratedAt,
-    IReadOnlyList<TabularResultRow> Rows);
+    int? SeatCount,
+    int WinnerCount,
+    IReadOnlyList<TabularResultRow> Rows,
+    IReadOnlyList<PartyResultGroup> PartyGroups);

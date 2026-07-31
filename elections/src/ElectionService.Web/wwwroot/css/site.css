@@ -143,6 +143,19 @@ h3 { font-size: 1.3rem; }
 .result-value small { min-width: 70px; color: var(--muted); text-align: right; }
 .result-bar { grid-column: 1 / -1; height: 7px; background: var(--line); }
 .result-bar span { display: block; height: 100%; background: var(--sky); }
+.results-visual { display: grid; grid-template-columns: minmax(180px, 280px) minmax(0, 1fr); gap: 36px; align-items: center; margin: 24px 0 42px; }
+.results-pie { width: 100%; aspect-ratio: 1; border-radius: 50%; border: 1px solid var(--line); }
+.results-legend { margin: 0; padding: 0; list-style: none; }
+.results-legend li { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.results-legend li > span { width: 14px; height: 14px; }
+.public-result-group { padding: 22px 0; border-bottom: 1px solid var(--line); }
+.public-result-group header { display: flex; justify-content: space-between; gap: 20px; align-items: baseline; }
+.public-result-group h3, .public-result-group p { margin: 0; }
+.public-result-group p { color: var(--muted); }
+.public-result-group ol { margin: 14px 0 0; padding-left: 32px; }
+.public-result-group li { padding: 7px 4px; }
+.public-result-group li > span { margin-right: 12px; }
+.winner-badge { padding: 2px 7px; color: var(--success); border: 1px solid var(--success); font-size: .72rem; text-transform: uppercase; }
 .invite-page { max-width: 860px; }
 .compact-header { margin-bottom: 28px; }
 .invite-schedule { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.9rem; }
@@ -212,6 +225,14 @@ h3 { font-size: 1.3rem; }
 .candidate-name { flex: 1; }
 .candidate-entry.withdrawn .candidate-name { text-decoration: line-through; color: var(--muted); }
 .candidate-badge { font-size: .78rem; font-weight: 700; color: var(--error); text-transform: uppercase; }
+.winner-form { max-width: 820px; }
+.winner-form fieldset { margin: 18px 0; padding: 16px 20px; border: 1px solid var(--line); }
+.winner-form legend { padding: 0 8px; font-size: 1.15rem; }
+.winner-option { min-height: 44px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.winner-option input { width: 20px; height: 20px; accent-color: var(--success); }
+.winner-option.withdrawn { color: var(--muted); text-decoration: line-through; cursor: not-allowed; }
+.admin-result-group { padding: 12px 4px; border-bottom: 1px solid var(--line); }
+.admin-result-group h3, .admin-result-group p { margin: 0; }
 .small-button { min-height: 34px; padding: 4px 12px; font-size: .82rem; }
 .danger-button { color: var(--error); border-color: var(--error); }
 .immutable-record { margin-top: 30px; padding: 28px; background: var(--white); border-left: 5px solid var(--warning); }
@@ -250,7 +271,8 @@ h3 { font-size: 1.3rem; }
   .election-row { grid-template-columns: 64px minmax(0, 1fr); gap: 14px; padding-inline: 0; }
   .date-block { width: 60px; min-height: 68px; }
   .date-block strong { font-size: 1.55rem; }
-  .summary-grid, .record-grid, .form-grid, .paired-forms, .turnout-grid { grid-template-columns: 1fr; }
+  .summary-grid, .record-grid, .form-grid, .paired-forms, .turnout-grid, .results-visual { grid-template-columns: 1fr; }
+  .results-pie { max-width: 240px; }
   .resource-row { grid-template-columns: 1fr; align-items: stretch; }
   .candidate-row { margin-left: 0; }
   .inline-action-form .secondary-button { width: 100%; }

@@ -35,6 +35,7 @@ public sealed class ElectionDbContext(DbContextOptions<ElectionDbContext> option
             entity.ToTable(table =>
             {
                 table.HasCheckConstraint("CK_Elections_EligibleVoterCount", "\"EligibleVoterCount\" IS NULL OR \"EligibleVoterCount\" >= 0");
+                table.HasCheckConstraint("CK_Elections_SeatCount", "\"SeatCount\" IS NULL OR \"SeatCount\" > 0");
                 table.HasCheckConstraint("CK_Elections_HistoricalParticipatingVoterCount", "\"HistoricalParticipatingVoterCount\" IS NULL OR \"HistoricalParticipatingVoterCount\" >= 0");
                 table.HasCheckConstraint("CK_Elections_HistoricalInvalidBallotCount", "\"HistoricalInvalidBallotCount\" IS NULL OR \"HistoricalInvalidBallotCount\" >= 0");
                 table.HasCheckConstraint("CK_Elections_HistoricalMetadata", "(\"IsHistorical\" AND \"HistoricalSourceReference\" IS NOT NULL AND \"ImportedAt\" IS NOT NULL AND \"ImportedByPersonId\" IS NOT NULL AND \"HistoricalParticipatingVoterCount\" IS NOT NULL AND \"HistoricalInvalidBallotCount\" IS NOT NULL) OR (NOT \"IsHistorical\" AND \"HistoricalSourceReference\" IS NULL AND \"ImportedAt\" IS NULL AND \"ImportedByPersonId\" IS NULL AND \"HistoricalParticipatingVoterCount\" IS NULL AND \"HistoricalInvalidBallotCount\" IS NULL)");
@@ -60,6 +61,9 @@ public sealed class ElectionDbContext(DbContextOptions<ElectionDbContext> option
             entity.HasIndex(item => new { item.PartyListId, item.PersonId }).IsUnique().HasFilter("\"PersonId\" IS NOT NULL");
             entity.Property(item => item.DisplayName).HasMaxLength(300).IsRequired();
             entity.Property(item => item.Description).HasMaxLength(2000);
+            entity.ToTable(table => table.HasCheckConstraint(
+                "CK_Candidates_WinnerAudit",
+                "(NOT \"IsWinner\" AND \"WinnerSelectedAt\" IS NULL AND \"WinnerSelectedByPersonId\" IS NULL) OR (\"IsWinner\" AND \"WinnerSelectedAt\" IS NOT NULL AND \"WinnerSelectedByPersonId\" IS NOT NULL)"));
             entity.HasOne(item => item.PartyList).WithMany(item => item.Candidates).HasForeignKey(item => item.PartyListId).OnDelete(DeleteBehavior.Cascade);
         });
 

@@ -15,6 +15,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddHealthChecks();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddCors(options => options.AddPolicy("PublicResults", policy =>
+    policy.AllowAnyOrigin().WithMethods(HttpMethods.Get).AllowAnyHeader()));
 builder.Services.AddElectionInfrastructure(builder.Configuration);
 builder.Services.AddMkluApiAuth(builder.Configuration, options =>
 {
@@ -36,6 +38,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<ElectionExceptionMiddleware>();
+app.UseCors();
 app.UseAuthentication();
 app.UseMkluPersonIdEnrichment();
 app.UseAuthorization();

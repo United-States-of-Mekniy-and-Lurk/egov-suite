@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ElectionService.Web.Models;
 
-public sealed record CandidateView(Guid Id, Guid? PersonId, string DisplayName, string? Description, int Position, DateTime? WithdrawnAt);
+public sealed record CandidateView(Guid Id, Guid? PersonId, string DisplayName, string? Description, int Position, DateTime? WithdrawnAt, bool IsWinner);
 
 public sealed record PartyListView(
     Guid Id,
@@ -26,13 +26,14 @@ public sealed record ElectionView(
     DateTime VotingStartsAt,
     DateTime VotingEndsAt,
     string? TerritoryCode,
+    int? SeatCount,
     IReadOnlyList<PartyListView> PartyLists,
     IReadOnlyList<ReferendumOptionView> ReferendumOptions,
     bool IsHistorical,
     string? HistoricalSourceReference)
 {
     public bool IsOpen => Status == "Published" && DateTime.UtcNow >= VotingStartsAt && DateTime.UtcNow < VotingEndsAt;
-    public bool HasPublicResults => Status is "Finalized" or "Archived";
+    public bool HasPublicResults => Status is "Finalized" or "Certified" or "Archived";
 }
 
 public sealed record ResultView(string SelectionType, Guid SelectionId, string SelectionLabel, string? TerritoryCode, int VoteCount);
@@ -64,6 +65,7 @@ public sealed class ElectionInput
     [Display(Name = "Voting ends"), Required] public DateTime VotingEndsAt { get; set; }
     [Display(Name = "Territory code"), StringLength(80)] public string? TerritoryCode { get; set; }
     [Display(Name = "Eligible voters (optional)"), Range(0, int.MaxValue)] public int? EligibleVoterCount { get; set; }
+    [Display(Name = "Seats (optional)"), Range(1, int.MaxValue)] public int? SeatCount { get; set; }
 
     private static readonly TimeZoneInfo Prague = TimeZoneInfo.FindSystemTimeZoneById("Europe/Prague");
 
@@ -165,14 +167,24 @@ public sealed record TabularResultsView(
     decimal? TurnoutPercentage,
     bool IsLive,
     DateTime GeneratedAt,
-    IReadOnlyList<TabularResultRow> Rows);
+    int? SeatCount,
+    int WinnerCount,
+    IReadOnlyList<TabularResultRow> Rows,
+    IReadOnlyList<PartyResultGroup> PartyGroups);
 
 public sealed record TabularResultRow(
+    Guid SelectionId,
     string SelectionLabel,
     string SelectionType,
+    string? PartyName,
     int VoteCount,
     decimal Percentage,
     string? TerritoryCode);
+
+public sealed record CandidateResultView(Guid Id, string DisplayName, int Position, bool IsWithdrawn, bool IsWinner);
+public sealed record PartyResultGroup(Guid PartyListId, string PartyName, string ListName, int VoteCount,
+    decimal Percentage, IReadOnlyList<CandidateResultView> Candidates);
+public sealed record WinnerSelectionInput(IReadOnlyList<Guid> CandidateIds);
 
 public sealed record ReceiptVerificationResult(bool IsValid, Guid ElectionId);
 

@@ -40,6 +40,7 @@ spec:
           citizenRegistryBaseUrl: "http://citizen-service-api"
           organizationRegistryBaseUrl: "http://organization-registry-api"
           electionApiBaseUrl: "http://election-service-api"
+          electionApiPublicBaseUrl: "https://elections-api.mklu.org"
           oidcAuthority: "https://idna.mklu.org/realms/mklu"
           oidcClientId: "election-service-web"
           oidcPublicBaseUrl: "https://elections.mklu.org"
