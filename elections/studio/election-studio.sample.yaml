@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: election-studio
+  labels:
+    app.kubernetes.io/name: election-studio
+    app.kubernetes.io/part-of: election-service
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: election-studio
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: election-studio
+        app.kubernetes.io/part-of: election-service
+    spec:
+      terminationGracePeriodSeconds: 15
+      containers:
+        - name: studio
+          image: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-election-studio:latest
+          imagePullPolicy: Always
+          env:
+            - name: STREAM_URL
+              valueFrom:
+                secretKeyRef:
+                  name: election-studio-youtube
+                  key: stream-url
+            - name: STUDIO_URL
+              value: http://127.0.0.1/?lang=en
+            - name: TZ
+              value: Europe/Prague
+          ports:
+            - name: http
+              containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: "1"
+              memory: 1Gi
+            limits:
+              cpu: "4"
+              memory: 2Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault

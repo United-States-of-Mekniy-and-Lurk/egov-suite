@@ -56,6 +56,10 @@ jobs:
             context: .
             dockerfile: ./elections/Dockerfile.web
             image: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-election-service-web
+          - name: election-studio
+            context: .
+            dockerfile: ./elections/studio/Dockerfile
+            image: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-election-studio
           - name: gov-cli
             context: ./gov-cli
             dockerfile: ./gov-cli/Dockerfile
