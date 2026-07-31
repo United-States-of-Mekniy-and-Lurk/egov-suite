@@ -77,7 +77,7 @@ exec ffmpeg \
     -f x11grab -draw_mouse 0 -framerate "$fps" -video_size "${width}x${height}" -i "$DISPLAY.0" \
     -i /usr/share/nginx/html/audio/title-theme.mp3 \
     -i /usr/share/nginx/html/audio/transition-whoosh.mp3 \
-    -filter_complex "[1:a]aformat=sample_rates=44100:channel_layouts=stereo,volume=0.38,apad=pad_dur=101.364906,atrim=duration=108,aloop=loop=-1:size=4762800[title];[2:a]aformat=sample_rates=44100:channel_layouts=stereo,volume=0.3,apad=pad_dur=11.112,atrim=duration=18,aloop=loop=-1:size=793800,adelay=18000|18000[whoosh];[title][whoosh]amix=inputs=2:duration=longest:normalize=0[audio]" \
+    -filter_complex "[1:a]aformat=sample_rates=44100:channel_layouts=stereo,volume=0.228,apad=pad_dur=119.364906,atrim=duration=126,aloop=loop=-1:size=5556600[title];[2:a]aformat=sample_rates=44100:channel_layouts=stereo,volume=0.18,apad=pad_dur=11.112,atrim=duration=18,aloop=loop=-1:size=793800,adelay=17000|17000[whoosh];[title][whoosh]amix=inputs=2:duration=longest:normalize=0[audio]" \
     -map 0:v -map "[audio]" \
     -c:v libx264 -preset veryfast -pix_fmt yuv420p \
     -r "$fps" -g "$keyframe_interval" -keyint_min "$keyframe_interval" -sc_threshold 0 -bf 2 -refs 1 \

@@ -1,6 +1,6 @@
 # Election Studio
 
-A fixed-format animated election-night broadcast that renders in Chromium and can be captured by FFmpeg. The prototype uses synthetic data matching the Election Service `TabularResultsView` shape.
+A fixed-format animated election-night broadcast that polls Election Service and renders in Chromium for capture by FFmpeg.
 
 ## Preview
 
@@ -10,18 +10,19 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`. The studio rotates through six 18-second scenes:
+Open `http://localhost:5173`. The studio rotates through seven 18-second scenes:
 
 - `intro`
 - `overview`
 - `parties`
 - `candidates`
 - `results`
+- `seats`
 - `turnout`
 
-Pin a scene for review or screenshots with `?scene=candidates`. By default, the studio runs the complete six-scene program in English, then Czech, then Nissiian, and repeats. Use `?lang=en`, `?lang=cs`, or `?lang=mis` to pin one language; parameters can be combined. The Nissiian catalog currently contains English fallback copy pending authoritative translations.
+Pin a scene for review or screenshots with `?scene=seats`. By default, the studio runs the complete seven-scene program in English, then Czech, then Nissiian, and repeats. Use `?lang=en`, `?lang=cs`, or `?lang=mis` to pin one language; parameters can be combined.
 
-The election opens on 1 August 2026 at 10:00 and closes on 2 August 2026 at 14:00 in `Europe/Prague`. The header clock, election phase, and countdown update every second.
+The header clock, election phase, and countdown update every second. Opening and closing times come from the configured election's public API response.
 
 The title theme plays when the intro scene enters. The transition whoosh plays as each scene wipe begins. Browsers may require one click on the preview before allowing sound. The capture container mixes both cues directly in FFmpeg on the deterministic 18-second scene cycle, so broadcast audio does not depend on browser autoplay.
 
@@ -89,12 +90,15 @@ The Deployment uses the `Recreate` strategy so two pods cannot publish concurren
 
 ## Data integration
 
-At container startup, `start-studio.sh` writes the API settings to `runtime-config.js` before nginx starts. The browser requests the following endpoint immediately and again after each configured polling interval:
+At container startup, `start-studio.sh` writes the API settings to `runtime-config.js` before nginx starts. The browser requests the following endpoints immediately and again after each configured polling interval:
 
 ```text
+GET /public/elections/{electionId}
 GET /public/elections/{electionId}/results/tabular
 ```
 
 Successful responses replace the displayed snapshot. Failed requests are logged and retain the last successful response while scene animations continue. Party palettes can be keyed by selection ID in `src/config/party-colors.json`; unknown UUIDs receive palettes in list order. Interface strings are in `src/config/translations.json`.
 
-The candidate scene reads `partyGroups[].candidates[]` from the same tabular results response. Candidate order comes from `position`; `isWinner` and `isWithdrawn` control the optional status treatment.
+Visible elections and their tabular snapshots are available in every workflow state, including Draft and Closed. `IsPubliclyVisible` remains the access control: hidden elections are not returned on public surfaces.
+
+The candidate scene reads `partyGroups[].candidates[]` from the same tabular results response. Candidate order comes from `position`; `isWinner` and `isWithdrawn` control the optional status treatment. The projected-seats scene applies the D'Hondt highest-averages method to each party group's current vote count and the election's `seatCount`. Equal quotients are resolved by total votes and then ballot-list order. Before any votes are counted, configured seats remain visible in a neutral, unallocated state.

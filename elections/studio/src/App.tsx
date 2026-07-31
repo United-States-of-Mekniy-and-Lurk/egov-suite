@@ -57,6 +57,23 @@ type StudioConfig = {
   pollIntervalMs?: number
 }
 
+type ElectionSchedule = {
+  votingStartsAt: string
+  votingEndsAt: string
+}
+
+type SeatProjection = PartyResultGroup & {
+  seats: number
+  palette: PartyPalette
+}
+
+type SeatPosition = {
+  x: number
+  y: number
+  angle: number
+  radius: number
+}
+
 declare global {
   interface Window { __STUDIO_CONFIG__?: StudioConfig }
 }
@@ -67,10 +84,8 @@ const emptySnapshot: ElectionSnapshot = {
   winnerCount: 0, rows: [], partyGroups: [],
 }
 
-const electionOpensAt = new Date('2026-08-01T10:00:00+02:00')
-const electionClosesAt = new Date('2026-08-02T14:00:00+02:00')
 const partyColors = partyColorData as Record<string, PartyPalette>
-const sceneNames = ['intro', 'overview', 'parties', 'candidates', 'results', 'turnout'] as const
+const sceneNames = ['intro', 'overview', 'parties', 'candidates', 'results', 'seats', 'turnout'] as const
 const localeOrder: Locale[] = ['en', 'cs', 'mis']
 type SceneName = (typeof sceneNames)[number]
 const sceneDuration = 18000
@@ -81,8 +96,49 @@ function getPartyPalette(partyListId: string, index: number) {
   return partyColors[partyListId] ?? configuredPalettes[index % configuredPalettes.length]
 }
 
+function projectDhondtSeats(groups: PartyResultGroup[], seatCount: number | null): SeatProjection[] {
+  const projection = groups.map((group, index) => ({ ...group, seats: 0, palette: getPartyPalette(group.partyListId, index) }))
+  if (!seatCount || projection.every((party) => party.voteCount === 0)) return projection
+
+  for (let seat = 0; seat < seatCount; seat += 1) {
+    let winnerIndex = 0
+    for (let index = 1; index < projection.length; index += 1) {
+      const candidate = projection[index]
+      const winner = projection[winnerIndex]
+      const candidateQuotient = candidate.voteCount / (candidate.seats + 1)
+      const winnerQuotient = winner.voteCount / (winner.seats + 1)
+      if (candidateQuotient > winnerQuotient || (candidateQuotient === winnerQuotient && candidate.voteCount > winner.voteCount)) winnerIndex = index
+    }
+    projection[winnerIndex].seats += 1
+  }
+
+  return projection
+}
+
+function createSeatPositions(seatCount: number): SeatPosition[] {
+  if (seatCount <= 0) return []
+  const rowCount = seatCount <= 10 ? 1 : Math.min(seatCount, Math.max(3, Math.min(8, Math.ceil(Math.sqrt(seatCount / 3)))))
+  const radii = Array.from({ length: rowCount }, (_, index) => rowCount === 1 ? 300 : 185 + index * 245 / (rowCount - 1))
+  const totalRadius = radii.reduce((total, radius) => total + radius, 0)
+  const capacities = radii.map((radius) => Math.floor(seatCount * radius / totalRadius))
+  for (let assigned = capacities.reduce((total, capacity) => total + capacity, 0); assigned < seatCount; assigned += 1) {
+    const row = radii.reduce((best, radius, index) => {
+      const remainder = seatCount * radius / totalRadius - capacities[index]
+      const bestRemainder = seatCount * radii[best] / totalRadius - capacities[best]
+      return remainder > bestRemainder ? index : best
+    }, 0)
+    capacities[row] += 1
+  }
+
+  return radii.flatMap((radius, row) => Array.from({ length: capacities[row] }, (_, index) => {
+    const angle = capacities[row] === 1 ? Math.PI / 2 : Math.PI - index * Math.PI / (capacities[row] - 1)
+    return { x: 500 + radius * Math.cos(angle), y: 475 - radius * Math.sin(angle), angle, radius }
+  })).sort((first, second) => second.angle - first.angle || first.radius - second.radius)
+}
+
 function useElectionSnapshot() {
   const [snapshot, setSnapshot] = useState<ElectionSnapshot>(emptySnapshot)
+  const [schedule, setSchedule] = useState<ElectionSchedule | null>(null)
 
   useEffect(() => {
     const config = window.__STUDIO_CONFIG__
@@ -93,16 +149,25 @@ function useElectionSnapshot() {
 
     const controller = new AbortController()
     const interval = Math.max(1000, config.pollIntervalMs ?? 5000)
-    const endpoint = `${config.electionApiBaseUrl.replace(/\/$/, '')}/public/elections/${encodeURIComponent(config.electionId)}/results/tabular`
+    const electionEndpoint = `${config.electionApiBaseUrl.replace(/\/$/, '')}/public/elections/${encodeURIComponent(config.electionId)}`
+    const resultsEndpoint = `${electionEndpoint}/results/tabular`
     let timer: number | undefined
 
     const poll = async () => {
       try {
-        const response = await fetch(endpoint, { signal: controller.signal, cache: 'no-store' })
-        if (!response.ok) throw new Error(`Election API returned ${response.status}`)
-        const next = await response.json() as ElectionSnapshot
+        const [resultsResponse, electionResponse] = await Promise.all([
+          fetch(resultsEndpoint, { signal: controller.signal, cache: 'no-store' }),
+          fetch(electionEndpoint, { signal: controller.signal, cache: 'no-store' }),
+        ])
+        if (!resultsResponse.ok || !electionResponse.ok) throw new Error(`Election API returned results=${resultsResponse.status}, election=${electionResponse.status}`)
+        const [next, nextSchedule] = await Promise.all([
+          resultsResponse.json() as Promise<ElectionSnapshot>,
+          electionResponse.json() as Promise<ElectionSchedule>,
+        ])
         if (!Array.isArray(next.rows) || !Array.isArray(next.partyGroups)) throw new Error('Election API returned an invalid result shape')
+        if (!nextSchedule.votingStartsAt || !nextSchedule.votingEndsAt) throw new Error('Election API returned an invalid schedule')
         setSnapshot(next)
+        setSchedule(nextSchedule)
       } catch (error) {
         if (!controller.signal.aborted) console.error('Could not refresh election results; retaining the last snapshot', error)
       } finally {
@@ -117,7 +182,7 @@ function useElectionSnapshot() {
     }
   }, [])
 
-  return snapshot
+  return { snapshot, schedule }
 }
 
 function getRequestedLocale(): Locale | null {
@@ -125,13 +190,17 @@ function getRequestedLocale(): Locale | null {
   return requested && requested in translationData ? requested as Locale : null
 }
 
-function getElectionTiming(now: Date) {
+function getElectionTiming(now: Date, schedule: ElectionSchedule | null) {
+  if (!schedule) return { phase: 'upcoming' as const, target: null }
+  const electionOpensAt = new Date(schedule.votingStartsAt)
+  const electionClosesAt = new Date(schedule.votingEndsAt)
   if (now < electionOpensAt) return { phase: 'upcoming' as const, target: electionOpensAt }
   if (now < electionClosesAt) return { phase: 'open' as const, target: electionClosesAt }
   return { phase: 'closed' as const, target: electionClosesAt }
 }
 
-function formatCountdown(target: Date, now: Date) {
+function formatCountdown(target: Date | null, now: Date) {
+  if (!target) return '—'
   const totalSeconds = Math.max(0, Math.floor((target.getTime() - now.getTime()) / 1000))
   const days = Math.floor(totalSeconds / 86400)
   const hours = Math.floor(totalSeconds % 86400 / 3600)
@@ -162,13 +231,13 @@ function StudioHeader({ now, phase, t, locale }: { now: Date; phase: ElectionPha
   </header>
 }
 
-function TimingCard({ now, phase, t }: { now: Date; phase: ElectionPhase; t: (key: TranslationKey) => string }) {
-  const timing = getElectionTiming(now)
+function TimingCard({ now, phase, t, schedule }: { now: Date; phase: ElectionPhase; t: (key: TranslationKey) => string; schedule: ElectionSchedule | null }) {
+  const timing = getElectionTiming(now, schedule)
   return <article className={`timing-card phase-${phase}`}><small>{phase === 'upcoming' ? t('opensIn') : phase === 'open' ? t('closesIn') : t('closedAt')}</small><strong>{phase === 'closed' ? '00:00:00' : formatCountdown(timing.target, now)}</strong><span>{t(phase)}</span></article>
 }
 
-function IntroScene({ now, phase, t }: { now: Date; phase: ElectionPhase; t: (key: TranslationKey) => string }) {
-  const timing = getElectionTiming(now)
+function IntroScene({ now, phase, t, schedule }: { now: Date; phase: ElectionPhase; t: (key: TranslationKey) => string; schedule: ElectionSchedule | null }) {
+  const timing = getElectionTiming(now, schedule)
   return <section className="scene intro-scene" aria-label={t('coverage')}>
     <div className="intro-rings" aria-hidden="true"><i /><i /><i /></div>
     <img className="intro-emblem" src="/manticore.svg" alt="" />
@@ -177,7 +246,7 @@ function IntroScene({ now, phase, t }: { now: Date; phase: ElectionPhase; t: (ke
   </section>
 }
 
-function OverviewScene({ now, phase, t, locale, snapshot }: { now: Date; phase: ElectionPhase; t: (key: TranslationKey) => string; locale: Locale; snapshot: ElectionSnapshot }) {
+function OverviewScene({ now, phase, t, locale, snapshot, schedule }: { now: Date; phase: ElectionPhase; t: (key: TranslationKey) => string; locale: Locale; snapshot: ElectionSnapshot; schedule: ElectionSchedule | null }) {
   const leader = snapshot.rows[0]
   const turnout = snapshot.turnoutPercentage ?? 0
   const formatNumber = (value: number) => new Intl.NumberFormat(localeTags[locale]).format(value)
@@ -186,7 +255,7 @@ function OverviewScene({ now, phase, t, locale, snapshot }: { now: Date; phase: 
     <div className="overview-grid">
       <article className="leader-panel"><p>{t('leadingList')}</p><span className="rank">01</span><h2>{leader?.selectionLabel ?? '—'}</h2><small>{leader?.partyName ?? ''}</small><div className="leader-total"><strong>{(leader?.percentage ?? 0).toFixed(1)}%</strong><span>{formatNumber(leader?.voteCount ?? 0)} {t('votes')}</span></div></article>
       <div className="overview-stats">
-        <TimingCard now={now} phase={phase} t={t} />
+        <TimingCard now={now} phase={phase} t={t} schedule={schedule} />
         <article><small>{t('ballotsCounted')}</small><strong>{formatNumber(snapshot.totalValidBallots)}</strong><span>{t('estimatedTotal')}</span></article>
         <article><small>{t('turnout')}</small><strong>{turnout.toFixed(1)}%</strong><span>{formatNumber(snapshot.participatingVoters)} {t('participating')}</span></article>
         <article><small>{t('listsRegistered')}</small><strong>{snapshot.rows.length}</strong><span>{t('across')} {snapshot.rows[0]?.territoryCode ?? 'MKLU'}</span></article>
@@ -236,6 +305,31 @@ function ResultsScene({ t, locale, snapshot }: { t: (key: TranslationKey) => str
   </section>
 }
 
+function SeatsScene({ t, snapshot }: { t: (key: TranslationKey) => string; snapshot: ElectionSnapshot }) {
+  const projection = projectDhondtSeats(snapshot.partyGroups, snapshot.seatCount)
+  const hasProjection = projection.some((party) => party.seats > 0)
+  const seatParties = projection.flatMap((party) => Array.from({ length: party.seats }, () => party))
+  const positions = createSeatPositions(snapshot.seatCount ?? 0)
+  const seatRadius = positions.length <= 10 ? 34 : Math.max(6, Math.min(13, 92 / Math.sqrt(positions.length / 10)))
+
+  return <section className="scene seats-scene" aria-label={t('seatsTitle')}>
+    <div className="scene-heading compact"><p className="kicker">{t('seatsKicker')}</p><h1>{t('seatsTitle')}</h1></div>
+    <div className="seats-layout">
+      <div className="hemicycle-wrap">
+        {positions.length > 0 ? <svg className="hemicycle" viewBox="0 0 1000 510" role="img" aria-label={`${snapshot.seatCount} ${t('seats')}`}>
+          <path d="M 45 475 A 455 455 0 0 1 955 475" />
+          {positions.map((position, index) => <circle className={seatParties[index] ? '' : 'unallocated'} key={`${seatParties[index]?.partyListId ?? 'unallocated'}-${index}`} cx={position.x} cy={position.y} r={seatRadius} fill={seatParties[index]?.palette.primary ?? '#687278'} style={{ '--delay': `${index * 45}ms` } as CSSProperties} />)}
+        </svg> : <div className="projection-empty">{t('projectionUnavailable')}</div>}
+        {!hasProjection && positions.length > 0 && <p className="projection-note">{t('projectionUnavailable')}</p>}
+        <div className="seat-total"><strong>{snapshot.seatCount ?? '—'}</strong><span>{t('seats')}</span></div>
+      </div>
+      <div className="seat-legend">{projection.map((party) => <article key={party.partyListId} style={{ '--party-primary': party.palette.primary } as CSSProperties}>
+        <i /><div><strong>{party.listName}</strong><small>{party.percentage.toFixed(1)}%</small></div><b>{party.seats}</b>
+      </article>)}</div>
+    </div>
+  </section>
+}
+
 function TurnoutScene({ t, locale, snapshot }: { t: (key: TranslationKey) => string; locale: Locale; snapshot: ElectionSnapshot }) {
   const formatNumber = (value: number) => new Intl.NumberFormat(localeTags[locale]).format(value)
   const turnout = snapshot.turnoutPercentage ?? 0
@@ -248,17 +342,18 @@ function TurnoutScene({ t, locale, snapshot }: { t: (key: TranslationKey) => str
   </section>
 }
 
-function Scene({ name, now, phase, t, locale, snapshot }: { name: SceneName; now: Date; phase: ElectionPhase; t: (key: TranslationKey) => string; locale: Locale; snapshot: ElectionSnapshot }) {
-  if (name === 'intro') return <IntroScene now={now} phase={phase} t={t} />
-  if (name === 'overview') return <OverviewScene now={now} phase={phase} t={t} locale={locale} snapshot={snapshot} />
+function Scene({ name, now, phase, t, locale, snapshot, schedule }: { name: SceneName; now: Date; phase: ElectionPhase; t: (key: TranslationKey) => string; locale: Locale; snapshot: ElectionSnapshot; schedule: ElectionSchedule | null }) {
+  if (name === 'intro') return <IntroScene now={now} phase={phase} t={t} schedule={schedule} />
+  if (name === 'overview') return <OverviewScene now={now} phase={phase} t={t} locale={locale} snapshot={snapshot} schedule={schedule} />
   if (name === 'parties') return <PartiesScene t={t} snapshot={snapshot} />
   if (name === 'candidates') return <CandidatesScene t={t} snapshot={snapshot} />
   if (name === 'results') return <ResultsScene t={t} locale={locale} snapshot={snapshot} />
+  if (name === 'seats') return <SeatsScene t={t} snapshot={snapshot} />
   return <TurnoutScene t={t} locale={locale} snapshot={snapshot} />
 }
 
 function App() {
-  const snapshot = useElectionSnapshot()
+  const { snapshot, schedule } = useElectionSnapshot()
   const requestedLocale = getRequestedLocale()
   const [localeIndex, setLocaleIndex] = useState(requestedLocale ? localeOrder.indexOf(requestedLocale) : 0)
   const locale = localeOrder[localeIndex]
@@ -272,7 +367,7 @@ function App() {
   const titleThemeRef = useRef<HTMLAudioElement>(null)
 
   const scene = sceneNames[sceneIndex]
-  const { phase } = getElectionTiming(now)
+  const { phase } = getElectionTiming(now, schedule)
   const updatedAt = snapshot.generatedAt ? new Date(snapshot.generatedAt) : now
 
   useEffect(() => {
@@ -281,14 +376,14 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (scene === 'intro') playCue(titleThemeRef.current, .38)
+    if (scene === 'intro') playCue(titleThemeRef.current, .228)
   }, [scene])
 
   useEffect(() => {
     if (fixedScene) return
     let transitionTimer: number | undefined
     const timer = window.setInterval(() => {
-      playCue(whooshRef.current, .3)
+      playCue(whooshRef.current, .18)
       setTransitioning(true)
       transitionTimer = window.setTimeout(() => {
         setSceneIndex((current) => {
@@ -306,12 +401,12 @@ function App() {
   }, [fixedScene, requestedLocale])
 
   return <main className={`studio scene-${scene}`} onPointerDown={() => {
-    if (scene === 'intro' && titleThemeRef.current?.paused) playCue(titleThemeRef.current, .38)
+    if (scene === 'intro' && titleThemeRef.current?.paused) playCue(titleThemeRef.current, .228)
   }}>
     <audio ref={whooshRef} src="/audio/transition-whoosh.mp3" preload="auto" />
     <audio ref={titleThemeRef} src="/audio/title-theme.mp3" preload="auto" />
     <div className="set set-back" aria-hidden="true" /><div className="set set-floor" aria-hidden="true" /><div className="set set-beam beam-one" aria-hidden="true" /><div className="set set-beam beam-two" aria-hidden="true" />
-    <StudioHeader now={now} phase={phase} t={t} locale={locale} /><div className="camera"><Scene name={scene} now={now} phase={phase} t={t} locale={locale} snapshot={snapshot} /></div>
+    <StudioHeader now={now} phase={phase} t={t} locale={locale} /><div className="camera"><Scene name={scene} now={now} phase={phase} t={t} locale={locale} snapshot={snapshot} schedule={schedule} /></div>
     <footer className="studio-footer"><span>{t('preliminary')}</span><p>{t('disclaimer')}</p><time dateTime={updatedAt.toISOString()}>{t('updated')} {new Intl.DateTimeFormat(localeTags[locale], { timeZone: 'Europe/Prague', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(updatedAt)}</time></footer>
     <div className={`transition-wipe ${transitioning ? 'active' : ''}`} aria-hidden="true"><img src="/manticore.svg" alt="" /><ShimmerMark className="transition-mark" /></div>
   </main>

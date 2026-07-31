@@ -186,6 +186,35 @@ public sealed class AdminElectionServiceTests
         Assert.Single(results.PartyGroups.Single(item => item.PartyListId == firstParty.Id).Candidates);
     }
 
+    [Theory]
+    [InlineData(ElectionStatus.Draft)]
+    [InlineData(ElectionStatus.Published)]
+    [InlineData(ElectionStatus.Closed)]
+    [InlineData(ElectionStatus.Finalized)]
+    [InlineData(ElectionStatus.Certified)]
+    [InlineData(ElectionStatus.Archived)]
+    public async Task TabularResults_ReturnsTwoPartyFiveSeatElectionInEveryState(ElectionStatus status)
+    {
+        await using var database = await ElectionTestDatabase.CreateAsync();
+        var (election, _) = await database.SeedPartyElectionAsync(DateTime.UtcNow, status: status, seatCount: 5);
+        database.Context.PartyLists.Add(new PartyList
+        {
+            Id = Guid.NewGuid(), ElectionId = election.Id, PartyOrganizationId = Guid.NewGuid(),
+            PartyRegistrationNumber = "REG-2", PartyName = "Second Party", ListName = "Second List", SortOrder = 2
+        });
+        await database.Context.SaveChangesAsync();
+        var service = new PublicElectionService(new ElectionStore(database.Context), new TestHashService());
+
+        var visibleElection = await service.GetAsync(election.Id.ToString(), default);
+        var results = await service.TabularResultsAsync(election.Id, default);
+
+        Assert.Equal(status, visibleElection.Status);
+        Assert.Equal(status.ToString(), results.Status);
+        Assert.Equal(5, results.SeatCount);
+        Assert.Equal(2, results.PartyGroups.Count);
+        Assert.Equal(status == ElectionStatus.Published, results.IsLive);
+    }
+
     [Fact]
     public async Task SetVisibility_HidesElectionFromAllPublicSurfacesButKeepsAdminAccess()
     {

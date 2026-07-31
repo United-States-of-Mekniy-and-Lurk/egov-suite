@@ -115,17 +115,13 @@ public sealed class PublicElectionService(IElectionStore store, ICredentialHashS
                 ? election.HistoricalParticipatingVoterCount ?? counts.ParticipatingVoterCount
                 : counts.ParticipatingVoterCount;
         }
-        else if (election.Status == ElectionStatus.Published)
+        else
         {
-            isLive = true;
+            isLive = election.Status == ElectionStatus.Published;
             var counts = await store.GetLiveAggregateCountsAsync(electionId, ct);
             totalValidBallots = counts.ValidBallotCount;
             participatingVoters = counts.ParticipatingVoterCount;
             countsBySelection = await store.GetLiveSelectionCountsAsync(electionId, ct);
-        }
-        else
-        {
-            throw new ElectionNotFoundException("Results are not available for this election.");
         }
 
         var turnoutPct = election.EligibleVoterCount is > 0

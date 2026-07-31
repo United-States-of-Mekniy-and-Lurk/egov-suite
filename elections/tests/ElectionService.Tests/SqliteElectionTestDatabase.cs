@@ -29,7 +29,8 @@ internal sealed class ElectionTestDatabase : IAsyncDisposable
     public async Task<(Election Election, PartyList Selection)> SeedPartyElectionAsync(
         DateTime now,
         EligibilityMode eligibilityMode = EligibilityMode.AllActiveCitizens,
-        ElectionStatus status = ElectionStatus.Published)
+        ElectionStatus status = ElectionStatus.Published,
+        int? seatCount = null)
     {
         var election = new Election
         {
@@ -43,6 +44,7 @@ internal sealed class ElectionTestDatabase : IAsyncDisposable
             VotingStartsAt = now.AddHours(-1),
             VotingEndsAt = now.AddHours(1),
             TerritoryCode = "CZ-10",
+            SeatCount = seatCount,
             CreatedAt = now.AddDays(-1),
             UpdatedAt = now,
             CreatedByPersonId = Guid.NewGuid()
