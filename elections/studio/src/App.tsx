@@ -95,13 +95,14 @@ const electionOpensAt = new Date('2026-08-01T10:00:00+02:00')
 const electionClosesAt = new Date('2026-08-02T14:00:00+02:00')
 const partyColors = partyColorData as Record<string, PartyPalette>
 const sceneNames = ['intro', 'overview', 'parties', 'candidates', 'results', 'turnout'] as const
+const localeOrder: Locale[] = ['en', 'cs', 'mis']
 type SceneName = (typeof sceneNames)[number]
 const sceneDuration = 18000
 const localeTags: Record<Locale, string> = { en: 'en-GB', cs: 'cs-CZ', mis: 'mis' }
 
-function getLocale(): Locale {
+function getRequestedLocale(): Locale | null {
   const requested = new URLSearchParams(location.search).get('lang')
-  return requested && requested in translationData ? requested as Locale : 'en'
+  return requested && requested in translationData ? requested as Locale : null
 }
 
 function getElectionTiming(now: Date) {
@@ -235,7 +236,9 @@ function Scene({ name, now, phase, t, locale }: { name: SceneName; now: Date; ph
 }
 
 function App() {
-  const locale = getLocale()
+  const requestedLocale = getRequestedLocale()
+  const [localeIndex, setLocaleIndex] = useState(requestedLocale ? localeOrder.indexOf(requestedLocale) : 0)
+  const locale = localeOrder[localeIndex]
   const t = (key: TranslationKey) => translationData[locale][key]
   const requestedScene = new URLSearchParams(location.search).get('scene') as SceneName | null
   const fixedScene = requestedScene && sceneNames.includes(requestedScene) ? requestedScene : null
@@ -263,13 +266,20 @@ function App() {
     const timer = window.setInterval(() => {
       playCue(whooshRef.current, .3)
       setTransitioning(true)
-      transitionTimer = window.setTimeout(() => { setSceneIndex((current) => (current + 1) % sceneNames.length); setTransitioning(false) }, 850)
+      transitionTimer = window.setTimeout(() => {
+        setSceneIndex((current) => {
+          const next = (current + 1) % sceneNames.length
+          if (next === 0 && !requestedLocale) setLocaleIndex((locale) => (locale + 1) % localeOrder.length)
+          return next
+        })
+        setTransitioning(false)
+      }, 850)
     }, sceneDuration)
     return () => {
       window.clearInterval(timer)
       if (transitionTimer) window.clearTimeout(transitionTimer)
     }
-  }, [fixedScene])
+  }, [fixedScene, requestedLocale])
 
   return <main className={`studio scene-${scene}`} onPointerDown={() => {
     if (scene === 'intro' && titleThemeRef.current?.paused) playCue(titleThemeRef.current, .38)

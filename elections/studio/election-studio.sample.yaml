@@ -30,7 +30,7 @@ spec:
                   name: election-studio-youtube
                   key: stream-url
             - name: STUDIO_URL
-              value: http://127.0.0.1/?lang=en
+              value: http://127.0.0.1/
             - name: TZ
               value: Europe/Prague
           ports:

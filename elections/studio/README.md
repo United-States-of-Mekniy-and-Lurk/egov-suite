@@ -19,7 +19,7 @@ Open `http://localhost:5173`. The studio rotates through six 18-second scenes:
 - `results`
 - `turnout`
 
-Pin a scene for review or screenshots with `?scene=candidates`. Select a language with `?lang=en`, `?lang=cs`, or `?lang=mis`; parameters can be combined. English is the default. The Nissiian catalog currently contains English fallback copy pending authoritative translations.
+Pin a scene for review or screenshots with `?scene=candidates`. By default, the studio runs the complete six-scene program in English, then Czech, then Nissiian, and repeats. Use `?lang=en`, `?lang=cs`, or `?lang=mis` to pin one language; parameters can be combined. The Nissiian catalog currently contains English fallback copy pending authoritative translations.
 
 The election opens on 1 August 2026 at 10:00 and closes on 2 August 2026 at 14:00 in `Europe/Prague`. The header clock, election phase, and countdown update every second.
 
