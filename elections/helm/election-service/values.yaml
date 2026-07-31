@@ -4,7 +4,7 @@ api:
     repository: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-election-service-api
     pullPolicy: Always
     # Automatically updated by the helm-release workflow after a successful push to main.
-    tag: "sha-4db23a1"
+    tag: "sha-7df5cc6"
   service:
     type: ClusterIP
     port: 80
@@ -50,7 +50,7 @@ web:
     repository: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-election-service-web
     pullPolicy: Always
     # Automatically updated by the helm-release workflow after a successful push to main.
-    tag: "sha-4db23a1"
+    tag: "sha-7df5cc6"
   service:
     type: ClusterIP
     port: 80
