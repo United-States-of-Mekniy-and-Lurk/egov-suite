@@ -29,6 +29,19 @@ public sealed class AdminElectionService(
         return ToAdminView(election);
     }
 
+    public async Task<AdminElectionView> SetVisibilityAsync(
+        Guid electionId,
+        ElectionVisibilityInput input,
+        CancellationToken ct)
+    {
+        EnsureAdmin();
+        var election = await RequireElectionAsync(electionId, ct);
+        election.IsPubliclyVisible = input.IsPubliclyVisible;
+        election.UpdatedAt = DateTime.UtcNow;
+        await store.SaveChangesAsync(ct);
+        return ToAdminView(election);
+    }
+
     public async Task<AdminElectionView> CreateAsync(ElectionInput input, CancellationToken ct)
     {
         EnsureAdmin();
@@ -511,6 +524,11 @@ public sealed class AdminElectionService(
             throw new ElectionValidationException($"Transition from {election.Status} to {input.Status} is not allowed.");
         if (input.Status == ElectionStatus.Published)
             ValidateReadyToPublish(election);
+        if (input.Status == ElectionStatus.Certified && election.Type == ElectionType.PartyList &&
+            election.SeatCount.HasValue &&
+            election.PartyLists.SelectMany(item => item.Candidates).Count(candidate => candidate.IsWinner) != election.SeatCount.Value)
+            throw new ElectionValidationException(
+                $"Exactly {election.SeatCount.Value} winners must be selected before certification.");
         var now = DateTime.UtcNow;
         if (input.Status == ElectionStatus.Finalized)
             await store.FinalizeAsync(electionId, actor.PersonId, input.Reason, now, ct);
@@ -659,6 +677,7 @@ public sealed class AdminElectionService(
         election.EligibleVoterCount,
         election.SeatCount,
         election.IsHistorical,
+        election.IsPubliclyVisible,
         election.HistoricalSourceReference,
         election.ImportedAt,
         election.ImportedByPersonId);

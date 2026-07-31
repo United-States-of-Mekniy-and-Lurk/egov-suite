@@ -10,7 +10,6 @@ namespace ElectionService.Web.Pages.Admin;
 [Authorize(Policy = "RequireAdmin")]
 public sealed class ManageModel(
     ManagedElectionClient managed,
-    PublicElectionClient publicElections,
     IConfiguration configuration,
     IStringLocalizer localizer) : PageModel
 {
@@ -68,6 +67,15 @@ public sealed class ManageModel(
             SuccessMessage = localizer["Election details updated."];
         }, ct, "details");
 
+    public async Task<IActionResult> OnPostVisibilityAsync(bool isPubliclyVisible, CancellationToken ct) =>
+        await ExecuteActionAsync(async () =>
+        {
+            await managed.SetVisibilityAsync(Id, isPubliclyVisible, ct);
+            SuccessMessage = isPubliclyVisible
+                ? localizer["Election is publicly visible."]
+                : localizer["Election is hidden from public records and result feeds."];
+        }, ct, Step);
+
     public async Task<IActionResult> OnPostPartyListAsync(CancellationToken ct) =>
         await ExecuteAsync(PartyList, nameof(PartyList), async () =>
         {
@@ -121,10 +129,13 @@ public sealed class ManageModel(
     public async Task<IActionResult> OnPostEndNowAsync(CancellationToken ct) =>
         await ExecuteActionAsync(async () =>
         {
-            var election = await managed.GetAsync(Id, ct);
-            await managed.UpdateScheduleAsync(Id, election.VotingStartsAt, DateTime.UtcNow, ct);
-            SuccessMessage = localizer["Voting period ended."];
-        }, ct, "details");
+            var updated = await managed.TransitionAsync(
+                Id,
+                new TransitionInput { Status = "Closed", Reason = "Voting ended manually by an administrator." },
+                ct);
+            Title = updated.Title;
+            SuccessMessage = localizer["Election moved to {0}.", ElectionDisplay.Status(updated.Status, localizer)];
+        }, ct, "publish");
 
     public async Task<IActionResult> OnPostOptionAsync(CancellationToken ct) =>
         await ExecuteAsync(ReferendumOption, nameof(ReferendumOption), async () =>
@@ -294,7 +305,7 @@ public sealed class ManageModel(
             Invitations = await invitationsTask;
             if (PublicElection.Status is "Published" or "Finalized" or "Certified" or "Archived")
             {
-                Results = await publicElections.TabularResultsAsync(Id, ct);
+                Results = await managed.GetResultsAsync(Id, ct);
             }
             Title = PublicElection.Title;
             if (!populateForm) return;

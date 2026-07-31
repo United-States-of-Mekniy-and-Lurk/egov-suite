@@ -87,6 +87,7 @@ h3 { font-size: 1.3rem; }
 .status-draft { color: var(--muted); }
 .status-closed { color: var(--warning); }
 .status-finalized, .status-archived { color: #3f5f78; }
+.status-hidden { color: var(--error); }
 
 .notice, .empty-state { margin-block: 24px; padding: 24px; background: var(--white); border-left: 5px solid var(--sky); }
 .notice { display: flex; flex-direction: column; gap: 4px; }
@@ -186,6 +187,8 @@ h3 { font-size: 1.3rem; }
 .primary-button { color: var(--white); background: var(--ink); border: 2px solid var(--ink); }
 .secondary-button { color: var(--ink); background: var(--white); border: 2px solid var(--ink); }
 .manage-page > .notice { margin-bottom: 0; }
+.visibility-form { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 18px; }
+.visibility-form .secondary-button { min-height: 40px; padding: 6px 14px; }
 .setup-steps { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 30px; padding: 0; border-bottom: 3px solid var(--ink); }
 .setup-steps a { min-height: 44px; display: inline-flex; align-items: center; padding: 10px 16px; color: var(--muted); font-size: .88rem; font-weight: 700; text-decoration: none; white-space: nowrap; }
 .setup-steps a:hover { color: var(--ink); background: #eee; }

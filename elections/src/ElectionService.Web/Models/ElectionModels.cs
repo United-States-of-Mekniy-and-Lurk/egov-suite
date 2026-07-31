@@ -30,6 +30,7 @@ public sealed record ElectionView(
     IReadOnlyList<PartyListView> PartyLists,
     IReadOnlyList<ReferendumOptionView> ReferendumOptions,
     bool IsHistorical,
+    bool IsPubliclyVisible,
     string? HistoricalSourceReference)
 {
     public bool IsOpen => Status == "Published" && DateTime.UtcNow >= VotingStartsAt && DateTime.UtcNow < VotingEndsAt;
@@ -190,3 +191,4 @@ public sealed record ReceiptVerificationResult(bool IsValid, Guid ElectionId);
 
 public sealed record CertificationView(int ApprovalCount, int RejectionCount, int Quorum, bool IsCertified, DateTime? CertifiedAt);
 public sealed class TransitionInput { [Display(Name = "Status"), Required] public string Status { get; set; } = string.Empty; [Display(Name = "Reason"), StringLength(1000)] public string? Reason { get; set; } }
+public sealed record ElectionVisibilityInput(bool IsPubliclyVisible);

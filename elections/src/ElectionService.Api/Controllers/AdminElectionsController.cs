@@ -9,13 +9,19 @@ namespace ElectionService.Api.Controllers;
 [ApiController]
 [Authorize(Policy = "RequireAdmin")]
 [Route("admin/elections")]
-public sealed class AdminElectionsController(AdminElectionService service) : ControllerBase
+public sealed class AdminElectionsController(
+    AdminElectionService service,
+    PublicElectionService publicElectionService) : ControllerBase
 {
     [HttpGet]
     public Task<IReadOnlyList<AdminElectionView>> List(CancellationToken ct) => service.ListAsync(ct);
 
     [HttpGet("{electionId:guid}")]
     public Task<AdminElectionView> Get(Guid electionId, CancellationToken ct) => service.GetAsync(electionId, ct);
+
+    [HttpGet("{electionId:guid}/results")]
+    public Task<TabularResultsView> Results(Guid electionId, CancellationToken ct) =>
+        publicElectionService.AdminTabularResultsAsync(electionId, ct);
 
     [HttpPost]
     public async Task<ActionResult<AdminElectionView>> Create([FromBody] ElectionInput input, CancellationToken ct)
@@ -27,6 +33,13 @@ public sealed class AdminElectionsController(AdminElectionService service) : Con
     [HttpPut("{electionId:guid}")]
     public Task<AdminElectionView> Update(Guid electionId, [FromBody] ElectionInput input, CancellationToken ct) =>
         service.UpdateAsync(electionId, input, ct);
+
+    [HttpPut("{electionId:guid}/visibility")]
+    public Task<AdminElectionView> SetVisibility(
+        Guid electionId,
+        [FromBody] ElectionVisibilityInput input,
+        CancellationToken ct) =>
+        service.SetVisibilityAsync(electionId, input, ct);
 
     [HttpPost("{electionId:guid}/party-lists")]
     public Task<PartyListView> AddPartyList(Guid electionId, [FromBody] PartyListInput input, CancellationToken ct) =>

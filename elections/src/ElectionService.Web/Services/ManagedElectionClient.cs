@@ -13,6 +13,9 @@ public sealed class ManagedElectionClient(
     public Task<ElectionView> GetAsync(Guid electionId, CancellationToken ct) =>
         GetAsync<ElectionView>($"/admin/elections/{electionId}", ct);
 
+    public Task<TabularResultsView> GetResultsAsync(Guid electionId, CancellationToken ct) =>
+        GetAsync<TabularResultsView>($"/admin/elections/{electionId}/results", ct);
+
     public Task<BallotReceipt> VoteAsync(Guid electionId, VoteInput input, CancellationToken ct) =>
         SendAsync<BallotReceipt>(HttpMethod.Post, $"/elections/{electionId}/vote", input, ct);
 
@@ -24,6 +27,10 @@ public sealed class ManagedElectionClient(
 
     public Task<ElectionView> UpdateAsync(Guid electionId, ElectionInput input, CancellationToken ct) =>
         SendAsync<ElectionView>(HttpMethod.Put, $"/admin/elections/{electionId}", ToApiInput(input), ct);
+
+    public Task<ElectionView> SetVisibilityAsync(Guid electionId, bool isPubliclyVisible, CancellationToken ct) =>
+        SendAsync<ElectionView>(HttpMethod.Put, $"/admin/elections/{electionId}/visibility",
+            new ElectionVisibilityInput(isPubliclyVisible), ct);
 
     public Task<PartyListView> AddPartyListAsync(Guid electionId, PartyListInput input, CancellationToken ct) =>
         SendAsync<PartyListView>(HttpMethod.Post, $"/admin/elections/{electionId}/party-lists", input, ct);

@@ -30,6 +30,7 @@ public sealed record BulkInvitationInput(IReadOnlyList<InvitationInput> Items);
 public sealed record VoteInput(Guid SelectionId);
 public sealed record TransitionInput(ElectionStatus Status, string? Reason);
 public sealed record ScheduleInput(DateTime VotingStartsAt, DateTime VotingEndsAt);
+public sealed record ElectionVisibilityInput(bool IsPubliclyVisible);
 
 public sealed record CandidateView(Guid Id, string DisplayName, string? Description, int Position, bool IsWithdrawn, bool IsWinner);
 public sealed record CandidateAdminView(Guid Id, Guid? PersonId, string DisplayName, string? Description, int Position, DateTime? WithdrawnAt, bool IsWinner);
@@ -58,6 +59,7 @@ public sealed record ElectionView(
     IReadOnlyList<PartyListView> PartyLists,
     IReadOnlyList<ReferendumOptionView> ReferendumOptions,
     bool IsHistorical,
+    bool IsPubliclyVisible,
     string? HistoricalSourceReference);
 public sealed record PartyListAdminView(
     Guid Id,
@@ -83,6 +85,7 @@ public sealed record AdminElectionView(
     int? EligibleVoterCount,
     int? SeatCount,
     bool IsHistorical,
+    bool IsPubliclyVisible,
     string? HistoricalSourceReference,
     DateTime? ImportedAt,
     Guid? ImportedByPersonId);

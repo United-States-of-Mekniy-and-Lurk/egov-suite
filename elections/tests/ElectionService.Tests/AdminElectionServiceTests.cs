@@ -187,6 +187,47 @@ public sealed class AdminElectionServiceTests
     }
 
     [Fact]
+    public async Task SetVisibility_HidesElectionFromAllPublicSurfacesButKeepsAdminAccess()
+    {
+        await using var database = await ElectionTestDatabase.CreateAsync();
+        var (election, _) = await database.SeedPartyElectionAsync(
+            DateTime.UtcNow, status: ElectionStatus.Published);
+        var admin = CreateService(database.Context);
+        var publicService = new PublicElectionService(new ElectionStore(database.Context), new TestHashService());
+
+        var hidden = await admin.SetVisibilityAsync(
+            election.Id, new ElectionVisibilityInput(false), default);
+
+        Assert.False(hidden.IsPubliclyVisible);
+        Assert.DoesNotContain(await publicService.ListAsync(default), item => item.Id == election.Id);
+        await Assert.ThrowsAsync<ElectionNotFoundException>(() => publicService.GetAsync(election.Slug, default));
+        await Assert.ThrowsAsync<ElectionNotFoundException>(() => publicService.TabularResultsAsync(election.Id, default));
+        Assert.Contains(await admin.ListAsync(default), item => item.Id == election.Id && !item.IsPubliclyVisible);
+    }
+
+    [Fact]
+    public async Task TransitionToCertified_RequiresEveryConfiguredSeatToHaveAWinner()
+    {
+        await using var database = await ElectionTestDatabase.CreateAsync();
+        var (election, partyList) = await database.SeedPartyElectionAsync(
+            DateTime.UtcNow, status: ElectionStatus.Finalized);
+        election.SeatCount = 1;
+        var candidate = Candidate(partyList.Id, "Winning candidate", 1);
+        database.Context.Candidates.Add(candidate);
+        await database.Context.SaveChangesAsync();
+        var service = CreateService(database.Context);
+
+        await Assert.ThrowsAsync<ElectionValidationException>(() => service.TransitionAsync(
+            election.Id, new TransitionInput(ElectionStatus.Certified, null), default));
+
+        await service.SetWinnersAsync(election.Id, new WinnerSelectionInput([candidate.Id]), default);
+        var certified = await service.TransitionAsync(
+            election.Id, new TransitionInput(ElectionStatus.Certified, null), default);
+
+        Assert.Equal(ElectionStatus.Certified, certified.Status);
+    }
+
+    [Fact]
     public async Task ImportHistorical_CreatesArchivedAggregateRecordWithoutVotingRows()
     {
         await using var database = await ElectionTestDatabase.CreateAsync();

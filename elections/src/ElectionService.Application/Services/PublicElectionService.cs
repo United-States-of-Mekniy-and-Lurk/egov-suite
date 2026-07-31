@@ -15,7 +15,7 @@ public sealed class PublicElectionService(IElectionStore store, ICredentialHashS
 
     public async Task<IReadOnlyList<ResultView>> ResultsAsync(Guid electionId, CancellationToken ct)
     {
-        var election = await store.GetAsync(electionId, ct) ?? throw new ElectionNotFoundException("Election was not found.");
+        var election = await RequirePublicAsync(electionId, ct);
         if (election.Status is not (ElectionStatus.Finalized or ElectionStatus.Certified or ElectionStatus.Archived))
             throw new ElectionNotFoundException("Election results are not available.");
         return (await store.GetResultsAsync(electionId, ct)).Select(item => new ResultView(
@@ -81,8 +81,22 @@ public sealed class PublicElectionService(IElectionStore store, ICredentialHashS
 
     public async Task<TabularResultsView> TabularResultsAsync(Guid electionId, CancellationToken ct)
     {
+        var election = await RequirePublicAsync(electionId, ct);
+        return await BuildTabularResultsAsync(election, ct);
+    }
+
+    public async Task<TabularResultsView> AdminTabularResultsAsync(Guid electionId, CancellationToken ct)
+    {
         var election = await store.GetAsync(electionId, ct)
             ?? throw new ElectionNotFoundException("Election was not found.");
+        return await BuildTabularResultsAsync(election, ct);
+    }
+
+    private async Task<TabularResultsView> BuildTabularResultsAsync(
+        Domain.Entities.Election election,
+        CancellationToken ct)
+    {
+        var electionId = election.Id;
 
         bool isLive;
         int totalValidBallots;
@@ -153,8 +167,7 @@ public sealed class PublicElectionService(IElectionStore store, ICredentialHashS
 
     public async Task<ReceiptVerificationResult> VerifyReceiptAsync(Guid electionId, string receiptHash, CancellationToken ct)
     {
-        var election = await store.GetAsync(electionId, ct)
-            ?? throw new ElectionNotFoundException("Election was not found.");
+        var election = await RequirePublicAsync(electionId, ct);
         if (election.Status == ElectionStatus.Draft)
             throw new ElectionNotFoundException("Election was not found.");
         var isValid = await store.VerifyReceiptAsync(electionId, receiptHash, ct);
@@ -163,8 +176,7 @@ public sealed class PublicElectionService(IElectionStore store, ICredentialHashS
 
     public async Task<CertificationView> GetCertificationStatusAsync(Guid electionId, CancellationToken ct)
     {
-        var election = await store.GetAsync(electionId, ct)
-            ?? throw new ElectionNotFoundException("Election was not found.");
+        var election = await RequirePublicAsync(electionId, ct);
         if (election.Status is not (ElectionStatus.Finalized or ElectionStatus.Certified or ElectionStatus.Archived))
             throw new ElectionNotFoundException("Certification is not available for this election.");
         var decisions = await store.ListCertificationDecisionsAsync(electionId, ct);
@@ -173,4 +185,8 @@ public sealed class PublicElectionService(IElectionStore store, ICredentialHashS
         return new CertificationView(approvals, rejections, election.CertificationQuorum,
             election.CertifiedAt.HasValue, election.CertifiedAt);
     }
+
+    private async Task<Domain.Entities.Election> RequirePublicAsync(Guid electionId, CancellationToken ct) =>
+        await store.GetPublicAsync(electionId.ToString(), ct)
+            ?? throw new ElectionNotFoundException("Election was not found.");
 }

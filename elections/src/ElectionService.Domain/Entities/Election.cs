@@ -20,6 +20,7 @@ public sealed class Election
     public int? HistoricalParticipatingVoterCount { get; set; }
     public int? HistoricalInvalidBallotCount { get; set; }
     public bool IsHistorical { get; set; }
+    public bool IsPubliclyVisible { get; set; } = true;
     public string? HistoricalSourceReference { get; set; }
     public DateTime? ImportedAt { get; set; }
     public Guid? ImportedByPersonId { get; set; }

@@ -25,8 +25,8 @@
                 {
                     <article>
                         <div><h3>@election.Title</h3><p>@ElectionDisplay.Type(election.Type, L) · @election.VotingStartsAt.ToString("d MMM yyyy")@if (election.IsHistorical) { <span> · @L["Historical record"]</span> }</p></div>
-                        <span class="status status-@election.Status.ToLowerInvariant()">@ElectionDisplay.Status(election.Status, L)</span>
-                        <div class="row-links"><a asp-page="/Admin/Manage" asp-route-id="@election.Id" asp-route-title="@election.Title">@L["Manage"]</a><a asp-page="/Elections/Detail" asp-route-identifier="@election.Slug">@L["Public record"]</a></div>
+                        <span class="status @(election.IsPubliclyVisible ? $"status-{election.Status.ToLowerInvariant()}" : "status-hidden")">@(election.IsPubliclyVisible ? ElectionDisplay.Status(election.Status, L) : L["Hidden"])</span>
+                        <div class="row-links"><a asp-page="/Admin/Manage" asp-route-id="@election.Id" asp-route-title="@election.Title">@L["Manage"]</a>@if (election.IsPubliclyVisible) { <a asp-page="/Elections/Detail" asp-route-identifier="@election.Slug">@L["Public record"]</a> }</div>
                     </article>
                 }
             </div>

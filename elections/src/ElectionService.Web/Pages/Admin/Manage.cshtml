@@ -6,8 +6,26 @@
     <a class="back-link" asp-page="/Admin/Index">@L["Back to dashboard"]</a>
     <header class="workspace-header">
         <div><p class="eyebrow">@L["Election administration"]</p><h1>@(Model.Title ?? L["Manage election"])</h1><p class="identifier">@L["Election ID"]: @Model.Id</p></div>
-        @if (Model.PublicElection is not null) { <a class="secondary-link" asp-page="/Elections/Detail" asp-route-identifier="@Model.PublicElection.Slug">@L["View public record"]</a> }
+        @if (Model.PublicElection?.IsPubliclyVisible == true) { <a class="secondary-link" asp-page="/Elections/Detail" asp-route-identifier="@Model.PublicElection.Slug">@L["View public record"]</a> }
     </header>
+
+    @if (Model.PublicElection is not null)
+    {
+        <form method="post" asp-page-handler="Visibility" class="visibility-form">
+            <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" /><input type="hidden" asp-for="Step" />
+            <input type="hidden" name="isPubliclyVisible" value="@(!Model.PublicElection.IsPubliclyVisible ? "true" : "false")" />
+            @if (Model.PublicElection.IsPubliclyVisible)
+            {
+                <span class="status status-published">@L["Publicly visible"]</span>
+                <button class="secondary-button danger-button" type="submit">@L["Hide from public"]</button>
+            }
+            else
+            {
+                <span class="status status-hidden">@L["Hidden from public"]</span>
+                <button class="secondary-button" type="submit">@L["Make public"]</button>
+            }
+        </form>
+    }
 
     @if (!string.IsNullOrWhiteSpace(Model.SuccessMessage)) { <div class="notice notice-success" role="status">@Model.SuccessMessage</div> }
     @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage)) { <div class="notice notice-error" role="alert">@Model.ErrorMessage</div> }
@@ -60,6 +78,8 @@
         {
         <section class="setup-section">
             <h2>@L["Election details"]</h2>
+            @if (Model.PublicElection?.Status is "Draft" or "Published")
+            {
             <form method="post" asp-page-handler="Update" class="admin-form compact-form">
                 <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
                 <div class="field"><label asp-for="Election.Slug">@L["Record slug"]</label><input asp-for="Election.Slug" /></div>
@@ -73,7 +93,12 @@
                 <div class="field"><label asp-for="Election.SeatCount">@L["Seats (party-list elections, optional)"]</label><input asp-for="Election.SeatCount" type="number" min="1" /></div>
                 <button class="primary-button" type="submit">@L["Update details"]</button>
             </form>
-            @if (Model.PublicElection?.Status is "Published" or "Draft")
+            }
+            else
+            {
+                <p class="section-intro">@L["This section is locked in the current election state."]</p>
+            }
+            @if (Model.PublicElection?.Status == "Published")
             {
             <form method="post" asp-page-handler="EndNow" class="admin-form compact-form end-now-form">
                 <input type="hidden" name="Id" value="@Model.Id" />
@@ -95,6 +120,8 @@
                     {
                         <details class="party-card">
                             <summary><strong>@party.ListName</strong> <span class="identifier">@party.PartyName · #@party.SortOrder</span></summary>
+                            @if (Model.PublicElection.Status == "Draft")
+                            {
                             <form method="post" asp-page-handler="UpdatePartyList" class="admin-form compact-form">
                                 <input type="hidden" name="Id" value="@Model.Id" />
                                 <input type="hidden" name="EditPartyListId" value="@party.Id" />
@@ -112,10 +139,13 @@
                                 <input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="EditPartyListId" value="@party.Id" />
                                 <button class="secondary-button danger-button" type="submit">@L["Delete list"]</button>
                             </form>
+                            }
                         </details>
                     }
                 </div>
             }
+            @if (Model.PublicElection?.Status == "Draft")
+            {
             <form method="post" asp-page-handler="PartyList" class="admin-form compact-form narrow-form">
                 <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
                 <h3>@L["Add party list"]</h3>
@@ -129,14 +159,15 @@
                 </div>
                 <button class="secondary-button" type="submit">@L["Add party list"]</button>
             </form>
+            }
         </section>
 
         <section class="setup-section">
             <h2>@L["Candidates"]</h2>
             <p class="section-intro">@L["Candidates belong to a party list. Withdrawn candidates remain visible with a strike-through but are excluded from tallies."]</p>
-            @if (Model.PublicElection.PartyLists.Any(item => item.Candidates.Count > 0))
+            @if (Model.PublicElection is { } publicElection && publicElection.PartyLists.Any(item => item.Candidates.Count > 0))
             {
-                @foreach (var party in Model.PublicElection.PartyLists.OrderBy(item => item.SortOrder).Where(item => item.Candidates.Count > 0))
+                @foreach (var party in publicElection.PartyLists.OrderBy(item => item.SortOrder).Where(item => item.Candidates.Count > 0))
                 {
                     <h3 class="candidate-group-heading">@party.ListName</h3>
                     <div class="candidate-table">
@@ -147,14 +178,14 @@
                                 <span class="candidate-position">@candidate.Position</span>
                                 <span class="candidate-name">@candidate.DisplayName</span>
                                 @if (withdrawn) { <span class="candidate-badge">@L["Withdrawn"]</span> }
-                                @if (!withdrawn)
+                                @if (!withdrawn && publicElection.Status is "Draft" or "Published")
                                 {
                                     <form method="post" asp-page-handler="WithdrawCandidate" class="inline-action-form">
                                         <input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="EditCandidatePartyListId" value="@party.Id" /><input type="hidden" name="EditCandidateId" value="@candidate.Id" />
                                         <button class="secondary-button small-button" type="submit">@L["Withdraw"]</button>
                                     </form>
                                 }
-                                @if (Model.PublicElection.Status == "Draft")
+                                @if (publicElection.Status == "Draft")
                                 {
                                     <form method="post" asp-page-handler="DeleteCandidate" class="inline-action-form">
                                         <input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="EditCandidatePartyListId" value="@party.Id" /><input type="hidden" name="EditCandidateId" value="@candidate.Id" />
@@ -166,6 +197,8 @@
                     </div>
                 }
             }
+            @if (Model.PublicElection?.Status == "Draft")
+            {
             <form method="post" asp-page-handler="Candidate" class="admin-form compact-form narrow-form">
                 <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
                 <h3>@L["Add candidate"]</h3>
@@ -180,6 +213,7 @@
                 </div>
                 <button class="secondary-button" type="submit">@L["Add candidate"]</button>
             </form>
+            }
         </section>
         }
 
@@ -193,6 +227,8 @@
                     @foreach (var option in Model.PublicElection.ReferendumOptions.OrderBy(item => item.SortOrder))
                     {
                         <div class="resource-row">
+                            @if (Model.PublicElection.Status == "Draft")
+                            {
                             <form method="post" asp-page-handler="UpdateOption" class="admin-form compact-form">
                                 <input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="EditOptionId" value="@option.Id" />
                                 <div class="form-grid">
@@ -207,10 +243,17 @@
                                 <input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="EditOptionId" value="@option.Id" />
                                 <button class="secondary-button" type="submit">@L["Delete option"]</button>
                             </form>
+                            }
+                            else
+                            {
+                                <div><strong>@option.Label</strong><p class="identifier">@option.Code</p></div>
+                            }
                         </div>
                     }
                 </div>
             }
+            @if (Model.PublicElection?.Status == "Draft")
+            {
             <form method="post" asp-page-handler="Option" class="admin-form compact-form narrow-form">
                 <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
                 <div class="form-grid"><div class="field"><label asp-for="ReferendumOption.Code">@L["Code"]</label><input asp-for="ReferendumOption.Code" /></div><div class="field"><label asp-for="ReferendumOption.SortOrder">@L["Sort order"]</label><input asp-for="ReferendumOption.SortOrder" type="number" /></div></div>
@@ -218,6 +261,7 @@
                 <div class="field"><label asp-for="ReferendumOption.Description">@L["Description"]</label><textarea asp-for="ReferendumOption.Description" rows="3"></textarea></div>
                 <button class="secondary-button" type="submit">@L["Add option"]</button>
             </form>
+            }
         </section>
         }
 
@@ -232,14 +276,19 @@
                     {
                         <div class="resource-row compact-resource-row">
                             <div><strong>@voter.PersonId</strong><p class="identifier">@L["Added {0}", voter.AddedAt.ToString("g")]</p></div>
+                            @if (Model.PublicElection?.Status == "Draft")
+                            {
                             <form method="post" asp-page-handler="RemoveVoter" class="inline-action-form">
                                 <input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="personId" value="@voter.PersonId" />
                                 <button class="secondary-button" type="submit">@L["Remove"]</button>
                             </form>
+                            }
                         </div>
                     }
                 </div>
             }
+            @if (Model.PublicElection?.Status == "Draft")
+            {
             <div class="paired-forms">
                 <form method="post" asp-page-handler="Voter" class="admin-form compact-form">
                     <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
@@ -254,6 +303,11 @@
                     <button class="secondary-button" type="submit">@L["Add voter list"]</button>
                 </form>
             </div>
+            }
+            else
+            {
+                <p class="section-intro">@L["This section is locked in the current election state."]</p>
+            }
         </section>
         }
 
@@ -275,7 +329,7 @@
                                 @if (url is not null) { <code class="invite-link">@url</code> }
                                 <p class="identifier">@status · @L["Created {0}", invitation.CreatedAt.ToString("g")]</p>
                             </div>
-                            @if (invitation.UsedOn is null && invitation.RevokedAt is null)
+                            @if (invitation.UsedOn is null && invitation.RevokedAt is null && Model.PublicElection?.Status is "Draft" or "Published")
                             {
                                 <form method="post" asp-page-handler="RevokeInvitation" class="inline-action-form">
                                     <input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="invitationId" value="@invitation.Id" />
@@ -286,6 +340,8 @@
                     }
                 </div>
             }
+            @if (Model.PublicElection?.Status is "Draft" or "Published")
+            {
             <div class="paired-forms">
                 <form method="post" asp-page-handler="Invitation" class="admin-form compact-form">
                     <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
@@ -301,6 +357,11 @@
                     <button class="secondary-button" type="submit">@L["Create invitations"]</button>
                 </form>
             </div>
+            }
+            else
+            {
+                <p class="section-intro">@L["This section is locked in the current election state."]</p>
+            }
         </section>
         }
 
@@ -308,13 +369,29 @@
         {
         <section class="setup-section">
             <h2>@L["Review and publish"]</h2>
+            @if (Model.PublicElection?.Status == "Archived")
+            {
+                <p class="section-intro">@L["No further state transitions are available."]</p>
+            }
+            else
+            {
             <form method="post" asp-page-handler="Transition" class="admin-form compact-form narrow-form">
                 <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Title" />
-                <div class="field"><label asp-for="Transition.Status">@L["Move to"]</label><select asp-for="Transition.Status"><option value="Published">@L["Status_Published"]</option><option value="Closed">@L["Status_Closed"]</option><option value="Finalized">@L["Status_Finalized"]</option><option value="Certified">@L["Status_Certified"]</option><option value="Archived">@L["Status_Archived"]</option></select></div>
+                <div class="field"><label asp-for="Transition.Status">@L["Move to"]</label><select asp-for="Transition.Status">
+                    @if (Model.PublicElection?.Status == "Draft") { <option value="Published">@L["Status_Published"]</option> }
+                    @if (Model.PublicElection?.Status == "Published") { <option value="Closed">@L["Status_Closed"]</option> }
+                    @if (Model.PublicElection?.Status == "Closed") { <option value="Finalized">@L["Status_Finalized"]</option> }
+                    @if (Model.PublicElection?.Status == "Finalized") { <option value="Certified">@L["Status_Certified"]</option><option value="Archived">@L["Status_Archived"]</option> }
+                    @if (Model.PublicElection?.Status == "Certified") { <option value="Archived">@L["Status_Archived"]</option> }
+                </select></div>
                 <div class="field"><label asp-for="Transition.Reason">@L["Reason"]</label><textarea asp-for="Transition.Reason" rows="3"></textarea></div>
-                <div class="field checkbox-field"><label><input asp-for="ConfirmPublish" /> @L["I confirm this election is ready to publish"]</label></div>
+                @if (Model.PublicElection?.Status == "Draft")
+                {
+                    <div class="field checkbox-field"><label><input asp-for="ConfirmPublish" /> @L["I confirm this election is ready to publish"]</label></div>
+                }
                 <button class="primary-button" type="submit">@L["Change state"]</button>
             </form>
+            }
 
             @if (Model.PublicElection?.Status == "Finalized")
             {
@@ -337,7 +414,14 @@
             }
             else
             {
-                <p class="section-intro">@L["Public CSV feed"]: <a href="@Model.ResultsCsvUrl">@Model.ResultsCsvUrl</a></p>
+                @if (Model.PublicElection?.IsPubliclyVisible == true)
+                {
+                    <p class="section-intro">@L["Public CSV feed"]: <a href="@Model.ResultsCsvUrl">@Model.ResultsCsvUrl</a></p>
+                }
+                else
+                {
+                    <p class="section-intro">@L["Public result feeds are unavailable while this election is hidden."]</p>
+                }
                 @foreach (var party in Model.Results.PartyGroups.OrderByDescending(item => item.VoteCount))
                 {
                     <section class="admin-result-group">

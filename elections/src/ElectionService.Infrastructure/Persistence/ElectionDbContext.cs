@@ -29,6 +29,7 @@ public sealed class ElectionDbContext(DbContextOptions<ElectionDbContext> option
             entity.Property(item => item.Type).HasConversion<string>().HasMaxLength(30);
             entity.Property(item => item.Status).HasConversion<string>().HasMaxLength(30);
             entity.Property(item => item.EligibilityMode).HasConversion<string>().HasMaxLength(30);
+            entity.Property(item => item.IsPubliclyVisible).HasDefaultValue(true);
             entity.Property(item => item.CredentialHashKeyVersion).HasMaxLength(50).IsRequired();
             entity.Property(item => item.TerritoryCode).HasMaxLength(50);
             entity.Property(item => item.HistoricalSourceReference).HasMaxLength(1000);

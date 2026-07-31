@@ -2,7 +2,7 @@
 @model ElectionService.Web.Pages.Elections.ResultsModel
 @inject IConfiguration Configuration
 @{
-    ViewData["Title"] = Model.Results is not null ? $"{Model.Results.Title} — Results" : L["Results"];
+    ViewData["Title"] = Model.Results is not null ? $"{Model.Results.Title} — {L["Results"]}" : L["Results"];
 }
 
 <div class="content-width workspace-page">
@@ -17,7 +17,7 @@
         var r = Model.Results;
         <header class="workspace-header">
             <div>
-                <p class="eyebrow">@r.Status @(r.IsLive ? $"· {L["LiveIntermediate"]}" : "")</p>
+                <p class="eyebrow">@ElectionDisplay.Status(r.Status, L) @(r.IsLive ? $"· {L["LiveIntermediate"]}" : "")</p>
                 <h1>@r.Title</h1>
             </div>
             <a class="secondary-link" href="@($"{(Configuration["ElectionApi:PublicBaseUrl"] ?? Configuration["ElectionApi:BaseUrl"] ?? "http://localhost:8085").TrimEnd('/')}/public/elections/{r.ElectionId}/results.csv")">@L["Download CSV"]</a>

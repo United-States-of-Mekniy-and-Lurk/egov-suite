@@ -30,5 +30,6 @@ internal static class ElectionMapping
         election.ReferendumOptions.OrderBy(item => item.SortOrder).Select(item => new ReferendumOptionView(
             item.Id, item.Code, item.Label, item.Description, item.SortOrder)).ToList(),
         election.IsHistorical,
+        election.IsPubliclyVisible,
         election.HistoricalSourceReference);
 }

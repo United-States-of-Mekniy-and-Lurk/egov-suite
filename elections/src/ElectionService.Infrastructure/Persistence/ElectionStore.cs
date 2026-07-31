@@ -14,7 +14,7 @@ public sealed class ElectionStore(ElectionDbContext db) : IElectionStore
         await FullQuery().AsNoTracking().OrderByDescending(item => item.VotingStartsAt).ToListAsync(ct);
 
     public async Task<IReadOnlyList<Election>> ListPublicAsync(CancellationToken ct) =>
-        await FullQuery().AsNoTracking().Where(item => item.Status != ElectionStatus.Draft)
+        await FullQuery().AsNoTracking().Where(item => item.Status != ElectionStatus.Draft && item.IsPubliclyVisible)
             .OrderByDescending(item => item.VotingStartsAt).ToListAsync(ct);
 
     public Task<Election?> GetAsync(Guid id, CancellationToken ct) =>
@@ -24,7 +24,8 @@ public sealed class ElectionStore(ElectionDbContext db) : IElectionStore
     {
         var isId = Guid.TryParse(identifier, out var id);
         return FullQuery().AsNoTracking().SingleOrDefaultAsync(item =>
-            item.Status != ElectionStatus.Draft && (isId ? item.Id == id : item.Slug == identifier), ct);
+            item.Status != ElectionStatus.Draft && item.IsPubliclyVisible &&
+            (isId ? item.Id == id : item.Slug == identifier), ct);
     }
 
     public async Task<IReadOnlyList<ElectionResult>> GetResultsAsync(Guid electionId, CancellationToken ct) =>
