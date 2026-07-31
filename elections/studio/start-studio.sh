@@ -8,6 +8,24 @@ fps="${FPS:-30}"
 keyframe_interval=$((fps * 2))
 studio_url="${STUDIO_URL:-http://127.0.0.1/}"
 : "${STREAM_URL:?STREAM_URL is required (for example, an RTMPS YouTube ingestion URL)}"
+: "${ELECTION_API_BASE_URL:?ELECTION_API_BASE_URL is required}"
+: "${ELECTION_ID:?ELECTION_ID is required}"
+
+case "${POLL_INTERVAL_MS:-5000}" in
+        ''|*[!0-9]*) echo "POLL_INTERVAL_MS must be an integer" >&2; exit 1 ;;
+esac
+
+json_escape() {
+        printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+cat > /usr/share/nginx/html/runtime-config.js <<EOF
+window.__STUDIO_CONFIG__ = {
+    electionApiBaseUrl: "$(json_escape "$ELECTION_API_BASE_URL")",
+    electionId: "$(json_escape "$ELECTION_ID")",
+    pollIntervalMs: ${POLL_INTERVAL_MS:-5000},
+}
+EOF
 
 cleanup() {
     kill "${chromium_pid:-}" "${xvfb_pid:-}" 2>/dev/null || true

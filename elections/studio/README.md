@@ -41,14 +41,19 @@ Build from the repository root because the Dockerfile uses a root-relative conte
 docker build -f elections/studio/Dockerfile -t election-studio:sample .
 docker run --rm \
   -e STREAM_URL='rtmps://a.rtmps.youtube.com/live2/YOUR_STREAM_KEY' \
+  -e ELECTION_API_BASE_URL='https://elections-api.mklu.org' \
+  -e ELECTION_ID='65e8aa59-1282-498b-804d-0d46d6e6f3f0' \
   election-studio:sample
 ```
 
-`STREAM_URL` is required; the container has no local recording mode. Do not commit or log the ingestion URL. The default encoder output is H.264 at 1080p30, 10 Mbps CBR, with two-second keyframes and AAC stereo audio.
+`STREAM_URL`, `ELECTION_API_BASE_URL`, and `ELECTION_ID` are required; the container has no local recording mode. Do not commit or log the ingestion URL. The default encoder output is H.264 at 1080p30, 10 Mbps CBR, with two-second keyframes and AAC stereo audio.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `STREAM_URL` | required | Full RTMPS destination |
+| `ELECTION_API_BASE_URL` | required | Election Service API origin, without a trailing path |
+| `ELECTION_ID` | required | Election UUID polled by the studio |
+| `POLL_INTERVAL_MS` | `5000` | Delay between completed result requests |
 | `STREAM_DURATION` | unset | Optional bounded duration in seconds for smoke tests |
 | `STUDIO_URL` | `http://127.0.0.1/` | Browser source, including optional query string |
 | `WIDTH` | `1920` | Capture width |
@@ -62,20 +67,21 @@ Example Czech pinned-scene stream:
 ```sh
 docker run --rm \
   -e STREAM_URL='rtmps://a.rtmps.youtube.com/live2/YOUR_STREAM_KEY' \
+  -e ELECTION_API_BASE_URL='https://elections-api.mklu.org' \
+  -e ELECTION_ID='65e8aa59-1282-498b-804d-0d46d6e6f3f0' \
   -e STUDIO_URL='http://127.0.0.1/?scene=parties&lang=cs' \
   election-studio:sample
 ```
 
 ## One-off Kubernetes deployment
 
-The sample manifest expects the image `ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-election-studio:latest`. Build and push that tag, create the stream Secret directly in the target cluster, then apply the Deployment:
+The sample manifest expects the image `ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-election-studio:latest`. Build and push that tag, replace the placeholder in `election-studio.secret.sample.yaml`, then apply the Secret and Deployment. Do not commit a manifest containing the real stream key.
 
 ```sh
 docker build -f elections/studio/Dockerfile \
   -t ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-election-studio:latest .
 docker push ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-election-studio:latest
-kubectl create secret generic election-studio-youtube \
-  --from-literal=stream-url='rtmps://a.rtmps.youtube.com/live2/YOUR_STREAM_KEY'
+kubectl apply -f elections/studio/election-studio.secret.sample.yaml
 kubectl apply -f elections/studio/election-studio.sample.yaml
 ```
 
@@ -83,12 +89,12 @@ The Deployment uses the `Recreate` strategy so two pods cannot publish concurren
 
 ## Data integration
 
-Replace the `snapshot` constant in `src/App.tsx` with a polling source for:
+At container startup, `start-studio.sh` writes the API settings to `runtime-config.js` before nginx starts. The browser requests the following endpoint immediately and again after each configured polling interval:
 
 ```text
 GET /public/elections/{electionId}/results/tabular
 ```
 
-Party palettes are keyed by selection ID in `src/config/party-colors.json`. Interface strings are in `src/config/translations.json`. Scene animations are independent of polling and should retain the last valid snapshot during API failures.
+Successful responses replace the displayed snapshot. Failed requests are logged and retain the last successful response while scene animations continue. Party palettes can be keyed by selection ID in `src/config/party-colors.json`; unknown UUIDs receive palettes in list order. Interface strings are in `src/config/translations.json`.
 
 The candidate scene reads `partyGroups[].candidates[]` from the same tabular results response. Candidate order comes from `position`; `isWinner` and `isWithdrawn` control the optional status treatment.
