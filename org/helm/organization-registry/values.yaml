@@ -4,7 +4,7 @@ api:
     repository: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-organization-registry-api
     pullPolicy: Always
     # Automatically updated by the helm-release workflow after a successful push to main.
-    tag: "sha-288320d"
+    tag: "sha-7ac40c9"
   service:
     type: ClusterIP
     port: 80
@@ -37,7 +37,7 @@ web:
     repository: ghcr.io/united-states-of-mekniy-and-lurk/egov-suite-organization-registry-web
     pullPolicy: Always
     # Automatically updated by the helm-release workflow after a successful push to main.
-    tag: "sha-288320d"
+    tag: "sha-7ac40c9"
   service:
     type: ClusterIP
     port: 80
