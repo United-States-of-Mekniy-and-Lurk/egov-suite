@@ -1,6 +1,6 @@
 name: Helm Release
 
-# Runs after the container build workflow succeeds on main.
+# Temporarily paused while container images are published without deployment updates.
 # Updates the Helm image tags with the new SHA-based tag,
 # commits the change back, and lets Argo CD detect it and auto-sync the
 # pinned images.
@@ -16,8 +16,9 @@ jobs:
   update-image-tag:
     name: Bump Helm image tags
     runs-on: ubuntu-latest
-    # Only run when the Docker workflow was triggered by a push to main and succeeded.
+    # Remove the false guard to resume Helm tag updates after successful main builds.
     if: >
+      false &&
       github.event.workflow_run.event == 'push' &&
       github.event.workflow_run.conclusion == 'success'
     permissions:

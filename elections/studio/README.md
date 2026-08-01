@@ -97,7 +97,7 @@ GET /public/elections/{electionId}
 GET /public/elections/{electionId}/results/tabular
 ```
 
-Successful responses replace the displayed snapshot. Failed requests are logged and retain the last successful response while scene animations continue. Party palettes can be keyed by selection ID in `src/config/party-colors.json`; unknown UUIDs receive palettes in list order. Interface strings are in `src/config/translations.json`.
+Successful responses replace the displayed snapshot. Failed requests are logged and retain the last successful response while scene animations continue. Party palettes can be keyed by selection ID in `src/config/party-colors.json`; unknown UUIDs receive palettes in list order. Party logos are optional PNG files in `public/party-logos`, named by one-based list position (`1.png`, `2.png`, and so on). Interface strings are in `src/config/translations.json`.
 
 Visible elections and their tabular snapshots are available in every workflow state, including Draft and Closed. `IsPubliclyVisible` remains the access control: hidden elections are not returned on public surfaces.
 

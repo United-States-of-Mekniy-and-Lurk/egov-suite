@@ -40,17 +40,18 @@
 .overview-stats article::after { content: ''; position: absolute; width: 120px; height: 180%; right: -50px; background: rgb(255 255 255 / .035); transform: skewX(-20deg); } .overview-stats small { color: #aeb8bd; font-weight: 700; text-transform: uppercase; } .overview-stats strong { grid-row: 1 / 3; grid-column: 2; font: 600 clamp(35px, 3.2vw, 62px)/1 'Source Serif 4', serif; } .overview-stats span { font-size: clamp(9px, .7vw, 14px); }
 .overview-stats .timing-card { border-left-color: var(--yellow); } .overview-stats .timing-card.phase-open { border-left-color: #ff574b; } .overview-stats .timing-card.phase-closed { border-left-color: #8c979c; } .overview-stats .timing-card strong { font-size: clamp(28px, 2.5vw, 48px); font-variant-numeric: tabular-nums; } .timing-card span { color: var(--yellow); font-weight: 800; text-transform: uppercase; } .timing-card.phase-open span { color: #ff7d72; } .timing-card.phase-closed span { color: #aeb8bd; }
 .parties-scene { padding-top: 5.2vh; }
-.party-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1.2vw; height: 51vh; margin-top: 3.5vh; }
-.party-card { position: relative; min-width: 0; padding: 1.2vw; overflow: hidden; color: var(--paper); background: rgb(17 20 22 / .9); border-bottom: 7px solid var(--party-primary); animation: row-enter .75s cubic-bezier(.16,.8,.2,1) both; animation-delay: var(--delay); }
-.party-card::after { content: ''; position: absolute; inset: auto -20% -50% 28%; height: 58%; background: var(--party-primary); opacity: .08; transform: skewX(-20deg); }
-.party-visual { position: relative; height: 55%; margin: -1.2vw -1.2vw 1.5vh; overflow: hidden; background: var(--party-primary); }
-.party-visual::before { content: ''; position: absolute; width: 78%; aspect-ratio: 1; top: -32%; right: -25%; border: clamp(18px, 2vw, 38px) solid rgb(20 23 25 / .22); border-radius: 50%; animation: party-orbit 13s linear infinite; }
-.party-visual i { position: absolute; width: 36%; height: 145%; top: -22%; left: 18%; background: var(--party-secondary); opacity: .75; transform: skewX(-20deg); animation: party-drift 8s ease-in-out infinite; }
-.party-visual i:nth-child(2) { left: 62%; width: 10%; background: #16191b; opacity: .42; animation-delay: -3s; }
-.party-visual span { position: absolute; right: 1vw; bottom: -.16em; color: rgb(20 23 25 / .34); font: 700 clamp(65px, 6.5vw, 125px)/1 'Source Serif 4', serif; }
-.party-card > small { color: var(--party-primary); font-size: clamp(9px, .65vw, 13px); font-weight: 800; text-transform: uppercase; }
-.party-card h2 { margin: 1vh 0 .7vh; font: 600 clamp(23px, 1.75vw, 34px)/1.02 'Source Serif 4', serif; overflow-wrap: anywhere; }
-.party-card p { margin: 0; color: #aeb8bd; font-size: clamp(9px, .68vw, 13px); font-weight: 600; }
+.party-chart { display: grid; grid-template-columns: repeat(var(--party-count), minmax(0, 1fr)); align-items: end; gap: 1.2vw; height: 53vh; margin-top: 2vh; border-bottom: 2px solid rgb(255 255 255 / .45); }
+.party-column { display: grid; grid-template-rows: minmax(0, 1fr) 12vh; align-self: stretch; min-width: 0; animation: row-enter .75s cubic-bezier(.16,.8,.2,1) both; animation-delay: var(--delay); }
+.party-bar { position: relative; align-self: end; display: flex; height: var(--bar-height); min-height: 3%; align-items: center; justify-content: center; overflow: hidden; color: #111416; background: var(--party-primary); border-top: 6px solid var(--party-secondary); transform-origin: bottom; animation: party-bar-grow 1.2s .2s cubic-bezier(.16,.8,.2,1) both; }
+.party-bar::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 25%, rgb(255 255 255 / .22), transparent 70%); transform: translateX(-120%); animation: bar-glint 8s 2.2s ease-in-out infinite; }
+.party-bar img { position: absolute; z-index: 1; width: 72%; height: 38%; object-fit: contain; filter: drop-shadow(0 5px 8px rgb(0 0 0 / .2)); }
+.party-votes { position: absolute; z-index: 2; top: 1.3vh; left: 50%; display: flex; flex-direction: column; align-items: center; color: #fff; font: 700 clamp(25px, 2.2vw, 42px)/.9 'Source Serif 4', serif; text-shadow: 0 2px 8px rgb(0 0 0 / .5); transform: translateX(-50%); white-space: nowrap; }
+.party-votes small { margin-top: .55vh; font: 800 clamp(7px, .52vw, 10px)/1 'Noto Sans', sans-serif; text-transform: uppercase; }
+.party-bar > span { position: absolute; z-index: 2; right: .7vw; bottom: 20px; color: rgb(17 20 22 / .28); font: 700 clamp(52px, 5vw, 96px)/1 'Source Serif 4', serif; }
+.party-label { min-width: 0; padding: 1.2vh .5vw 0; }
+.party-label > small { color: var(--party-primary); font-size: clamp(8px, .58vw, 11px); font-weight: 800; text-transform: uppercase; }
+.party-label h2 { margin: .5vh 0 .3vh; font: 600 clamp(18px, 1.35vw, 26px)/1 'Source Serif 4', serif; overflow-wrap: anywhere; }
+.party-label p { margin: 0; overflow: hidden; color: #aeb8bd; font-size: clamp(8px, .6vw, 12px); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .candidates-scene { padding-top: 5.2vh; }
 .candidate-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1.2vw; height: 51vh; margin-top: 3.5vh; }
 .candidate-card { position: relative; min-width: 0; padding: 0 1.2vw 1.2vw; overflow: hidden; background: rgb(17 20 22 / .91); border-top: 7px solid var(--party-primary); animation: row-enter .75s cubic-bezier(.16,.8,.2,1) both; animation-delay: var(--delay); }
@@ -110,6 +111,7 @@
 @keyframes emblem-float { 0%, 100% { transform: translate3d(0, -.3%, 0) rotate(-.25deg); } 50% { transform: translate3d(0, .8%, 0) rotate(.25deg); } }
 @keyframes party-orbit { to { transform: rotate(360deg); } }
 @keyframes party-drift { 0%, 100% { transform: skewX(-20deg) translateX(-5%); } 50% { transform: skewX(-20deg) translateX(8%); } }
+@keyframes party-bar-grow { from { transform: scaleY(0); } }
 @keyframes bar-glint { 0%, 72%, 100% { transform: translateX(-120%); } 84% { transform: translateX(120%); } }
 @keyframes orbit { to { transform: rotate(360deg); } } @keyframes row-enter { from { opacity: 0; transform: translateX(45px); } } @keyframes seat-enter { from { opacity: 0; transform: scale(0); } } @keyframes bar-grow { from { transform: scaleX(0); } } @keyframes dial-grow { from { stroke-dasharray: 0 1031; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }

@@ -96,6 +96,14 @@ function getPartyPalette(partyListId: string, index: number) {
   return partyColors[partyListId] ?? configuredPalettes[index % configuredPalettes.length]
 }
 
+function getLeadingResult(rows: ResultRow[]) {
+  return rows.reduce<ResultRow | undefined>((leader, row) => {
+    if (!leader || row.voteCount > leader.voteCount) return row
+    if (row.voteCount === leader.voteCount && row.percentage > leader.percentage) return row
+    return leader
+  }, undefined)
+}
+
 function projectDhondtSeats(groups: PartyResultGroup[], seatCount: number | null): SeatProjection[] {
   const projection = groups.map((group, index) => ({ ...group, seats: 0, palette: getPartyPalette(group.partyListId, index) }))
   if (!seatCount || projection.every((party) => party.voteCount === 0)) return projection
@@ -247,7 +255,7 @@ function IntroScene({ now, phase, t, schedule }: { now: Date; phase: ElectionPha
 }
 
 function OverviewScene({ now, phase, t, locale, snapshot, schedule }: { now: Date; phase: ElectionPhase; t: (key: TranslationKey) => string; locale: Locale; snapshot: ElectionSnapshot; schedule: ElectionSchedule | null }) {
-  const leader = snapshot.rows[0]
+  const leader = getLeadingResult(snapshot.rows)
   const turnout = snapshot.turnoutPercentage ?? 0
   const formatNumber = (value: number) => new Intl.NumberFormat(localeTags[locale]).format(value)
   return <section className="scene overview-scene" aria-label={t('overviewTitle')}>
@@ -264,14 +272,20 @@ function OverviewScene({ now, phase, t, locale, snapshot, schedule }: { now: Dat
   </section>
 }
 
-function PartiesScene({ t, snapshot }: { t: (key: TranslationKey) => string; snapshot: ElectionSnapshot }) {
+function PartiesScene({ t, locale, snapshot }: { t: (key: TranslationKey) => string; locale: Locale; snapshot: ElectionSnapshot }) {
+  const formatNumber = (value: number) => new Intl.NumberFormat(localeTags[locale]).format(value)
+  const maximumVotes = Math.max(...snapshot.rows.map((row) => row.voteCount), 1)
   return <section className="scene parties-scene" aria-label={t('partyTitle')}>
     <div className="scene-heading compact"><p className="kicker">{t('partyKicker')}</p><h1>{t('partyTitle')}</h1></div>
-    <div className="party-grid">{snapshot.rows.map((row, index) => {
+    <div className="party-chart" style={{ '--party-count': Math.max(snapshot.rows.length, 1) } as CSSProperties}>{snapshot.rows.map((row, index) => {
       const palette = getPartyPalette(row.selectionId, index)
-      return <article className="party-card" key={row.selectionId} style={{ '--party-primary': palette.primary, '--party-secondary': palette.secondary, '--delay': `${index * 100}ms` } as CSSProperties}>
-        <div className="party-visual" aria-hidden="true"><i /><i /><span>{String(index + 1).padStart(2, '0')}</span></div>
-        <small>{t('listNumber')} {String(index + 1).padStart(2, '0')}</small><h2>{row.selectionLabel}</h2><p>{row.partyName}</p>
+      return <article className="party-column" key={row.selectionId} style={{ '--party-primary': palette.primary, '--party-secondary': palette.secondary, '--bar-height': `${Math.max(row.voteCount / maximumVotes * 100, row.voteCount > 0 ? 12 : 3)}%`, '--delay': `${index * 100}ms` } as CSSProperties}>
+        <div className="party-bar">
+          <strong className="party-votes">{formatNumber(row.voteCount)}<small>{t('votes')}</small></strong>
+          <img src={`/party-logos/${index + 1}.png`} alt="" onError={(event) => { event.currentTarget.hidden = true }} />
+          <span>{String(index + 1).padStart(2, '0')}</span>
+        </div>
+        <div className="party-label"><small>{t('listNumber')} {String(index + 1).padStart(2, '0')}</small><h2>{row.selectionLabel}</h2><p>{row.partyName}</p></div>
       </article>
     })}</div>
   </section>
@@ -345,7 +359,7 @@ function TurnoutScene({ t, locale, snapshot }: { t: (key: TranslationKey) => str
 function Scene({ name, now, phase, t, locale, snapshot, schedule }: { name: SceneName; now: Date; phase: ElectionPhase; t: (key: TranslationKey) => string; locale: Locale; snapshot: ElectionSnapshot; schedule: ElectionSchedule | null }) {
   if (name === 'intro') return <IntroScene now={now} phase={phase} t={t} schedule={schedule} />
   if (name === 'overview') return <OverviewScene now={now} phase={phase} t={t} locale={locale} snapshot={snapshot} schedule={schedule} />
-  if (name === 'parties') return <PartiesScene t={t} snapshot={snapshot} />
+  if (name === 'parties') return <PartiesScene t={t} locale={locale} snapshot={snapshot} />
   if (name === 'candidates') return <CandidatesScene t={t} snapshot={snapshot} />
   if (name === 'results') return <ResultsScene t={t} locale={locale} snapshot={snapshot} />
   if (name === 'seats') return <SeatsScene t={t} snapshot={snapshot} />
